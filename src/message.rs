@@ -2,7 +2,7 @@ use anyhow::Result;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Message {
     pub object_id: u32,
     pub opcode: u16,
@@ -13,8 +13,7 @@ impl Message {
     pub fn to_bytes(&self, buf: &mut BytesMut) {
         buf.reserve(8 + self.payload.len());
         buf.put_u32_ne(self.object_id);
-        buf.put_u16(self.payload.len() as u16);
-        buf.put_u16(self.opcode);
+        buf.put_u32_ne((((self.payload.len() + 8) as u32) << 16) | self.opcode as u32);
         buf.put_slice(&self.payload);
     }
 
@@ -67,5 +66,29 @@ impl Encoder<Message> for MessageCodec {
         item.to_bytes(dst);
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bytes::{Bytes, BytesMut};
+
+    use super::Message;
+
+    #[test]
+    fn encode_decode_roundtrip() {
+        let msg = Message {
+            object_id: 10,
+            opcode: 0,
+            payload: Bytes::copy_from_slice(b"\x03\0\0\0"),
+        };
+
+        let mut bytes = BytesMut::new();
+        msg.to_bytes(&mut bytes);
+
+        assert_eq!(
+            msg,
+            Message::from_bytes(&mut bytes).expect("Failed to parse bytes")
+        );
     }
 }
