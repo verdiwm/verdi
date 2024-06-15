@@ -4,7 +4,7 @@ use tokio_util::codec::{Decoder, Encoder};
 
 #[derive(Debug)]
 pub struct Message {
-    pub sender_id: u32,
+    pub object_id: u32,
     pub opcode: u16,
     pub payload: Bytes,
 }
@@ -12,14 +12,14 @@ pub struct Message {
 impl Message {
     pub fn to_bytes(&self, buf: &mut BytesMut) {
         buf.reserve(8 + self.payload.len());
-        buf.put_u32_ne(self.sender_id);
+        buf.put_u32_ne(self.object_id);
         buf.put_u16(self.payload.len() as u16);
         buf.put_u16(self.opcode);
         buf.put_slice(&self.payload);
     }
 
     pub fn from_bytes(bytes: &mut BytesMut) -> Result<Self> {
-        let sender_id = bytes.get_u32_ne();
+        let object_id = bytes.get_u32_ne();
         let second = bytes.get_u32_ne();
         let len = (second >> 16) as usize;
         let opcode = (second & 65535) as u16;
@@ -27,7 +27,7 @@ impl Message {
         let payload = bytes.copy_to_bytes(len - 8);
 
         Ok(Message {
-            sender_id,
+            object_id,
             opcode,
             payload,
         })
