@@ -2,8 +2,8 @@ use anyhow::Result;
 use bytes::{Bytes, BytesMut};
 use futures::SinkExt;
 use message::{Message, MessageCodec};
-use std::{fs, process::exit};
-use tokio::net::UnixListener;
+use std::{fs, process::exit, sync::Arc};
+use tokio::{net::UnixListener, sync::Mutex, task::JoinSet};
 use tokio_stream::StreamExt;
 use tokio_util::codec::{Framed, FramedRead};
 
@@ -13,6 +13,8 @@ const SERVER_ID_START: usize = 0xff000000;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    console_subscriber::init();
+
     let socket_path = "verdi.sock";
 
     tokio::spawn(async move {
@@ -27,49 +29,56 @@ async fn main() -> Result<()> {
 
     let socket = UnixListener::bind(socket_path)?;
 
-    let mut server_objects = Objects::new_server_store();
+    let server_objects = Arc::new(Mutex::new(Objects::new_server_store()));
+
+    let mut set: JoinSet<Result<(), anyhow::Error>> = JoinSet::new();
 
     loop {
         match socket.accept().await {
             Ok((stream, _addr)) => {
                 println!("Got client");
 
+                let server_objects = server_objects.clone();
                 let mut stream = Framed::new(stream, MessageCodec::new());
 
-                while let Some(ref msg) = stream.try_next().await? {
-                    dbg!(msg);
+                set.spawn(async move {
+                    while let Some(ref msg) = stream.try_next().await? {
+                        dbg!(msg);
 
-                    if let Some(object) = server_objects.get(msg.object_id) {
-                        println!(
-                            "\"{}\" object requested with request \"{}\"",
-                            object.name(),
-                            object.get_request(msg.opcode).unwrap_or("unknown")
-                        );
+                        if let Some(object) = server_objects.lock().await.get(msg.object_id) {
+                            println!(
+                                "\"{}\" object requested with request \"{}\"",
+                                object.name(),
+                                object.get_request(msg.opcode).unwrap_or("unknown")
+                            );
 
-                        if let Some(request) = object.get_request(msg.opcode) {
-                            if request == "sync" {
-                                let new_id = u32::from_ne_bytes([
-                                    msg.payload[0],
-                                    msg.payload[1],
-                                    msg.payload[2],
-                                    msg.payload[3],
-                                ]);
+                            if let Some(request) = object.get_request(msg.opcode) {
+                                if request == "sync" {
+                                    let new_id = u32::from_ne_bytes([
+                                        msg.payload[0],
+                                        msg.payload[1],
+                                        msg.payload[2],
+                                        msg.payload[3],
+                                    ]);
 
-                                dbg!(new_id);
+                                    dbg!(new_id);
 
-                                stream
-                                    .send(Message {
-                                        object_id: new_id,
-                                        opcode: 0,
-                                        payload: Bytes::copy_from_slice(&1u32.to_ne_bytes()),
-                                    })
-                                    .await?;
+                                    // stream
+                                    //     .send(Message {
+                                    //         object_id: new_id,
+                                    //         opcode: 0,
+                                    //         payload: Bytes::copy_from_slice(&1u32.to_ne_bytes()),
+                                    //     })
+                                    //     .await?;
+                                }
                             }
+                        } else {
+                            println!("Unknown object requested");
                         }
-                    } else {
-                        println!("Unknown object requested");
                     }
-                }
+
+                    Ok(())
+                });
             }
             Err(e) => {
                 println!("Client failed to connect")
@@ -87,7 +96,7 @@ pub enum Argument {
 }
 
 struct Objects {
-    objects: Vec<Box<dyn Interface>>,
+    objects: Vec<Box<dyn Interface + Send>>,
 }
 
 impl Objects {
@@ -97,7 +106,7 @@ impl Objects {
         }
     }
 
-    pub fn get(&self, id: u32) -> Option<&Box<dyn Interface>> {
+    pub fn get(&self, id: u32) -> Option<&Box<dyn Interface + Send>> {
         if id == 0 {
             return None;
         }
