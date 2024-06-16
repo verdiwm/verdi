@@ -6,6 +6,8 @@ use std::{fs, process::exit, sync::Arc};
 use tokio::{net::UnixListener, sync::Mutex, task::JoinSet};
 use tokio_stream::StreamExt;
 use tokio_util::codec::{Framed, FramedRead};
+use tracing::{debug, error, info, warn};
+use tracing_subscriber::{prelude::*, EnvFilter};
 
 mod message;
 
@@ -13,7 +15,13 @@ const SERVER_ID_START: usize = 0xff000000;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    console_subscriber::init();
+    let console_layer = console_subscriber::ConsoleLayer::builder().spawn();
+
+    tracing_subscriber::registry()
+        .with(console_layer)
+        .with(tracing_subscriber::fmt::layer())
+        .with(EnvFilter::from_default_env())
+        .init();
 
     let socket_path = "verdi.sock";
 
@@ -36,7 +44,7 @@ async fn main() -> Result<()> {
     loop {
         match socket.accept().await {
             Ok((stream, _addr)) => {
-                println!("Got client");
+                info!("Got client");
 
                 let server_objects = server_objects.clone();
                 let mut stream = Framed::new(stream, MessageCodec::new());
@@ -46,7 +54,7 @@ async fn main() -> Result<()> {
                         dbg!(msg);
 
                         if let Some(object) = server_objects.lock().await.get(msg.object_id) {
-                            println!(
+                            debug!(
                                 "\"{}\" object requested with request \"{}\"",
                                 object.name(),
                                 object.get_request(msg.opcode).unwrap_or("unknown")
@@ -73,7 +81,7 @@ async fn main() -> Result<()> {
                                 }
                             }
                         } else {
-                            println!("Unknown object requested");
+                            warn!("Unknown object requested");
                         }
                     }
 
@@ -81,7 +89,7 @@ async fn main() -> Result<()> {
                 });
             }
             Err(e) => {
-                println!("Client failed to connect")
+                error!("Client failed to connect")
             }
         }
     }
