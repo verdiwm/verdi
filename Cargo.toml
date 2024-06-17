@@ -11,12 +11,14 @@ strip = true
 [dependencies]
 anyhow = "1.0.86"
 bytes = "1.6.0"
-console-subscriber = "0.3.0"
 futures = "0.3.30"
+softbuffer = { version = "0.4.4", default-features = false, features = ["wayland"] }
 thiserror = "1.0.61"
 tokio = { version = "1.38.0", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "tracing"] }
 tokio-stream = { version = "0.1.15", features = ["net"] }
 tokio-util = { version = "0.7.11", features = ["codec"] }
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "tracing-log"] }
+wgpu = "0.20.1"
+winit = { version = "0.30.2", default-features = false, features = ["rwh_06", "wayland"] }
