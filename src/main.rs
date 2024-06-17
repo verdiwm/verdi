@@ -1,98 +1,142 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use bytes::{Bytes, BytesMut};
 use futures::SinkExt;
 use message::{Message, MessageCodec};
 use std::{fs, process::exit, sync::Arc};
 use tokio::{net::UnixListener, sync::Mutex, task::JoinSet};
 use tokio_stream::StreamExt;
-use tokio_util::codec::{Framed, FramedRead};
+use tokio_util::codec::Framed;
 use tracing::{debug, error, info, warn};
-use tracing_subscriber::{prelude::*, EnvFilter};
+use tracing_subscriber::prelude::*;
+use winit::event_loop::{ControlFlow, EventLoop};
+use winit_backend::WinitBackend;
 
 mod message;
+mod winit_backend;
 
 const SERVER_ID_START: usize = 0xff000000;
 
-#[tokio::main]
-async fn main() -> Result<()> {
-    let console_layer = console_subscriber::ConsoleLayer::builder().spawn();
+const WIDTH: usize = 1280;
+const HEIGHT: usize = 720;
 
-    tracing_subscriber::registry()
-        .with(console_layer)
-        .with(tracing_subscriber::fmt::layer())
-        .with(EnvFilter::from_default_env())
-        .init();
+const SOCKET_PATH: &str = "verdi.sock";
 
-    let socket_path = "verdi.sock";
-
+/// Register a ctrl+c handler that ensures the socket is removed
+fn register_ctrl_c_handler() {
     tokio::spawn(async move {
-        tokio::signal::ctrl_c().await.unwrap();
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Failed to listen for signals");
 
-        if fs::metadata(socket_path).is_ok() {
-            fs::remove_file(socket_path).expect("Fuck");
+        // Check if the socket actually exists
+        if fs::metadata(SOCKET_PATH).is_ok() {
+            // We still want to gracefully exit even on error
+            if fs::remove_file(SOCKET_PATH).is_err() {
+                error!("Failed to remove old socket");
+                exit(1)
+            }
         }
 
         exit(0)
     });
+}
 
-    let socket = UnixListener::bind(socket_path)?;
+fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
 
-    let server_objects = Arc::new(Mutex::new(Objects::new_server_store()));
+    // Create the tokio runtime manually instead of using a macro for better controll
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .context("Failed to create tokio runtime")?;
 
-    let mut set: JoinSet<Result<(), anyhow::Error>> = JoinSet::new();
+    let event_loop = EventLoop::new()?;
+    event_loop.set_control_flow(ControlFlow::Wait);
 
-    loop {
-        match socket.accept().await {
-            Ok((stream, _addr)) => {
-                info!("Got client");
+    let mut app = WinitBackend::new();
 
-                let server_objects = server_objects.clone();
-                let mut stream = Framed::new(stream, MessageCodec::new());
+    runtime.block_on(async move {
+        register_ctrl_c_handler();
 
-                set.spawn(async move {
-                    while let Some(ref msg) = stream.try_next().await? {
-                        dbg!(msg);
+        let socket = UnixListener::bind(SOCKET_PATH)?;
 
-                        if let Some(object) = server_objects.lock().await.get(msg.object_id) {
-                            debug!(
-                                "\"{}\" object requested with request \"{}\"",
-                                object.name(),
-                                object.get_request(msg.opcode).unwrap_or("unknown")
-                            );
+        let server_objects = Arc::new(Mutex::new(Objects::new_server_store()));
 
-                            if let Some(request) = object.get_request(msg.opcode) {
-                                if request == "sync" {
-                                    let new_id = u32::from_ne_bytes([
-                                        msg.payload[0],
-                                        msg.payload[1],
-                                        msg.payload[2],
-                                        msg.payload[3],
-                                    ]);
+        let mut set: JoinSet<Result<(), anyhow::Error>> = JoinSet::new();
 
-                                    dbg!(new_id);
+        let listener_handle = tokio::spawn(async move {
+            loop {
+                match socket.accept().await {
+                    Ok((stream, _addr)) => {
+                        info!("Got client");
 
-                                    // stream
-                                    //     .send(Message {
-                                    //         object_id: new_id,
-                                    //         opcode: 0,
-                                    //         payload: Bytes::copy_from_slice(&1u32.to_ne_bytes()),
-                                    //     })
-                                    //     .await?;
+                        let server_objects = server_objects.clone();
+                        let mut stream = Framed::new(stream, MessageCodec::new());
+
+                        set.spawn(async move {
+                            while let Some(ref msg) = stream.try_next().await? {
+                                dbg!(msg);
+
+                                if let Some(object) = server_objects.lock().await.get(msg.object_id)
+                                {
+                                    debug!(
+                                        "\"{}\" object requested with request \"{}\"",
+                                        object.name(),
+                                        object.get_request(msg.opcode).unwrap_or("unknown")
+                                    );
+
+                                    if let Some(request) = object.get_request(msg.opcode) {
+                                        if request == "sync" {
+                                            let new_id = u32::from_ne_bytes([
+                                                msg.payload[0],
+                                                msg.payload[1],
+                                                msg.payload[2],
+                                                msg.payload[3],
+                                            ]);
+
+                                            dbg!(new_id);
+
+                                            // stream
+                                            //     .send(Message {
+                                            //         object_id: new_id,
+                                            //         opcode: 0,
+                                            //         payload: Bytes::copy_from_slice(&1u32.to_ne_bytes()),
+                                            //     })
+                                            //     .await?;
+                                        }
+
+                                        if request == "get_registry" {
+                                            let new_id = u32::from_ne_bytes([
+                                                msg.payload[0],
+                                                msg.payload[1],
+                                                msg.payload[2],
+                                                msg.payload[3],
+                                            ]);
+
+                                            dbg!(new_id);
+                                        }
+                                    }
+                                } else {
+                                    warn!("Unknown object requested");
                                 }
                             }
-                        } else {
-                            warn!("Unknown object requested");
-                        }
-                    }
 
-                    Ok(())
-                });
+                            Ok(())
+                        });
+                    }
+                    Err(e) => {
+                        error!("Client failed to connect")
+                    }
+                }
             }
-            Err(e) => {
-                error!("Client failed to connect")
-            }
-        }
-    }
+        });
+
+        listener_handle.await?;
+
+        anyhow::Ok(())
+    })?;
+
+    event_loop.run_app(&mut app)?;
 
     Ok(())
 }
