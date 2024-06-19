@@ -1,7 +1,8 @@
+use arbitrary::Arbitrary;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
 pub struct Message {
     pub object_id: u32,
     pub opcode: u16,
