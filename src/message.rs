@@ -83,7 +83,7 @@ impl Decoder for MessageCodec {
 }
 
 impl Encoder<Message> for MessageCodec {
-    type Error = anyhow::Error;
+    type Error = std::io::Error;
 
     fn encode(&mut self, item: Message, dst: &mut BytesMut) -> Result<(), Self::Error> {
         item.to_bytes(dst);
