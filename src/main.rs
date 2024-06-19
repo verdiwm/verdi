@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use bytes::{Bytes, BytesMut};
-use futures::SinkExt;
+use futures_util::SinkExt;
 use std::{fs, process::exit, sync::Arc};
 use tokio::{net::UnixListener, sync::Mutex, task::JoinSet};
 use tokio_stream::StreamExt;
