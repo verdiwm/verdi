@@ -1,3 +1,6 @@
+[workspace]
+members = ["gen"]
+
 [package]
 name = "verdi"
 version = "0.1.0"
