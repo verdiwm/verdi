@@ -1,7 +1,11 @@
 use softbuffer::{Context, Surface};
 use std::{num::NonZeroU32, sync::Arc};
 use winit::{
-    application::ApplicationHandler, event::WindowEvent, event_loop::ControlFlow, window::Window,
+    application::ApplicationHandler,
+    event::{KeyEvent, WindowEvent},
+    event_loop::ControlFlow,
+    keyboard::{Key, NamedKey},
+    window::Window,
 };
 
 pub struct WinitBackend {
@@ -18,7 +22,7 @@ impl ApplicationHandler for WinitBackend {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
         let window = Arc::new(
             event_loop
-                .create_window(Window::default_attributes().with_title("Basic softbuffer"))
+                .create_window(Window::default_attributes().with_title("verdi-nested-session"))
                 .unwrap(),
         );
 
@@ -62,7 +66,15 @@ impl ApplicationHandler for WinitBackend {
                     }
                 }
             }
-            WindowEvent::CloseRequested => {
+            WindowEvent::CloseRequested
+            | WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        logical_key: Key::Named(NamedKey::Escape),
+                        ..
+                    },
+                ..
+            } => {
                 if window_id == window.id() {
                     event_loop.exit();
                 }
