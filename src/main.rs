@@ -1,17 +1,16 @@
 use anyhow::{Context, Result};
 use bytes::{Bytes, BytesMut};
 use futures::SinkExt;
-use message::{Message, MessageCodec};
 use std::{fs, process::exit, sync::Arc};
 use tokio::{net::UnixListener, sync::Mutex, task::JoinSet};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::prelude::*;
+use verdi::message::{Message, MessageCodec};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit_backend::WinitBackend;
 
-mod message;
 mod winit_backend;
 
 const SERVER_ID_START: usize = 0xff000000;

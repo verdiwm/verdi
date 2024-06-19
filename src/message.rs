@@ -1,12 +1,23 @@
-use anyhow::Result;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Message {
     pub object_id: u32,
     pub opcode: u16,
     pub payload: Bytes,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum DecodeError {
+    #[error("Malformed header")]
+    MalformedHeader,
+    #[error("Invalid payload lenght")]
+    InvalidLenght,
+    #[error("Malformed payload")]
+    MalformedPayload,
+    #[error("{0}")]
+    IoError(#[from] std::io::Error),
 }
 
 impl Message {
@@ -17,11 +28,23 @@ impl Message {
         buf.put_slice(&self.payload);
     }
 
-    pub fn from_bytes(bytes: &mut BytesMut) -> Result<Self> {
+    pub fn from_bytes(bytes: &mut BytesMut) -> Result<Self, DecodeError> {
+        if bytes.remaining() < 8 {
+            return Err(DecodeError::MalformedHeader);
+        }
+
         let object_id = bytes.get_u32_ne();
         let second = bytes.get_u32_ne();
         let len = (second >> 16) as usize;
         let opcode = (second & 65535) as u16;
+
+        if len < 8 {
+            return Err(DecodeError::InvalidLenght);
+        }
+
+        if bytes.remaining() < (len - 8) {
+            return Err(DecodeError::MalformedPayload);
+        }
 
         let payload = bytes.copy_to_bytes(len - 8);
 
@@ -44,9 +67,8 @@ impl MessageCodec {
 impl Decoder for MessageCodec {
     type Item = Message;
 
-    type Error = anyhow::Error;
+    type Error = DecodeError;
 
-    // TODO: error handling
     fn decode(
         &mut self,
         src: &mut BytesMut,
