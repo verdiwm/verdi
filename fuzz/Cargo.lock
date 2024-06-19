@@ -195,6 +195,7 @@ checksum = "b236fc92302c97ed75b38da1f4917b5cdda4984745740f153a5d3059e48d725e"
 [[package]]
 name = "bytes"
 version = "1.6.0"
+source = "git+https://github.com/morr0ne/bytes?branch=arbitrary#7f264e3ffb1b626932bd42da521755acf6e89982"
 dependencies = [
  "arbitrary",
 ]
