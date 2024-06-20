@@ -8,6 +8,7 @@ struct Protocol {
     #[serde(rename = "@name")]
     name: String,
     copyright: String,
+    description: Option<String>,
     #[serde(default, rename = "interface")]
     interfaces: Vec<Interface>,
 }
@@ -58,7 +59,7 @@ struct Arg {
     #[serde(default, rename = "@allow-null")]
     allow_null: bool,
     #[serde(rename = "@summary")]
-    summary: String,
+    summary: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -90,13 +91,23 @@ struct Entry {
     since: Option<usize>,
     #[serde(rename = "@deprecated-since")]
     deprecated_since: Option<usize>,
+    description: Option<String>,
 }
 
-fn main() -> Result<()> {
-    let xml = fs::read_to_string("wayland/protocol/wayland.xml")?;
-    let protocol: Protocol = quick_xml::de::from_str(&xml)?;
+const PROTOCOLS: [&str; 6] = [
+    "wayland/protocol/wayland.xml",
+    "wayland-protocols/stable/linux-dmabuf/linux-dmabuf-v1.xml",
+    "wayland-protocols/stable/presentation-time/presentation-time.xml",
+    "wayland-protocols/stable/tablet/tablet-v2.xml",
+    "wayland-protocols/stable/viewporter/viewporter.xml",
+    "wayland-protocols/stable/xdg-shell/xdg-shell.xml",
+];
 
-    println!("{protocol:#?}");
+fn main() -> Result<()> {
+    for path in PROTOCOLS {
+        let protocol: Protocol = quick_xml::de::from_str(&fs::read_to_string(path)?)?;
+        dbg!(protocol.name);
+    }
 
     Ok(())
 }
