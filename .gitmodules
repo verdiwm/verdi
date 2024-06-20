@@ -1,3 +1,4 @@
 [submodule "wayland"]
 	path = wayland
 	url = https://gitlab.freedesktop.org/wayland/wayland.git
+	tag = 1.23.0
