@@ -35,7 +35,7 @@ struct Message {
     #[serde(rename = "@name")]
     name: String,
     #[serde(rename = "@type")]
-    ty: Option<String>,
+    ty: Option<MessageType>,
     #[serde(rename = "@since")]
     since: Option<usize>,
     #[serde(rename = "@deprecated-since")]
@@ -46,12 +46,18 @@ struct Message {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+enum MessageType {
+    #[serde(rename = "destructor")]
+    Destructor,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct Arg {
     #[serde(rename = "@name")]
     name: String,
     #[serde(rename = "@type")]
-    ty: String,
+    ty: ArgType,
     #[serde(rename = "@interface")]
     interface: Option<String>,
     #[serde(rename = "@enum")]
@@ -60,6 +66,26 @@ struct Arg {
     allow_null: bool,
     #[serde(rename = "@summary")]
     summary: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+enum ArgType {
+    #[serde(rename = "int")]
+    Int,
+    #[serde(rename = "uint")]
+    Uint,
+    #[serde(rename = "fixed")]
+    Fixed,
+    #[serde(rename = "string")]
+    String,
+    #[serde(rename = "object")]
+    Object,
+    #[serde(rename = "new_id")]
+    NewId,
+    #[serde(rename = "array")]
+    Array,
+    #[serde(rename = "fd")]
+    Fd,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
