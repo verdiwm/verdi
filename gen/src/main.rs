@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, OpenOptions},
     io::Write,
+    process::Command,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -161,6 +162,8 @@ fn main() -> Result<()> {
         }
         writeln!(&mut generated_path, "}}")?;
     }
+
+    Command::new("rustfmt").arg("src/core.rs").output()?;
 
     Ok(())
 }
