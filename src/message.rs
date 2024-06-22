@@ -57,6 +57,7 @@ impl Message {
     }
 }
 
+#[derive(Debug)]
 pub struct MessageCodec;
 
 impl MessageCodec {
