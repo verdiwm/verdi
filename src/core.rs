@@ -1,306 +1,307 @@
+#![allow(unused)]
 mod wayland {
-struct wl_display {
+struct WlDisplay {
 
                 }
                 
-                impl wl_display {
+                impl WlDisplay {
                     
                 }
-struct wl_registry {
+struct WlRegistry {
 
                 }
                 
-                impl wl_registry {
+                impl WlRegistry {
                     
                 }
-struct wl_callback {
+struct WlCallback {
 
                 }
                 
-                impl wl_callback {
+                impl WlCallback {
                     
                 }
-struct wl_compositor {
+struct WlCompositor {
 
                 }
                 
-                impl wl_compositor {
+                impl WlCompositor {
                     
                 }
-struct wl_shm_pool {
+struct WlShmPool {
 
                 }
                 
-                impl wl_shm_pool {
+                impl WlShmPool {
                     
                 }
-struct wl_shm {
+struct WlShm {
 
                 }
                 
-                impl wl_shm {
+                impl WlShm {
                     
                 }
-struct wl_buffer {
+struct WlBuffer {
 
                 }
                 
-                impl wl_buffer {
+                impl WlBuffer {
                     
                 }
-struct wl_data_offer {
+struct WlDataOffer {
 
                 }
                 
-                impl wl_data_offer {
+                impl WlDataOffer {
                     
                 }
-struct wl_data_source {
+struct WlDataSource {
 
                 }
                 
-                impl wl_data_source {
+                impl WlDataSource {
                     
                 }
-struct wl_data_device {
+struct WlDataDevice {
 
                 }
                 
-                impl wl_data_device {
+                impl WlDataDevice {
                     
                 }
-struct wl_data_device_manager {
+struct WlDataDeviceManager {
 
                 }
                 
-                impl wl_data_device_manager {
+                impl WlDataDeviceManager {
                     
                 }
-struct wl_shell {
+struct WlShell {
 
                 }
                 
-                impl wl_shell {
+                impl WlShell {
                     
                 }
-struct wl_shell_surface {
+struct WlShellSurface {
 
                 }
                 
-                impl wl_shell_surface {
+                impl WlShellSurface {
                     
                 }
-struct wl_surface {
+struct WlSurface {
 
                 }
                 
-                impl wl_surface {
+                impl WlSurface {
                     
                 }
-struct wl_seat {
+struct WlSeat {
 
                 }
                 
-                impl wl_seat {
+                impl WlSeat {
                     
                 }
-struct wl_pointer {
+struct WlPointer {
 
                 }
                 
-                impl wl_pointer {
+                impl WlPointer {
                     
                 }
-struct wl_keyboard {
+struct WlKeyboard {
 
                 }
                 
-                impl wl_keyboard {
+                impl WlKeyboard {
                     
                 }
-struct wl_touch {
+struct WlTouch {
 
                 }
                 
-                impl wl_touch {
+                impl WlTouch {
                     
                 }
-struct wl_output {
+struct WlOutput {
 
                 }
                 
-                impl wl_output {
+                impl WlOutput {
                     
                 }
-struct wl_region {
+struct WlRegion {
 
                 }
                 
-                impl wl_region {
+                impl WlRegion {
                     
                 }
-struct wl_subcompositor {
+struct WlSubcompositor {
 
                 }
                 
-                impl wl_subcompositor {
+                impl WlSubcompositor {
                     
                 }
-struct wl_subsurface {
+struct WlSubsurface {
 
                 }
                 
-                impl wl_subsurface {
+                impl WlSubsurface {
                     
                 }
 }
 mod linux_dmabuf_v1 {
-struct zwp_linux_dmabuf_v1 {
+struct ZwpLinuxDmabufV1 {
 
                 }
                 
-                impl zwp_linux_dmabuf_v1 {
+                impl ZwpLinuxDmabufV1 {
                     
                 }
-struct zwp_linux_buffer_params_v1 {
+struct ZwpLinuxBufferParamsV1 {
 
                 }
                 
-                impl zwp_linux_buffer_params_v1 {
+                impl ZwpLinuxBufferParamsV1 {
                     
                 }
-struct zwp_linux_dmabuf_feedback_v1 {
+struct ZwpLinuxDmabufFeedbackV1 {
 
                 }
                 
-                impl zwp_linux_dmabuf_feedback_v1 {
+                impl ZwpLinuxDmabufFeedbackV1 {
                     
                 }
 }
 mod presentation_time {
-struct wp_presentation {
+struct WpPresentation {
 
                 }
                 
-                impl wp_presentation {
+                impl WpPresentation {
                     
                 }
-struct wp_presentation_feedback {
+struct WpPresentationFeedback {
 
                 }
                 
-                impl wp_presentation_feedback {
+                impl WpPresentationFeedback {
                     
                 }
 }
 mod tablet_v2 {
-struct zwp_tablet_manager_v2 {
+struct ZwpTabletManagerV2 {
 
                 }
                 
-                impl zwp_tablet_manager_v2 {
+                impl ZwpTabletManagerV2 {
                     
                 }
-struct zwp_tablet_seat_v2 {
+struct ZwpTabletSeatV2 {
 
                 }
                 
-                impl zwp_tablet_seat_v2 {
+                impl ZwpTabletSeatV2 {
                     
                 }
-struct zwp_tablet_tool_v2 {
+struct ZwpTabletToolV2 {
 
                 }
                 
-                impl zwp_tablet_tool_v2 {
+                impl ZwpTabletToolV2 {
                     
                 }
-struct zwp_tablet_v2 {
+struct ZwpTabletV2 {
 
                 }
                 
-                impl zwp_tablet_v2 {
+                impl ZwpTabletV2 {
                     
                 }
-struct zwp_tablet_pad_ring_v2 {
+struct ZwpTabletPadRingV2 {
 
                 }
                 
-                impl zwp_tablet_pad_ring_v2 {
+                impl ZwpTabletPadRingV2 {
                     
                 }
-struct zwp_tablet_pad_strip_v2 {
+struct ZwpTabletPadStripV2 {
 
                 }
                 
-                impl zwp_tablet_pad_strip_v2 {
+                impl ZwpTabletPadStripV2 {
                     
                 }
-struct zwp_tablet_pad_group_v2 {
+struct ZwpTabletPadGroupV2 {
 
                 }
                 
-                impl zwp_tablet_pad_group_v2 {
+                impl ZwpTabletPadGroupV2 {
                     
                 }
-struct zwp_tablet_pad_v2 {
+struct ZwpTabletPadV2 {
 
                 }
                 
-                impl zwp_tablet_pad_v2 {
+                impl ZwpTabletPadV2 {
                     
                 }
 }
 mod viewporter {
-struct wp_viewporter {
+struct WpViewporter {
 
                 }
                 
-                impl wp_viewporter {
+                impl WpViewporter {
                     
                 }
-struct wp_viewport {
+struct WpViewport {
 
                 }
                 
-                impl wp_viewport {
+                impl WpViewport {
                     
                 }
 }
 mod xdg_shell {
-struct xdg_wm_base {
+struct XdgWmBase {
 
                 }
                 
-                impl xdg_wm_base {
+                impl XdgWmBase {
                     
                 }
-struct xdg_positioner {
+struct XdgPositioner {
 
                 }
                 
-                impl xdg_positioner {
+                impl XdgPositioner {
                     
                 }
-struct xdg_surface {
+struct XdgSurface {
 
                 }
                 
-                impl xdg_surface {
+                impl XdgSurface {
                     
                 }
-struct xdg_toplevel {
+struct XdgToplevel {
 
                 }
                 
-                impl xdg_toplevel {
+                impl XdgToplevel {
                     
                 }
-struct xdg_popup {
+struct XdgPopup {
 
                 }
                 
-                impl xdg_popup {
+                impl XdgPopup {
                     
                 }
 }

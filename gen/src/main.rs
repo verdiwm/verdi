@@ -1,6 +1,10 @@
 use anyhow::Result;
+use heck::ToUpperCamelCase;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::{
+    fs::{self, OpenOptions},
+    io::Write,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -130,9 +134,32 @@ const PROTOCOLS: [&str; 6] = [
 ];
 
 fn main() -> Result<()> {
+    let mut generated_path = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .open("src/core.rs")?;
+
+    writeln!(&mut generated_path, "#![allow(unused)]")?;
+
     for path in PROTOCOLS {
         let protocol: Protocol = quick_xml::de::from_str(&fs::read_to_string(path)?)?;
-        dbg!(protocol.name);
+        dbg!(&protocol.name);
+
+        writeln!(&mut generated_path, "mod {name} {{", name = &protocol.name)?;
+        for interface in protocol.interfaces {
+            writeln!(
+                &mut generated_path,
+                r#"struct {name} {{
+
+                }}
+                
+                impl {name} {{
+                    
+                }}"#,
+                name = interface.name.to_upper_camel_case()
+            )?;
+        }
+        writeln!(&mut generated_path, "}}")?;
     }
 
     Ok(())
