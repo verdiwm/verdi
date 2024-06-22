@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
-quick-xml = { version = "0.32.0", features = ["serialize", "overlapped-lists"] }
+quick-xml = { version = "0.33.0", features = ["serialize", "overlapped-lists"] }
 serde = { version = "1.0.203", features = ["derive"] }
