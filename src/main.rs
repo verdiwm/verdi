@@ -1,16 +1,21 @@
 use anyhow::{Context, Result};
 use bytes::{Bytes, BytesMut};
 use futures_util::SinkExt;
-use std::{fs, process::exit, sync::Arc};
-use tokio::{net::UnixListener, sync::Mutex, task::JoinSet};
+use std::{fs, io, path::Path, process::exit, sync::Arc};
+use tokio::{
+    net::{unix::SocketAddr, UnixListener, UnixStream},
+    sync::Mutex,
+    task::JoinSet,
+};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::prelude::*;
-use verdi::message::{Message, MessageCodec};
+use verdi::message::{DecodeError, Message, MessageCodec};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit_backend::WinitBackend;
 
+mod core;
 mod winit_backend;
 
 const SERVER_ID_START: usize = 0xff000000;
@@ -40,6 +45,56 @@ fn register_ctrl_c_handler() {
     });
 }
 
+#[derive(Debug)]
+struct Verdi {
+    state: Arc<State>,
+    listener: UnixListener,
+}
+
+#[derive(Debug)]
+struct State {
+    store: Mutex<Store>,
+}
+
+impl Verdi {
+    pub fn new<P: AsRef<Path>>(path: P) -> Result<Self> {
+        let mut store = Store::new();
+
+        store.insert(Box::new(DisplayInterface {}));
+
+        Ok(Self {
+            state: Arc::new(State {
+                store: Mutex::new(store),
+            }),
+            listener: UnixListener::bind(path)?,
+        })
+    }
+
+    pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
+        match self.listener.accept().await {
+            Ok((stream, _)) => Some(Ok(Client {
+                stream: Framed::new(stream, MessageCodec::new()),
+            })),
+            Err(err) => Some(Err(err)),
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Client {
+    stream: Framed<UnixStream, MessageCodec>,
+}
+
+impl Client {
+    pub async fn next_message(&mut self) -> Result<Option<Message>, DecodeError> {
+        self.stream.try_next().await
+    }
+
+    pub async fn send_message(&mut self, message: Message) -> Result<(), io::Error> {
+        self.stream.send(message).await
+    }
+}
+
 fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
@@ -49,112 +104,103 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    let event_loop = EventLoop::new()?;
-    event_loop.set_control_flow(ControlFlow::Wait);
+    // let event_loop = EventLoop::new()?;
+    // event_loop.set_control_flow(ControlFlow::Wait);
 
-    let mut app = WinitBackend::new();
+    // let mut app = WinitBackend::new();
 
     runtime.block_on(async move {
         register_ctrl_c_handler();
 
-        let socket = UnixListener::bind(SOCKET_PATH)?;
-
-        let server_objects = Arc::new(Mutex::new(Objects::new_server_store()));
+        let verdi = Verdi::new(SOCKET_PATH)?;
 
         let mut set: JoinSet<Result<(), anyhow::Error>> = JoinSet::new();
 
-        let listener_handle = tokio::spawn(async move {
-            loop {
-                match socket.accept().await {
-                    Ok((stream, _addr)) => {
-                        info!("Got client");
+        while let Some(client) = verdi.new_client().await {
+            info!("Got client");
 
-                        let server_objects = server_objects.clone();
-                        let mut stream = Framed::new(stream, MessageCodec::new());
+            match client {
+                Ok(mut client) => {
+                    let state = verdi.state.clone();
 
-                        set.spawn(async move {
-                            while let Some(ref msg) = stream.try_next().await? {
-                                dbg!(msg);
+                    set.spawn(async move {
+                        while let Some(ref msg) = client.next_message().await? {
+                            dbg!(msg);
 
-                                if let Some(object) = server_objects.lock().await.get(msg.object_id)
-                                {
-                                    debug!(
-                                        "\"{}\" object requested with request \"{}\"",
-                                        object.name(),
-                                        object.get_request(msg.opcode).unwrap_or("unknown")
-                                    );
+                            if let Some(object) = state.store.lock().await.get(msg.object_id) {
+                                debug!(
+                                    "\"{}\" object requested with request \"{}\"",
+                                    object.name(),
+                                    object.get_request(msg.opcode).unwrap_or("unknown")
+                                );
 
-                                    if let Some(request) = object.get_request(msg.opcode) {
-                                        if request == "sync" {
-                                            let new_id = u32::from_ne_bytes([
-                                                msg.payload[0],
-                                                msg.payload[1],
-                                                msg.payload[2],
-                                                msg.payload[3],
-                                            ]);
+                                if let Some(request) = object.get_request(msg.opcode) {
+                                    if request == "sync" {
+                                        let new_id = u32::from_ne_bytes([
+                                            msg.payload[0],
+                                            msg.payload[1],
+                                            msg.payload[2],
+                                            msg.payload[3],
+                                        ]);
 
-                                            dbg!(new_id);
+                                        dbg!(new_id);
 
-                                            // stream
-                                            //     .send(Message {
-                                            //         object_id: new_id,
-                                            //         opcode: 0,
-                                            //         payload: Bytes::copy_from_slice(&1u32.to_ne_bytes()),
-                                            //     })
-                                            //     .await?;
-                                        }
-
-                                        if request == "get_registry" {
-                                            let new_id = u32::from_ne_bytes([
-                                                msg.payload[0],
-                                                msg.payload[1],
-                                                msg.payload[2],
-                                                msg.payload[3],
-                                            ]);
-
-                                            dbg!(new_id);
-                                        }
+                                        // client
+                                        //     .send_message(Message {
+                                        //         object_id: new_id,
+                                        //         opcode: 0,
+                                        //         payload: Bytes::copy_from_slice(
+                                        //             &1u32.to_ne_bytes(),
+                                        //         ),
+                                        //     })
+                                        //     .await?;
                                     }
-                                } else {
-                                    warn!("Unknown object requested");
+
+                                    if request == "get_registry" {
+                                        let new_id = u32::from_ne_bytes([
+                                            msg.payload[0],
+                                            msg.payload[1],
+                                            msg.payload[2],
+                                            msg.payload[3],
+                                        ]);
+
+                                        dbg!(new_id);
+                                    }
                                 }
+                            } else {
+                                warn!("Unknown object requested");
                             }
+                        }
 
-                            Ok(())
-                        });
-                    }
-                    Err(e) => {
-                        error!("Client failed to connect")
-                    }
+                        Ok(())
+                    });
                 }
+                Err(_) => error!("Client failed to connect"),
             }
-        });
-
-        listener_handle.await?;
+        }
 
         anyhow::Ok(())
     })?;
 
-    event_loop.run_app(&mut app)?;
+    // event_loop.run_app(&mut app)?;
 
     Ok(())
 }
 
-pub enum Argument {
-    Int(i32),
-    Uint(u32),
-    Fixed(i32),
-}
-
-struct Objects {
+#[derive(Debug)]
+struct Store {
     objects: Vec<Box<dyn Interface + Send>>,
 }
 
-impl Objects {
-    pub fn new_server_store() -> Self {
+impl Store {
+    pub fn new() -> Self {
         Self {
-            objects: vec![Box::new(DisplayInterface {})],
+            objects: Vec::new(),
         }
+    }
+
+    pub fn insert(&mut self, object: Box<dyn Interface + Send>) {
+        self.objects.push(object);
     }
 
     pub fn get(&self, id: u32) -> Option<&Box<dyn Interface + Send>> {
