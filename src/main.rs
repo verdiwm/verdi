@@ -74,6 +74,7 @@ impl Verdi {
         match self.listener.accept().await {
             Ok((stream, _)) => Some(Ok(Client {
                 stream: Framed::new(stream, MessageCodec::new()),
+                store: Store::new(),
             })),
             Err(err) => Some(Err(err)),
         }
@@ -83,6 +84,7 @@ impl Verdi {
 #[derive(Debug)]
 struct Client {
     stream: Framed<UnixStream, MessageCodec>,
+    store: Store,
 }
 
 impl Client {
