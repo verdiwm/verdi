@@ -1,5 +1,5 @@
 use anyhow::Result;
-use heck::ToUpperCamelCase;
+use heck::{ToSnekCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, OpenOptions},
@@ -136,9 +136,10 @@ const PROTOCOLS: [&str; 6] = [
 
 fn main() -> Result<()> {
     let mut generated_path = OpenOptions::new()
+        .truncate(true)
         .write(true)
         .create(true)
-        .open("src/core.rs")?;
+        .open("src/proto.rs")?;
 
     writeln!(&mut generated_path, "#![allow(unused)]")?;
 
@@ -146,24 +147,54 @@ fn main() -> Result<()> {
         let protocol: Protocol = quick_xml::de::from_str(&fs::read_to_string(path)?)?;
         dbg!(&protocol.name);
 
-        writeln!(&mut generated_path, "mod {name} {{", name = &protocol.name)?;
+        writeln!(&mut generated_path, "pub mod {name} {{", name = &protocol.name)?;
+
+        writeln!(
+            &mut generated_path,
+            "use crate::{{Result, message::Message, error::Error}};"
+        )?;
+
         for interface in protocol.interfaces {
             writeln!(
                 &mut generated_path,
-                r#"struct {name} {{
-
-                }}
-                
-                impl {name} {{
-                    
-                }}"#,
+                "pub trait r#{name} {{",
                 name = interface.name.to_upper_camel_case()
             )?;
+
+            writeln!(
+                &mut generated_path,
+                "fn handle_request(message: &Message) -> Result<()> {{"
+            )?;
+
+            writeln!(&mut generated_path, "match message.opcode {{")?;
+
+            for (opcode, request) in interface.requests.iter().enumerate() {
+                writeln!(
+                    &mut generated_path,
+                    "{opcode} => Self::r#{name}(),",
+                    name = request.name.to_snek_case(),
+                )?;
+            }
+
+            writeln!(&mut generated_path, "_ => Err(Error::UnknownOpcode)")?;
+            writeln!(&mut generated_path, "}}")?;
+
+            writeln!(&mut generated_path, "}}")?;
+
+            for request in &interface.requests {
+                writeln!(
+                    &mut generated_path,
+                    "fn r#{name}() -> Result<()>;",
+                    name = request.name.to_snek_case()
+                )?;
+            }
+
+            writeln!(&mut generated_path, "}}")?;
         }
         writeln!(&mut generated_path, "}}")?;
     }
 
-    Command::new("rustfmt").arg("src/core.rs").output()?;
+    Command::new("rustfmt").arg("src/proto.rs").output()?;
 
     Ok(())
 }
