@@ -163,7 +163,7 @@ fn main() -> Result<()> {
 
             writeln!(
                 &mut generated_path,
-                "fn handle_request(message: &Message) -> Result<()> {{"
+                "fn handle_request(client: &Client, message: &Message) -> Result<()> {{"
             )?;
 
             writeln!(&mut generated_path, "match message.opcode {{")?;
