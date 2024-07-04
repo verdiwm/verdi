@@ -10,9 +10,11 @@ use tokio::{
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 use tracing::{debug, error, info, warn};
-use verdi::message::{DecodeError, Message, MessageCodec};
+use verdi::{
+    message::{DecodeError, Message, MessageCodec},
+    proto::wayland::WlDisplay,
+};
 
-mod core;
 // mod winit_backend;
 
 const SERVER_ID_START: usize = 0xff000000;
@@ -49,30 +51,28 @@ struct Verdi {
 }
 
 #[derive(Debug)]
-struct State {
-    store: Mutex<Store>,
-}
+struct State {}
 
 impl Verdi {
     pub fn new<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let mut store = Store::new();
-
-        store.insert(Box::new(DisplayInterface {}));
-
         Ok(Self {
-            state: Arc::new(State {
-                store: Mutex::new(store),
-            }),
+            state: Arc::new(State {}),
             listener: UnixListener::bind(path)?,
         })
     }
 
     pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
         match self.listener.accept().await {
-            Ok((stream, _)) => Some(Ok(Client {
-                stream: Framed::new(stream, MessageCodec::new()),
-                store: Store::new(),
-            })),
+            Ok((stream, _)) => {
+                let mut store = Store::new();
+
+                store.insert(Box::new(DisplayInterface {}));
+
+                Some(Ok(Client {
+                    stream: Framed::new(stream, MessageCodec::new()),
+                    store,
+                }))
+            }
             Err(err) => Some(Err(err)),
         }
     }
@@ -103,11 +103,6 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    // let event_loop = EventLoop::new()?;
-    // event_loop.set_control_flow(ControlFlow::Wait);
-
-    // let mut app = WinitBackend::new();
-
     runtime.block_on(async move {
         register_ctrl_c_handler();
 
@@ -120,52 +115,12 @@ fn main() -> Result<()> {
 
             match client {
                 Ok(mut client) => {
-                    let state = verdi.state.clone();
-
                     set.spawn(async move {
                         while let Some(ref msg) = client.next_message().await? {
                             dbg!(msg);
 
-                            if let Some(object) = state.store.lock().await.get(msg.object_id) {
-                                debug!(
-                                    "\"{}\" object requested with request \"{}\"",
-                                    object.name(),
-                                    object.get_request(msg.opcode).unwrap_or("unknown")
-                                );
-
-                                if let Some(request) = object.get_request(msg.opcode) {
-                                    if request == "sync" {
-                                        let new_id = u32::from_ne_bytes([
-                                            msg.payload[0],
-                                            msg.payload[1],
-                                            msg.payload[2],
-                                            msg.payload[3],
-                                        ]);
-
-                                        dbg!(new_id);
-
-                                        // client
-                                        //     .send_message(Message {
-                                        //         object_id: new_id,
-                                        //         opcode: 0,
-                                        //         payload: Bytes::copy_from_slice(
-                                        //             &1u32.to_ne_bytes(),
-                                        //         ),
-                                        //     })
-                                        //     .await?;
-                                    }
-
-                                    if request == "get_registry" {
-                                        let new_id = u32::from_ne_bytes([
-                                            msg.payload[0],
-                                            msg.payload[1],
-                                            msg.payload[2],
-                                            msg.payload[3],
-                                        ]);
-
-                                        dbg!(new_id);
-                                    }
-                                }
+                            if let Some(object) = client.store.get(msg.object_id) {
+                                object.handle_request(msg)?;
                             } else {
                                 warn!("Unknown object requested");
                             }
@@ -180,8 +135,6 @@ fn main() -> Result<()> {
 
         anyhow::Ok(())
     })?;
-
-    // event_loop.run_app(&mut app)?;
 
     Ok(())
 }
@@ -212,24 +165,25 @@ impl Store {
 }
 
 pub trait Interface: std::fmt::Debug {
-    fn name(&self) -> &'static str;
-    fn get_request(&self, opcode: u16) -> Option<&'static str>;
+    fn handle_request(&self, message: &Message) -> verdi::Result<()>;
 }
 
 #[derive(Debug)]
 pub struct DisplayInterface {}
 
 impl Interface for DisplayInterface {
-    fn name(&self) -> &'static str {
-        "wl_display"
+    fn handle_request(&self, message: &Message) -> verdi::Result<()> {
+        <Self as WlDisplay>::handle_request(message)
+    }
+}
+
+impl WlDisplay for DisplayInterface {
+    fn sync() -> verdi::Result<()> {
+        todo!()
     }
 
-    fn get_request(&self, opcode: u16) -> Option<&'static str> {
-        match opcode {
-            0 => Some("sync"),
-            1 => Some("get_registry"),
-            _ => None,
-        }
+    fn get_registry() -> verdi::Result<()> {
+        todo!()
     }
 }
 
@@ -243,15 +197,8 @@ impl CallbackInterface {
 }
 
 impl Interface for CallbackInterface {
-    fn name(&self) -> &'static str {
-        "wl_callback"
-    }
-
-    fn get_request(&self, opcode: u16) -> Option<&'static str> {
-        match opcode {
-            0 => Some("done"),
-            _ => None,
-        }
+    fn handle_request(&self, message: &Message) -> verdi::Result<()> {
+        todo!()
     }
 }
 
