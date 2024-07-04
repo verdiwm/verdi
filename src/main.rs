@@ -3,20 +3,17 @@ use bytes::{Bytes, BytesMut};
 use futures_util::SinkExt;
 use std::{fs, io, path::Path, process::exit, sync::Arc};
 use tokio::{
-    net::{unix::SocketAddr, UnixListener, UnixStream},
+    net::{UnixListener, UnixStream},
     sync::Mutex,
     task::JoinSet,
 };
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 use tracing::{debug, error, info, warn};
-use tracing_subscriber::prelude::*;
 use verdi::message::{DecodeError, Message, MessageCodec};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit_backend::WinitBackend;
 
 mod core;
-mod winit_backend;
+// mod winit_backend;
 
 const SERVER_ID_START: usize = 0xff000000;
 
