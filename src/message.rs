@@ -32,6 +32,33 @@ pub struct Message {
     pub payload: Bytes,
 }
 
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
+pub struct PayloadBuilder(BytesMut);
+
+impl PayloadBuilder {
+    pub fn new() -> Self {
+        Self(BytesMut::new())
+    }
+
+    pub fn put_int(mut self, int: i32) -> Self {
+        self.0.reserve(4);
+        self.0.put_i32_ne(int);
+
+        self
+    }
+
+    pub fn put_uint(mut self, uint: u32) -> Self {
+        self.0.reserve(4);
+        self.0.put_u32_ne(uint);
+
+        self
+    }
+
+    pub fn build(self) -> Bytes {
+        self.0.freeze()
+    }
+}
+
 #[derive(thiserror::Error, Debug)]
 pub enum DecodeError {
     #[error("Malformed header")]
