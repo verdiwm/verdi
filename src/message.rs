@@ -1,6 +1,16 @@
 use arbitrary::Arbitrary;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
+use std::num::NonZeroU32;
 use tokio_util::codec::{Decoder, Encoder};
+
+pub struct Fixed(u32);
+#[repr(transparent)]
+pub struct ObjectId(NonZeroU32);
+pub struct NewId {
+    pub interface: String,
+    pub version: u32,
+    pub id: ObjectId,
+}
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
 pub struct Message {
@@ -54,6 +64,88 @@ impl Message {
             opcode,
             payload,
         })
+    }
+
+    pub fn int(&mut self) -> Result<i32, DecodeError> {
+        if self.payload.remaining() < 4 {
+            return Err(DecodeError::MalformedPayload);
+        }
+
+        Ok(self.payload.get_i32_ne())
+    }
+
+    pub fn uint(&mut self) -> Result<u32, DecodeError> {
+        if self.payload.remaining() < 4 {
+            return Err(DecodeError::MalformedPayload);
+        }
+
+        Ok(self.payload.get_u32_ne())
+    }
+
+    pub fn fixed(&mut self) -> Result<Fixed, DecodeError> {
+        if self.payload.remaining() < 4 {
+            return Err(DecodeError::MalformedPayload);
+        }
+
+        Ok(Fixed(self.payload.get_u32_ne()))
+    }
+
+    pub fn string(&mut self) -> Result<Option<String>, DecodeError> {
+        let mut array = self.array()?;
+
+        if array.len() == 0 {
+            return Ok(None);
+        }
+
+        if let Some(b'\0') = array.pop() {
+            return String::from_utf8(array)
+                .map_err(|_| DecodeError::MalformedPayload)
+                .map(Some);
+        }
+
+        return Err(DecodeError::MalformedPayload);
+    }
+
+    pub fn object(&mut self) -> Result<Option<ObjectId>, DecodeError> {
+        if self.payload.remaining() < 4 {
+            return Err(DecodeError::MalformedPayload);
+        }
+
+        Ok(NonZeroU32::new(self.payload.get_u32_ne()).map(ObjectId))
+    }
+
+    pub fn new_id(&mut self) -> Result<NewId, DecodeError> {
+        let interface = self.string()?.ok_or(DecodeError::MalformedPayload)?;
+        let version = self.uint()?;
+        let id = self.object()?.ok_or(DecodeError::MalformedPayload)?;
+
+        Ok(NewId {
+            interface,
+            version,
+            id,
+        })
+    }
+
+    pub fn array(&mut self) -> Result<Vec<u8>, DecodeError> {
+        if self.payload.remaining() < 4 {
+            return Err(DecodeError::MalformedPayload);
+        }
+
+        let len = self.uint()? as usize;
+
+        if len == 0 {
+            return Ok(Vec::new());
+        }
+
+        if self.payload.remaining() < len {
+            return Err(DecodeError::MalformedPayload);
+        }
+
+        let array = self.payload.copy_to_bytes(len).to_vec();
+
+        self.payload.advance(self.payload.remaining() % 4);
+
+        Ok(array)
     }
 }
 

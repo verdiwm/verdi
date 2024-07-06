@@ -53,11 +53,9 @@ fn main() -> Result<()> {
             match client {
                 Ok(mut client) => {
                     set.spawn(async move {
-                        while let Some(ref msg) = client.next_message().await? {
-                            dbg!(msg);
-
+                        while let Some(mut msg) = client.next_message().await? {
                             if let Some(object) = client.store.get(msg.object_id) {
-                                object.handle_request(msg)?;
+                                object.handle_request(&client, &mut msg)?;
                             } else {
                                 warn!("Unknown object requested");
                             }
