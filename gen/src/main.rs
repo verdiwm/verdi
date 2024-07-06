@@ -217,47 +217,93 @@ fn main() -> Result<()> {
             )?;
 
             for enu in interface.enums {
-                let mut variants = String::new();
+                if !enu.bitfield {
+                    let mut variants = String::new();
 
-                for entry in enu.entries {
-                    let mut prefix = "";
+                    for entry in enu.entries {
+                        let mut prefix = "";
 
-                    if entry.name.chars().next().unwrap().is_numeric() {
-                        prefix = "_"
+                        if entry.name.chars().next().unwrap().is_numeric() {
+                            prefix = "_"
+                        }
+
+                        if let Some(summary) = entry.summary {
+                            for line in summary.lines() {
+                                let doc = line.trim();
+
+                                let mut c = doc.chars();
+                                let doc = c.next().unwrap().to_uppercase().collect::<String>()
+                                    + c.as_str();
+
+                                writeln!(&mut variants, r##"#[doc = r#"{doc}"#]"##,)?;
+                            }
+                        }
+
+                        variants.push_str(&format!(
+                            "{prefix}{name} = {value},",
+                            name = entry.name.to_upper_camel_case(),
+                            value = entry.value,
+                        ))
                     }
 
-                    if let Some(summary) = entry.summary {
-                        for line in summary.lines() {
-                            let doc = line.trim();
-
-                            let mut c = doc.chars();
-                            let doc =
-                                c.next().unwrap().to_uppercase().collect::<String>() + c.as_str();
-
-                            writeln!(&mut variants, r##"#[doc = r#"{doc}"#]"##,)?;
+                    if let Some(description) = enu.description {
+                        for line in description.lines() {
+                            writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
                         }
                     }
 
-                    variants.push_str(&format!(
-                        "r#{prefix}{name},",
-                        name = entry.name.to_upper_camel_case()
-                    ))
-                }
+                    writeln!(
+                        &mut generated_path,
+                        r#"#[repr(u32)]
+                        #[non_exhaustive]
+                        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+                        pub enum r#{name} {{{variants}}}"#,
+                        name = enu.name.to_upper_camel_case()
+                    )?;
+                } else {
+                    let mut variants = String::new();
 
-                if let Some(description) = enu.description {
-                    for line in description.lines() {
-                        writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+                    for entry in enu.entries {
+                        let mut prefix = "";
+
+                        if entry.name.chars().next().unwrap().is_numeric() {
+                            prefix = "_"
+                        }
+
+                        if let Some(summary) = entry.summary {
+                            for line in summary.lines() {
+                                let doc = line.trim();
+
+                                let mut c = doc.chars();
+                                let doc = c.next().unwrap().to_uppercase().collect::<String>()
+                                    + c.as_str();
+
+                                writeln!(&mut variants, r##"#[doc = r#"{doc}"#]"##,)?;
+                            }
+                        }
+
+                        variants.push_str(&format!(
+                            "const {prefix}{name} = {value};",
+                            name = entry.name.to_upper_camel_case(),
+                            value = entry.value
+                        ))
                     }
-                }
 
-                writeln!(
-                    &mut generated_path,
-                    r#"#[repr(u32)]
-                    #[non_exhaustive]
-                    #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                    pub enum r#{name} {{{variants}}}"#,
-                    name = enu.name.to_upper_camel_case()
-                )?;
+                    if let Some(description) = enu.description {
+                        for line in description.lines() {
+                            writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+                        }
+                    }
+
+                    writeln!(
+                        &mut generated_path,
+                        r#"bitflags::bitflags! {{
+                            #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+                            pub struct r#{name}: u32 {{{variants}}}
+                        }}"#,
+                        name = enu.name.to_upper_camel_case()
+                    )?;
+                }
             }
 
             for line in interface.description.lines() {
