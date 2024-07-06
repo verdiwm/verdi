@@ -4,13 +4,14 @@ use std::{io, path::Path, sync::Arc};
 use tokio::net::{UnixListener, UnixStream};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
+use tracing::debug;
 // use tracing::{debug, error, info, warn};
 
 pub mod error;
 pub mod message;
 pub mod proto;
 
-use message::{DecodeError, Message, MessageCodec};
+use message::{DecodeError, Message, MessageCodec, NewId};
 use proto::wayland::WlDisplay;
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
@@ -41,6 +42,7 @@ impl Verdi {
 
                 Some(Ok(Client {
                     stream: Framed::new(stream, MessageCodec::new()),
+                    _next_id: 0xff000000,
                     store,
                 }))
             }
@@ -53,6 +55,7 @@ impl Verdi {
 pub struct Client {
     stream: Framed<UnixStream, MessageCodec>,
     pub store: Store,
+    _next_id: usize,
 }
 
 impl Client {
@@ -91,41 +94,26 @@ impl Store {
 }
 
 pub trait Interface: std::fmt::Debug {
-    fn handle_request(&self, message: &Message) -> Result<()>;
+    fn handle_request(&self, client: &Client, message: &mut Message) -> Result<()>;
 }
 
 #[derive(Debug)]
 pub struct DisplayInterface {}
 
 impl Interface for DisplayInterface {
-    fn handle_request(&self, message: &Message) -> Result<()> {
-        <Self as WlDisplay>::handle_request(message)
+    fn handle_request(&self, client: &Client, message: &mut Message) -> Result<()> {
+        <Self as WlDisplay>::handle_request(client, message)
     }
 }
 
 impl WlDisplay for DisplayInterface {
-    fn sync() -> Result<()> {
+    fn r#sync(r#callback: NewId) -> Result<()> {
+        debug!("Handling sync");
         todo!()
     }
 
-    fn get_registry() -> Result<()> {
+    fn r#get_registry(r#registry: NewId) -> Result<()> {
+        debug!("Handling get_registry");
         todo!()
     }
 }
-
-// #[derive(Debug)]
-// pub struct CallbackInterface {}
-
-// impl CallbackInterface {
-//     pub fn call(&self, opcode: u16) -> Message {
-//         todo!()
-//     }
-// }
-
-// impl Interface for CallbackInterface {
-//     fn handle_request(&self, message: &Message) -> Result<()> {
-//         todo!()
-//     }
-// }
-
-// pub struct Request {}

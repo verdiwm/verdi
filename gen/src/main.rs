@@ -73,7 +73,7 @@ struct Arg {
     summary: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 enum ArgType {
     #[serde(rename = "int")]
     Int,
@@ -125,6 +125,48 @@ struct Entry {
     description: Option<String>,
 }
 
+impl ArgType {
+    fn to_rust_type(&self) -> &str {
+        match self {
+            ArgType::Int => "i32",
+            ArgType::Uint => "u32",
+            ArgType::Fixed => "Fixed",
+            ArgType::String => "String",
+            ArgType::Object => "ObjectId",
+            ArgType::NewId => "NewId",
+            ArgType::Array => "Vec<u8>",
+            ArgType::Fd => "RawFd",
+        }
+    }
+
+    fn needs_borrow(&self) -> bool {
+        match self {
+            ArgType::String | ArgType::Array => true,
+            _ => false,
+        }
+    }
+
+    fn is_return_option(&self) -> bool {
+        match self {
+            ArgType::String | ArgType::Object => true,
+            _ => false,
+        }
+    }
+
+    fn to_caller(&self) -> &str {
+        match self {
+            ArgType::Int => "int",
+            ArgType::Uint => "uint",
+            ArgType::Fixed => "fixed",
+            ArgType::String => "string",
+            ArgType::Object => "object",
+            ArgType::NewId => "new_id",
+            ArgType::Array => "array",
+            ArgType::Fd => "int",
+        }
+    }
+}
+
 const PROTOCOLS: [&str; 6] = [
     "wayland/protocol/wayland.xml",
     "wayland-protocols/stable/linux-dmabuf/linux-dmabuf-v1.xml",
@@ -147,12 +189,17 @@ fn main() -> Result<()> {
         let protocol: Protocol = quick_xml::de::from_str(&fs::read_to_string(path)?)?;
         dbg!(&protocol.name);
 
-        writeln!(&mut generated_path, "pub mod {name} {{", name = &protocol.name)?;
+        writeln!(
+            &mut generated_path,
+            "pub mod {name} {{",
+            name = &protocol.name
+        )?;
 
         writeln!(
             &mut generated_path,
-            "use crate::{{Result, message::Message, error::Error}};"
+            "use crate::{{Result, message::{{Message,Fixed,ObjectId,NewId}}, error::Error, Client}};"
         )?;
+        writeln!(&mut generated_path, "use std::os::fd::RawFd;")?;
 
         for interface in protocol.interfaces {
             writeln!(
@@ -163,15 +210,36 @@ fn main() -> Result<()> {
 
             writeln!(
                 &mut generated_path,
-                "fn handle_request(client: &Client, message: &Message) -> Result<()> {{"
+                "fn handle_request(client: &Client, message: &mut Message) -> Result<()> {{"
             )?;
 
             writeln!(&mut generated_path, "match message.opcode {{")?;
 
             for (opcode, request) in interface.requests.iter().enumerate() {
+                let mut args = String::new();
+
+                for arg in &request.args {
+                    // let mut borrowed = "";
+
+                    // if arg.ty.needs_borrow() {
+                    //     borrowed = "&";
+                    // }
+
+                    let mut optional = "".to_string();
+
+                    if !arg.allow_null && arg.ty.is_return_option() {
+                        optional = format!(".unwrap()");
+                    }
+
+                    args.push_str(&format!(
+                        "message.{caller}()?{optional},",
+                        caller = arg.ty.to_caller()
+                    ))
+                }
+
                 writeln!(
                     &mut generated_path,
-                    "{opcode} => Self::r#{name}(),",
+                    "{opcode} => Self::r#{name}({args}),",
                     name = request.name.to_snek_case(),
                 )?;
             }
@@ -182,9 +250,21 @@ fn main() -> Result<()> {
             writeln!(&mut generated_path, "}}")?;
 
             for request in &interface.requests {
+                let mut args = String::new();
+
+                for arg in &request.args {
+                    let mut ty = arg.ty.to_rust_type().to_string();
+
+                    if arg.allow_null {
+                        ty = format!("Option<{ty}>");
+                    }
+
+                    args.push_str(&format!("r#{name}: {ty},", name = arg.name.to_snek_case(),))
+                }
+
                 writeln!(
                     &mut generated_path,
-                    "fn r#{name}() -> Result<()>;",
+                    "fn r#{name}({args}) -> Result<()>;",
                     name = request.name.to_snek_case()
                 )?;
             }
