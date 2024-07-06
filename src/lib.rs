@@ -45,13 +45,7 @@ impl Verdi {
 
                 let id = unsafe { ObjectId::from_raw(1) };
 
-                client.insert(
-                    id,
-                    Dispatcher {
-                        dipatch_fn: DisplayInterface::handle_request,
-                        id,
-                    },
-                );
+                client.insert(id, DisplayInterface::create_dispatcher(id));
 
                 Some(Ok(client))
             }
@@ -116,18 +110,8 @@ impl Store {
     }
 }
 
-// pub trait Interface: std::fmt::Debug {
-//     fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
-// }
-
 #[derive(Debug)]
 pub struct DisplayInterface {}
-
-// impl Interface for DisplayInterface {
-//     fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-//         <Self as WlDisplay>::handle_request(client, message)
-//     }
-// }
 
 impl WlDisplay for DisplayInterface {
     fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
