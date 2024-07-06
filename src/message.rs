@@ -5,7 +5,7 @@ use tokio_util::codec::{Decoder, Encoder};
 
 pub struct Fixed(u32);
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary, Clone, Copy)]
 #[repr(transparent)]
 pub struct ObjectId(NonZeroU32);
 
