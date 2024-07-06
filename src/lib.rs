@@ -114,13 +114,10 @@ pub struct DisplayInterface;
 
 impl WlDisplay for DisplayInterface {
     async fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
-        debug!("Handling sync");
         Ok(())
     }
 
     async fn get_registry(client: &mut Client, registry_id: ObjectId) -> Result<()> {
-        debug!("Handling get_registry");
-
         let registry = RegistryInterface::create_dispatcher(registry_id);
         client.insert(registry_id, registry);
 
@@ -160,7 +157,6 @@ impl WlRegistry for RegistryInterface {
         Arc::new(Box::new(Self {}))
     }
 }
-
 
 #[async_trait]
 impl Dispatcher for RegistryInterface {
