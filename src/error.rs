@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::message::DecodeError;
+use crate::wire::DecodeError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

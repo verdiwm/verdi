@@ -1,28 +1,43 @@
 use arbitrary::Arbitrary;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
-use std::num::NonZeroU32;
 use tokio_util::codec::{Decoder, Encoder};
 
-pub struct Fixed(u32);
+use super::{DecodeError, Fixed, NewId, ObjectId};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary, Clone, Copy)]
-#[repr(transparent)]
-pub struct ObjectId(NonZeroU32);
+#[derive(Debug)]
+pub struct MessageCodec;
 
-impl ObjectId {
-    pub const fn as_raw(&self) -> u32 {
-        self.0.get()
-    }
-
-    pub const unsafe fn from_raw(id: u32) -> Self {
-        Self(NonZeroU32::new_unchecked(id))
+impl MessageCodec {
+    pub const fn new() -> Self {
+        Self
     }
 }
 
-pub struct NewId {
-    pub interface: String,
-    pub version: u32,
-    pub id: ObjectId,
+impl Decoder for MessageCodec {
+    type Item = Message;
+
+    type Error = DecodeError;
+
+    fn decode(
+        &mut self,
+        src: &mut BytesMut,
+    ) -> std::result::Result<Option<Self::Item>, Self::Error> {
+        if src.is_empty() {
+            return Ok(None);
+        }
+
+        Message::from_bytes(src).map(Option::Some)
+    }
+}
+
+impl Encoder<Message> for MessageCodec {
+    type Error = std::io::Error;
+
+    fn encode(&mut self, item: Message, dst: &mut BytesMut) -> Result<(), Self::Error> {
+        item.to_bytes(dst);
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
@@ -30,92 +45,6 @@ pub struct Message {
     pub object_id: ObjectId,
     pub opcode: u16,
     pub payload: Bytes,
-}
-
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
-pub struct PayloadBuilder(BytesMut);
-
-impl PayloadBuilder {
-    pub fn new() -> Self {
-        Self(BytesMut::new())
-    }
-
-    pub fn put_int(mut self, int: i32) -> Self {
-        self.0.reserve(4);
-        self.0.put_i32_ne(int);
-
-        self
-    }
-
-    pub fn put_uint(mut self, uint: u32) -> Self {
-        self.0.reserve(4);
-        self.0.put_u32_ne(uint);
-
-        self
-    }
-
-    pub fn put_fixed(mut self, fixed: Fixed) -> Self {
-        self.0.reserve(4);
-        self.0.put_u32_ne(fixed.0);
-
-        self
-    }
-
-    pub fn put_string<T: AsRef<str>>(mut self, string: Option<T>) -> Self {
-        if let Some(string) = string {
-            let string = string.as_ref();
-            let total_len = 5 + string.len();
-            let mut padding = 0;
-
-            if total_len % 4 != 0 {
-                padding = 4 - (total_len % 4);
-            }
-
-            self.0.reserve(total_len + padding);
-            self.0.put_u32_ne((string.len() + 1) as u32);
-            self.0.put_slice(string.as_bytes());
-            self.0.put_u8(b'\0');
-
-            for _ in 0..padding {
-                self.0.put_u8(0);
-            }
-
-            return self;
-        }
-
-        self.put_uint(0)
-    }
-
-    pub fn put_object(mut self, object: Option<ObjectId>) -> Self {
-        todo!();
-        self
-    }
-
-    pub fn put_new_id(mut self, new_id: NewId) -> Self {
-        todo!();
-        self
-    }
-
-    pub fn put_array<T: AsRef<[u8]>>(mut self, array: T) -> Self {
-        todo!();
-        self
-    }
-
-    pub fn build(self) -> Bytes {
-        self.0.freeze()
-    }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum DecodeError {
-    #[error("Malformed header")]
-    MalformedHeader,
-    #[error("Invalid payload lenght")]
-    InvalidLenght,
-    #[error("Malformed payload")]
-    MalformedPayload,
-    #[error("{0}")]
-    IoError(#[from] std::io::Error),
 }
 
 impl Message {
@@ -129,7 +58,7 @@ impl Message {
 
     pub fn to_bytes(&self, buf: &mut BytesMut) {
         buf.reserve(8 + self.payload.len());
-        buf.put_u32_ne(self.object_id.0.get());
+        buf.put_u32_ne(self.object_id.as_raw());
         buf.put_u32_ne((((self.payload.len() + 8) as u32) << 16) | self.opcode as u32);
         buf.put_slice(&self.payload);
     }
@@ -185,7 +114,7 @@ impl Message {
     }
 
     pub fn fixed(&mut self) -> Result<Fixed, DecodeError> {
-        self.uint().map(Fixed)
+        self.uint().map(|raw| unsafe { Fixed::from_raw(raw) })
     }
 
     pub fn string(&mut self) -> Result<Option<String>, DecodeError> {
@@ -209,7 +138,7 @@ impl Message {
             return Err(DecodeError::MalformedPayload);
         }
 
-        Ok(NonZeroU32::new(self.payload.get_u32_ne()).map(ObjectId))
+        Ok(ObjectId::new(self.payload.get_u32_ne()))
     }
 
     pub fn new_id(&mut self) -> Result<NewId, DecodeError> {
@@ -243,49 +172,11 @@ impl Message {
     }
 }
 
-#[derive(Debug)]
-pub struct MessageCodec;
-
-impl MessageCodec {
-    pub const fn new() -> Self {
-        Self
-    }
-}
-
-impl Decoder for MessageCodec {
-    type Item = Message;
-
-    type Error = DecodeError;
-
-    fn decode(
-        &mut self,
-        src: &mut BytesMut,
-    ) -> std::result::Result<Option<Self::Item>, Self::Error> {
-        if src.is_empty() {
-            return Ok(None);
-        }
-
-        Message::from_bytes(src).map(Option::Some)
-    }
-}
-
-impl Encoder<Message> for MessageCodec {
-    type Error = std::io::Error;
-
-    fn encode(&mut self, item: Message, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        item.to_bytes(dst);
-
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use bytes::{Bytes, BytesMut};
 
-    use crate::message::ObjectId;
-
-    use super::Message;
+    use crate::wire::{Message, ObjectId};
 
     #[test]
     fn encode_decode_roundtrip() {

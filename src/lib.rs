@@ -10,10 +10,10 @@ use tracing::{debug, warn};
 // use tracing::{debug, error, info, warn};
 
 pub mod error;
-pub mod message;
+pub mod wire;
 pub mod proto;
 
-use message::{DecodeError, Message, MessageCodec, NewId, ObjectId};
+use wire::{DecodeError, Message, MessageCodec, NewId, ObjectId};
 use proto::wayland::{WlCallback, WlCompositor, WlDisplay, WlRegistry, WlShm};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;

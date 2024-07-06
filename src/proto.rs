@@ -3,7 +3,7 @@
 pub mod wayland {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
+        wire::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
@@ -1695,7 +1695,7 @@ pub mod wayland {
 pub mod linux_dmabuf_v1 {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
+        wire::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
@@ -1968,7 +1968,7 @@ pub mod linux_dmabuf_v1 {
 pub mod presentation_time {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
+        wire::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
@@ -2074,7 +2074,7 @@ pub mod presentation_time {
 pub mod tablet_v2 {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
+        wire::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
@@ -2855,7 +2855,7 @@ pub mod tablet_v2 {
 pub mod viewporter {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
+        wire::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
@@ -2931,7 +2931,7 @@ pub mod viewporter {
 pub mod xdg_shell {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
+        wire::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
