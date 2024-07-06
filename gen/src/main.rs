@@ -246,6 +246,7 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"#[repr(u32)]
+                    #[non_exhaustive]
                     pub enum r#{name} {{{variants}}}"#,
                     name = enu.name.to_upper_camel_case()
                 )?;
