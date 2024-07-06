@@ -257,6 +257,30 @@ fn main() -> Result<()> {
                 )?;
             }
 
+            for event in &interface.events {
+                let mut args = "client: &mut Client,".to_string();
+
+                for arg in &event.args {
+                    let mut ty = arg.to_rust_type().to_string();
+
+                    if arg.allow_null {
+                        ty = format!("Option<{ty}>");
+                    }
+
+                    args.push_str(&format!("r#{name}: {ty},", name = arg.name.to_snek_case(),))
+                }
+
+                writeln!(
+                    &mut generated_path,
+                    "fn r#{name}({args}) -> Result<()> {{",
+                    name = event.name.to_snek_case()
+                )?;
+
+                writeln!(&mut generated_path, "todo!()");
+
+                writeln!(&mut generated_path, "}}")?;
+            }
+
             writeln!(&mut generated_path, "}}")?;
         }
         writeln!(&mut generated_path, "}}")?;
