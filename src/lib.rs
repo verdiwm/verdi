@@ -78,7 +78,7 @@ impl Client {
     pub fn handle_message(&mut self, message: &mut Message) {
         let object = self.store.get(&message.object_id).unwrap();
 
-        object.handle_request(self, message).unwrap();
+        object.dispatch(self, message).unwrap();
     }
 
     pub async fn next_message(&mut self) -> Result<Option<Message>, DecodeError> {
@@ -112,14 +112,14 @@ impl Store {
 }
 
 pub trait Interface: std::fmt::Debug {
-    fn handle_request(&self, client: &mut Client, message: &mut Message) -> Result<()>;
+    fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
 }
 
 #[derive(Debug)]
 pub struct DisplayInterface {}
 
 impl Interface for DisplayInterface {
-    fn handle_request(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+    fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
         <Self as WlDisplay>::handle_request(client, message)
     }
 }
