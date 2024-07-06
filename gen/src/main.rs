@@ -190,6 +190,7 @@ fn main() -> Result<()> {
         .open("src/proto.rs")?;
 
     writeln!(&mut generated_path, "#![allow(unused)]")?;
+    writeln!(&mut generated_path, "#![allow(async_fn_in_trait)]")?;
 
     for path in PROTOCOLS {
         let protocol: Protocol = quick_xml::de::from_str(&fs::read_to_string(path)?)?;
@@ -198,7 +199,7 @@ fn main() -> Result<()> {
         writeln!(
             &mut generated_path,
             r#"pub mod {name} {{
-                use crate::{{Result, Dispatcher, message::{{Message,Fixed,ObjectId,NewId,DecodeError}}, error::Error, Client}};
+                use crate::{{Result, Dispatcher, message::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
                 use std::os::fd::RawFd;"#,
             name = &protocol.name
         )?;
@@ -272,25 +273,51 @@ fn main() -> Result<()> {
             }
 
             for event in &interface.events {
-                let mut args = "dispatcher: &Dispatcher, client: &mut Client,".to_string();
+                let mut args = "dispatcher_id: ObjectId, client: &mut Client,".to_string();
+                let mut build_args = String::new();
 
                 for arg in &event.args {
                     let mut ty = arg.to_rust_type().to_string();
+                    let build_ty = arg.to_caller();
+                    let name = arg.name.to_snek_case();
+                    let mut build_name = arg.name.to_snek_case();
 
                     if arg.allow_null {
                         ty = format!("Option<{ty}>");
                     }
 
-                    args.push_str(&format!("r#{name}: {ty},", name = arg.name.to_snek_case(),))
+                    if arg.is_return_option() && !arg.allow_null {
+                        build_name = format!("Some({build_name})")
+                    }
+
+                    args.push_str(&format!("r#{name}: {ty},",));
+                    build_args.push_str(&format!(".put_{build_ty}({build_name})",));
                 }
 
                 writeln!(
                     &mut generated_path,
-                    "fn r#{name}({args}) -> Result<()> {{",
+                    "async fn r#{name}({args}) -> Result<()> {{",
                     name = event.name.to_snek_case()
                 )?;
 
-                writeln!(&mut generated_path, "todo!()")?;
+                // .put_uint(name)
+                // .put_string(&interface)
+                // .put_uint(version)
+
+                writeln!(
+                    &mut generated_path,
+                    r#"let payload = PayloadBuilder::new()
+                    {build_args}
+                    .build();"#
+                )?;
+
+                writeln!(
+                    &mut generated_path,
+                    r#"client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)"#
+                )?;
 
                 writeln!(&mut generated_path, "}}")?;
             }
