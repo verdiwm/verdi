@@ -54,7 +54,8 @@ fn main() -> Result<()> {
                 Ok(mut client) => {
                     set.spawn(async move {
                         while let Some(mut message) = client.next_message().await? {
-                            client.handle_message(&mut message);
+                            dbg!(&message);
+                            client.handle_message(&mut message).await?;
                         }
 
                         Ok(())
