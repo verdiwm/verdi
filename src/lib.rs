@@ -127,11 +127,11 @@ impl Interface for DisplayInterface {
 impl WlDisplay for DisplayInterface {
     fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
         debug!("Handling sync");
-        todo!()
+        Ok(())
     }
 
     fn get_registry(_client: &mut Client, _registry: ObjectId) -> Result<()> {
         debug!("Handling get_registry");
-        todo!()
+        Ok(())
     }
 }
