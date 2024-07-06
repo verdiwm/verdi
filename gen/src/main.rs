@@ -216,13 +216,13 @@ fn main() -> Result<()> {
 
             writeln!(
                 &mut generated_path,
-                "fn handle_request(client: &Client, message: &mut Message) -> Result<()> {{"
+                "fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {{"
             )?;
 
             writeln!(&mut generated_path, "match message.opcode {{")?;
 
             for (opcode, request) in interface.requests.iter().enumerate() {
-                let mut args = String::new();
+                let mut args = "client,".to_string();
 
                 for arg in &request.args {
                     let mut optional = "".to_string();
@@ -250,7 +250,7 @@ fn main() -> Result<()> {
             writeln!(&mut generated_path, "}}")?;
 
             for request in &interface.requests {
-                let mut args = String::new();
+                let mut args = "client: &mut Client,".to_string();
 
                 for arg in &request.args {
                     let mut ty = arg.to_rust_type().to_string();
