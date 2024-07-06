@@ -1,11 +1,7 @@
 use anyhow::Result as AnyResult;
+use async_trait::async_trait;
 use futures_util::SinkExt;
-use std::{
-    collections::HashMap,
-    io,
-    path::Path,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, io, path::Path, sync::Arc};
 use tokio::net::{UnixListener, UnixStream};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
@@ -17,7 +13,7 @@ pub mod message;
 pub mod proto;
 
 use message::{DecodeError, Message, MessageCodec, ObjectId};
-use proto::wayland::WlDisplay;
+use proto::wayland::{WlCompositor, WlDisplay, WlRegistry};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
 
@@ -54,7 +50,6 @@ impl Verdi {
     }
 }
 
-#[derive(Debug)]
 pub struct Client {
     stream: Framed<UnixStream, MessageCodec>,
     store: Store,
@@ -70,14 +65,14 @@ impl Client {
         }
     }
 
-    pub fn insert(&mut self, id: ObjectId, object: Dispatcher) {
+    pub fn insert(&mut self, id: ObjectId, object: Arc<Box<dyn Dispatcher + Send + Sync>>) {
         self.store.insert(id, object)
     }
 
-    pub fn handle_message(&mut self, message: &mut Message) {
+    pub async fn handle_message(&mut self, message: &mut Message) -> Result<()> {
         let object = self.store.get(&message.object_id).unwrap();
 
-        object.dispatch(self, message).unwrap();
+        object.dispatch(self, message).await
     }
 
     pub async fn next_message(&mut self) -> Result<Option<Message>, DecodeError> {
@@ -89,9 +84,8 @@ impl Client {
     }
 }
 
-#[derive(Debug)]
 struct Store {
-    objects: HashMap<ObjectId, Arc<Dispatcher>>,
+    objects: HashMap<ObjectId, Arc<Box<dyn Dispatcher + Send + Sync>>>,
 }
 
 impl Store {
@@ -101,38 +95,93 @@ impl Store {
         }
     }
     // FIXME: handle possible error if id already exists
-    fn insert(&mut self, id: ObjectId, object: Dispatcher) {
-        self.objects.insert(id, Arc::new(object));
+    fn insert(&mut self, id: ObjectId, object: Arc<Box<dyn Dispatcher + Send + Sync>>) {
+        self.objects.insert(id, object);
     }
 
-    fn get(&self, id: &ObjectId) -> Option<Arc<Dispatcher>> {
+    fn get(&self, id: &ObjectId) -> Option<Arc<Box<dyn Dispatcher + Send + Sync>>> {
         self.objects.get(id).map(|id| id.clone())
     }
 }
 
+#[async_trait]
+pub trait Dispatcher {
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
+}
+
 #[derive(Debug)]
-pub struct DisplayInterface {}
+pub struct DisplayInterface;
 
 impl WlDisplay for DisplayInterface {
-    fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
+    async fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
         debug!("Handling sync");
         Ok(())
     }
 
-    fn get_registry(_client: &mut Client, _registry: ObjectId) -> Result<()> {
+    async fn get_registry(client: &mut Client, registry_id: ObjectId) -> Result<()> {
         debug!("Handling get_registry");
+
+        let registry = RegistryInterface::create_dispatcher(registry_id);
+        client.insert(registry_id, registry);
+
+        RegistryInterface::global(
+            registry_id,
+            client,
+            0,
+            Compositor::INTERFACE.to_string(),
+            Compositor::VERSION,
+        )
+        .await?;
+
         Ok(())
+    }
+
+    fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        Arc::new(Box::new(Self {}))
+    }
+}
+
+#[async_trait]
+impl Dispatcher for DisplayInterface {
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        <Self as WlDisplay>::handle_request(client, message).await
     }
 }
 
 #[derive(Debug)]
-pub struct Dispatcher {
-    dipatch_fn: fn(&mut Client, &mut Message) -> Result<()>,
-    id: ObjectId,
+pub struct RegistryInterface;
+
+impl WlRegistry for RegistryInterface {
+    async fn r#bind(client: &mut Client, r#name: u32, r#id: message::NewId) -> Result<()> {
+        todo!()
+    }
+
+    fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        Arc::new(Box::new(Self {}))
+    }
 }
 
-impl Dispatcher {
-    pub fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        (self.dipatch_fn)(client, message)
+
+#[async_trait]
+impl Dispatcher for RegistryInterface {
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        <Self as WlRegistry>::handle_request(client, message).await
+    }
+}
+
+#[derive(Debug)]
+pub struct Compositor;
+
+impl WlCompositor for Compositor {
+    async fn r#create_surface(client: &mut Client, r#id: ObjectId) -> Result<()> {
+        todo!()
+    }
+
+    async fn r#create_region(client: &mut Client, r#id: ObjectId) -> Result<()> {
+        todo!()
+    }
+
+    fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        todo!()
     }
 }

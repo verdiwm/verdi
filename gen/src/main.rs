@@ -200,7 +200,7 @@ fn main() -> Result<()> {
             &mut generated_path,
             r#"pub mod {name} {{
                 use crate::{{Result, Dispatcher, message::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
-                use std::os::fd::RawFd;"#,
+                use std::{{os::fd::RawFd,sync::Arc}};"#,
             name = &protocol.name
         )?;
 
@@ -210,7 +210,7 @@ fn main() -> Result<()> {
                 r#"pub trait r#{trait_name} {{
                     const INTERFACE: &'static str = "{name}";
                     const VERSION: u32 = {version};
-                    fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {{
+                    async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {{
                     match message.opcode {{"#,
                 trait_name = interface.name.to_upper_camel_case(),
                 name = interface.name,
@@ -235,7 +235,7 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    "{opcode} => Self::r#{name}({args}),",
+                    "{opcode} => Self::r#{name}({args}).await,",
                     name = request.name.to_snek_case(),
                 )?;
             }
@@ -244,12 +244,7 @@ fn main() -> Result<()> {
 
             writeln!(
                 &mut generated_path,
-                r#"fn create_dispatcher(id: ObjectId) -> Dispatcher {{
-                    Dispatcher {{
-                        dipatch_fn: Self::handle_request,
-                        id,
-                    }}
-                }}"#
+                "fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>>;"
             )?;
 
             for request in &interface.requests {
@@ -267,7 +262,7 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    "fn r#{name}({args}) -> Result<()>;",
+                    "async fn r#{name}({args}) -> Result<()>;",
                     name = request.name.to_snek_case()
                 )?;
             }

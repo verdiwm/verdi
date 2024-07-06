@@ -54,6 +54,33 @@ impl PayloadBuilder {
         self
     }
 
+    pub fn put_fixed(mut self, fixed: Fixed) -> Self {
+        self.0.reserve(4);
+        self.0.put_u32_ne(fixed.0);
+
+        self
+    }
+
+    pub fn put_string<T: AsRef<str>>(mut self, string: Option<T>) -> Self {
+        todo!();
+        self
+    }
+
+    pub fn put_object(mut self, object: Option<ObjectId>) -> Self {
+        todo!();
+        self
+    }
+
+    pub fn put_new_id(mut self, new_id: NewId) -> Self {
+        todo!();
+        self
+    }
+
+    pub fn put_array<T: AsRef<[u8]>>(mut self, array: T) -> Self {
+        todo!();
+        self
+    }
+
     pub fn build(self) -> Bytes {
         self.0.freeze()
     }
