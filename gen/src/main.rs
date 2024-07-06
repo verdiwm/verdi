@@ -197,29 +197,20 @@ fn main() -> Result<()> {
 
         writeln!(
             &mut generated_path,
-            "pub mod {name} {{",
+            r#"pub mod {name} {{
+                use crate::{{Result, message::{{Message,Fixed,ObjectId,NewId,DecodeError}}, error::Error, Client}};
+                use std::os::fd::RawFd;"#,
             name = &protocol.name
         )?;
-
-        writeln!(
-            &mut generated_path,
-            "use crate::{{Result, message::{{Message,Fixed,ObjectId,NewId,DecodeError}}, error::Error, Client}};"
-        )?;
-        writeln!(&mut generated_path, "use std::os::fd::RawFd;")?;
 
         for interface in protocol.interfaces {
             writeln!(
                 &mut generated_path,
-                "pub trait r#{name} {{",
+                r#"pub trait r#{name} {{
+                    fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {{
+                    match message.opcode {{"#,
                 name = interface.name.to_upper_camel_case()
             )?;
-
-            writeln!(
-                &mut generated_path,
-                "fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {{"
-            )?;
-
-            writeln!(&mut generated_path, "match message.opcode {{")?;
 
             for (opcode, request) in interface.requests.iter().enumerate() {
                 let mut args = "client,".to_string();
@@ -244,10 +235,7 @@ fn main() -> Result<()> {
                 )?;
             }
 
-            writeln!(&mut generated_path, "_ => Err(Error::UnknownOpcode)")?;
-            writeln!(&mut generated_path, "}}")?;
-
-            writeln!(&mut generated_path, "}}")?;
+            writeln!(&mut generated_path, "_ => Err(Error::UnknownOpcode) }} }}")?;
 
             for request in &interface.requests {
                 let mut args = "client: &mut Client,".to_string();
