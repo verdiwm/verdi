@@ -2,8 +2,9 @@ use anyhow::Result;
 use heck::{ToSnekCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 use std::{
+    fmt::Write as _,
     fs::{self, OpenOptions},
-    io::Write,
+    io::Write as _,
     process::Command,
 };
 
@@ -225,9 +226,15 @@ fn main() -> Result<()> {
                         prefix = "_"
                     }
 
-                    if let Some(description) = entry.description {
-                        for line in description.lines() {
-                            writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+                    if let Some(summary) = entry.summary {
+                        for line in summary.lines() {
+                            let doc = line.trim();
+
+                            let mut c = doc.chars();
+                            let doc =
+                                c.next().unwrap().to_uppercase().collect::<String>() + c.as_str();
+
+                            writeln!(&mut variants, r##"#[doc = r#"{doc}"#]"##,)?;
                         }
                     }
 
