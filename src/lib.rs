@@ -1,5 +1,6 @@
 use anyhow::Result as AnyResult;
 use async_trait::async_trait;
+use error::Error;
 use futures_util::SinkExt;
 use std::{collections::HashMap, io, path::Path, sync::Arc};
 use tokio::net::{UnixListener, UnixStream};
@@ -13,7 +14,7 @@ pub mod message;
 pub mod proto;
 
 use message::{DecodeError, Message, MessageCodec, NewId, ObjectId};
-use proto::wayland::{WlCallback, WlCompositor, WlDisplay, WlRegistry};
+use proto::wayland::{WlCallback, WlCompositor, WlDisplay, WlRegistry, WlShm};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
 
@@ -89,6 +90,7 @@ impl Client {
     }
 
     pub async fn send_message(&mut self, message: Message) -> Result<(), io::Error> {
+        dbg!(&message);
         self.stream.send(message).await
     }
 }
@@ -141,7 +143,18 @@ impl WlDisplay for Display {
             Compositor::INTERFACE.to_string(),
             Compositor::VERSION,
         )
-        .await
+        .await?;
+
+        Registry::global(
+            registry_id,
+            client,
+            1,
+            Shm::INTERFACE.to_string(),
+            Shm::VERSION,
+        )
+        .await?;
+
+        Ok(())
     }
 
     fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
@@ -160,8 +173,14 @@ impl Dispatcher for Display {
 pub struct Registry;
 
 impl WlRegistry for Registry {
-    async fn r#bind(client: &mut Client, r#name: u32, r#id: NewId) -> Result<()> {
-        todo!()
+    async fn r#bind(client: &mut Client, name: u32, id: NewId) -> Result<()> {
+        match name {
+            0 => client.insert(id.id, Compositor::create_dispatcher(id.id)),
+            1 => client.insert(id.id, Shm::create_dispatcher(id.id)),
+            _ => return Err(Error::NotFound),
+        }
+
+        Ok(())
     }
 
     fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
@@ -189,7 +208,14 @@ impl WlCompositor for Compositor {
     }
 
     fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        todo!()
+        Arc::new(Box::new(Self {}))
+    }
+}
+
+#[async_trait]
+impl Dispatcher for Compositor {
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        <Self as WlCompositor>::handle_request(client, message).await
     }
 }
 
@@ -206,5 +232,34 @@ impl WlCallback for Callback {
 impl Dispatcher for Callback {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
         <Self as WlCallback>::handle_request(client, message).await
+    }
+}
+
+#[derive(Debug)]
+pub struct Shm;
+
+impl WlShm for Shm {
+    async fn r#create_pool(
+        client: &mut Client,
+        r#id: ObjectId,
+        r#fd: std::os::unix::prelude::RawFd,
+        r#size: i32,
+    ) -> Result<()> {
+        todo!()
+    }
+
+    async fn r#release(client: &mut Client) -> Result<()> {
+        todo!()
+    }
+
+    fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        Arc::new(Box::new(Self {}))
+    }
+}
+
+#[async_trait]
+impl Dispatcher for Shm {
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        <Self as WlShm>::handle_request(client, message).await
     }
 }
