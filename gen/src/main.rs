@@ -24,7 +24,7 @@ struct Interface {
     #[serde(rename = "@name")]
     name: String,
     #[serde(rename = "@version")]
-    version: usize,
+    version: u32,
     description: String,
     #[serde(default, rename = "request")]
     requests: Vec<Message>,
@@ -206,10 +206,14 @@ fn main() -> Result<()> {
         for interface in protocol.interfaces {
             writeln!(
                 &mut generated_path,
-                r#"pub trait r#{name} {{
+                r#"pub trait r#{trait_name} {{
+                    const INTERFACE: &'static str = "{name}";
+                    const VERSION: u32 = {version};
                     fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {{
                     match message.opcode {{"#,
-                name = interface.name.to_upper_camel_case()
+                trait_name = interface.name.to_upper_camel_case(),
+                name = interface.name,
+                version = interface.version
             )?;
 
             for (opcode, request) in interface.requests.iter().enumerate() {
@@ -268,7 +272,7 @@ fn main() -> Result<()> {
             }
 
             for event in &interface.events {
-                let mut args = "client: &mut Client,".to_string();
+                let mut args = "dispatcher: &Dispatcher, client: &mut Client,".to_string();
 
                 for arg in &event.args {
                     let mut ty = arg.to_rust_type().to_string();

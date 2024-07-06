@@ -7,6 +7,8 @@ pub mod wayland {
     };
     use std::os::fd::RawFd;
     pub trait r#WlDisplay {
+        const INTERFACE: &'static str = "wl_display";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#sync(
@@ -29,6 +31,7 @@ pub mod wayland {
         fn r#sync(client: &mut Client, r#callback: ObjectId) -> Result<()>;
         fn r#get_registry(client: &mut Client, r#registry: ObjectId) -> Result<()>;
         fn r#error(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#object_id: ObjectId,
             r#code: u32,
@@ -36,11 +39,13 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#delete_id(client: &mut Client, r#id: u32) -> Result<()> {
+        fn r#delete_id(dispatcher: &Dispatcher, client: &mut Client, r#id: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlRegistry {
+        const INTERFACE: &'static str = "wl_registry";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#bind(client, message.uint()?, message.new_id()?),
@@ -55,6 +60,7 @@ pub mod wayland {
         }
         fn r#bind(client: &mut Client, r#name: u32, r#id: NewId) -> Result<()>;
         fn r#global(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#name: u32,
             r#interface: String,
@@ -62,11 +68,17 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#global_remove(client: &mut Client, r#name: u32) -> Result<()> {
+        fn r#global_remove(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#name: u32,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlCallback {
+        const INTERFACE: &'static str = "wl_callback";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 _ => Err(Error::UnknownOpcode),
@@ -78,11 +90,17 @@ pub mod wayland {
                 id,
             }
         }
-        fn r#done(client: &mut Client, r#callback_data: u32) -> Result<()> {
+        fn r#done(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#callback_data: u32,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlCompositor {
+        const INTERFACE: &'static str = "wl_compositor";
+        const VERSION: u32 = 6;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#create_surface(
@@ -106,6 +124,8 @@ pub mod wayland {
         fn r#create_region(client: &mut Client, r#id: ObjectId) -> Result<()>;
     }
     pub trait r#WlShmPool {
+        const INTERFACE: &'static str = "wl_shm_pool";
+        const VERSION: u32 = 2;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#create_buffer(
@@ -141,6 +161,8 @@ pub mod wayland {
         fn r#resize(client: &mut Client, r#size: i32) -> Result<()>;
     }
     pub trait r#WlShm {
+        const INTERFACE: &'static str = "wl_shm";
+        const VERSION: u32 = 2;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#create_pool(
@@ -166,11 +188,13 @@ pub mod wayland {
             r#size: i32,
         ) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#format(client: &mut Client, r#format: u32) -> Result<()> {
+        fn r#format(dispatcher: &Dispatcher, client: &mut Client, r#format: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlBuffer {
+        const INTERFACE: &'static str = "wl_buffer";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -184,11 +208,13 @@ pub mod wayland {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#release(client: &mut Client) -> Result<()> {
+        fn r#release(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlDataOffer {
+        const INTERFACE: &'static str = "wl_data_offer";
+        const VERSION: u32 = 3;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#accept(client, message.uint()?, message.string()?),
@@ -218,17 +244,27 @@ pub mod wayland {
             r#dnd_actions: u32,
             r#preferred_action: u32,
         ) -> Result<()>;
-        fn r#offer(client: &mut Client, r#mime_type: String) -> Result<()> {
+        fn r#offer(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#mime_type: String,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#source_actions(client: &mut Client, r#source_actions: u32) -> Result<()> {
+        fn r#source_actions(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#source_actions: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#action(client: &mut Client, r#dnd_action: u32) -> Result<()> {
+        fn r#action(dispatcher: &Dispatcher, client: &mut Client, r#dnd_action: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlDataSource {
+        const INTERFACE: &'static str = "wl_data_source";
+        const VERSION: u32 = 3;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#offer(
@@ -249,26 +285,37 @@ pub mod wayland {
         fn r#offer(client: &mut Client, r#mime_type: String) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#set_actions(client: &mut Client, r#dnd_actions: u32) -> Result<()>;
-        fn r#target(client: &mut Client, r#mime_type: Option<String>) -> Result<()> {
+        fn r#target(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#mime_type: Option<String>,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#send(client: &mut Client, r#mime_type: String, r#fd: RawFd) -> Result<()> {
+        fn r#send(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#mime_type: String,
+            r#fd: RawFd,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#cancelled(client: &mut Client) -> Result<()> {
+        fn r#cancelled(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#dnd_drop_performed(client: &mut Client) -> Result<()> {
+        fn r#dnd_drop_performed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#dnd_finished(client: &mut Client) -> Result<()> {
+        fn r#dnd_finished(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#action(client: &mut Client, r#dnd_action: u32) -> Result<()> {
+        fn r#action(dispatcher: &Dispatcher, client: &mut Client, r#dnd_action: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlDataDevice {
+        const INTERFACE: &'static str = "wl_data_device";
+        const VERSION: u32 = 3;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#start_drag(
@@ -302,10 +349,15 @@ pub mod wayland {
             r#serial: u32,
         ) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#data_offer(client: &mut Client, r#id: ObjectId) -> Result<()> {
+        fn r#data_offer(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#id: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
         fn r#enter(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
@@ -315,20 +367,32 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#leave(client: &mut Client) -> Result<()> {
+        fn r#leave(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#motion(client: &mut Client, r#time: u32, r#x: Fixed, r#y: Fixed) -> Result<()> {
+        fn r#motion(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#time: u32,
+            r#x: Fixed,
+            r#y: Fixed,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#drop(client: &mut Client) -> Result<()> {
+        fn r#drop(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#selection(client: &mut Client, r#id: Option<ObjectId>) -> Result<()> {
+        fn r#selection(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#id: Option<ObjectId>,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlDataDeviceManager {
+        const INTERFACE: &'static str = "wl_data_device_manager";
+        const VERSION: u32 = 3;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#create_data_source(
@@ -353,6 +417,8 @@ pub mod wayland {
         fn r#get_data_device(client: &mut Client, r#id: ObjectId, r#seat: ObjectId) -> Result<()>;
     }
     pub trait r#WlShell {
+        const INTERFACE: &'static str = "wl_shell";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#get_shell_surface(
@@ -376,6 +442,8 @@ pub mod wayland {
         ) -> Result<()>;
     }
     pub trait r#WlShellSurface {
+        const INTERFACE: &'static str = "wl_shell_surface";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#pong(client, message.uint()?),
@@ -465,10 +533,11 @@ pub mod wayland {
         fn r#set_maximized(client: &mut Client, r#output: Option<ObjectId>) -> Result<()>;
         fn r#set_title(client: &mut Client, r#title: String) -> Result<()>;
         fn r#set_class(client: &mut Client, r#class: String) -> Result<()>;
-        fn r#ping(client: &mut Client, r#serial: u32) -> Result<()> {
+        fn r#ping(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
             todo!()
         }
         fn r#configure(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#edges: u32,
             r#width: i32,
@@ -476,11 +545,13 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#popup_done(client: &mut Client) -> Result<()> {
+        fn r#popup_done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlSurface {
+        const INTERFACE: &'static str = "wl_surface";
+        const VERSION: u32 = 6;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -546,20 +617,30 @@ pub mod wayland {
             r#height: i32,
         ) -> Result<()>;
         fn r#offset(client: &mut Client, r#x: i32, r#y: i32) -> Result<()>;
-        fn r#enter(client: &mut Client, r#output: ObjectId) -> Result<()> {
+        fn r#enter(dispatcher: &Dispatcher, client: &mut Client, r#output: ObjectId) -> Result<()> {
             todo!()
         }
-        fn r#leave(client: &mut Client, r#output: ObjectId) -> Result<()> {
+        fn r#leave(dispatcher: &Dispatcher, client: &mut Client, r#output: ObjectId) -> Result<()> {
             todo!()
         }
-        fn r#preferred_buffer_scale(client: &mut Client, r#factor: i32) -> Result<()> {
+        fn r#preferred_buffer_scale(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#factor: i32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#preferred_buffer_transform(client: &mut Client, r#transform: u32) -> Result<()> {
+        fn r#preferred_buffer_transform(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#transform: u32,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlSeat {
+        const INTERFACE: &'static str = "wl_seat";
+        const VERSION: u32 = 9;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#get_pointer(
@@ -588,14 +669,20 @@ pub mod wayland {
         fn r#get_keyboard(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#get_touch(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#capabilities(client: &mut Client, r#capabilities: u32) -> Result<()> {
+        fn r#capabilities(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#capabilities: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#name(client: &mut Client, r#name: String) -> Result<()> {
+        fn r#name(dispatcher: &Dispatcher, client: &mut Client, r#name: String) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlPointer {
+        const INTERFACE: &'static str = "wl_pointer";
+        const VERSION: u32 = 9;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#set_cursor(
@@ -624,6 +711,7 @@ pub mod wayland {
         ) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
         fn r#enter(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
@@ -632,10 +720,16 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#leave(client: &mut Client, r#serial: u32, r#surface: ObjectId) -> Result<()> {
+        fn r#leave(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#serial: u32,
+            r#surface: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
         fn r#motion(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#time: u32,
             r#surface_x: Fixed,
@@ -644,6 +738,7 @@ pub mod wayland {
             todo!()
         }
         fn r#button(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#time: u32,
@@ -652,25 +747,51 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#axis(client: &mut Client, r#time: u32, r#axis: u32, r#value: Fixed) -> Result<()> {
+        fn r#axis(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#time: u32,
+            r#axis: u32,
+            r#value: Fixed,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#frame(client: &mut Client) -> Result<()> {
+        fn r#frame(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#axis_source(client: &mut Client, r#axis_source: u32) -> Result<()> {
+        fn r#axis_source(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#axis_source: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#axis_stop(client: &mut Client, r#time: u32, r#axis: u32) -> Result<()> {
+        fn r#axis_stop(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#time: u32,
+            r#axis: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#axis_discrete(client: &mut Client, r#axis: u32, r#discrete: i32) -> Result<()> {
+        fn r#axis_discrete(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#axis: u32,
+            r#discrete: i32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#axis_value120(client: &mut Client, r#axis: u32, r#value120: i32) -> Result<()> {
+        fn r#axis_value120(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#axis: u32,
+            r#value120: i32,
+        ) -> Result<()> {
             todo!()
         }
         fn r#axis_relative_direction(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#axis: u32,
             r#direction: u32,
@@ -679,6 +800,8 @@ pub mod wayland {
         }
     }
     pub trait r#WlKeyboard {
+        const INTERFACE: &'static str = "wl_keyboard";
+        const VERSION: u32 = 9;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#release(client),
@@ -692,10 +815,17 @@ pub mod wayland {
             }
         }
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#keymap(client: &mut Client, r#format: u32, r#fd: RawFd, r#size: u32) -> Result<()> {
+        fn r#keymap(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#format: u32,
+            r#fd: RawFd,
+            r#size: u32,
+        ) -> Result<()> {
             todo!()
         }
         fn r#enter(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
@@ -703,10 +833,16 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#leave(client: &mut Client, r#serial: u32, r#surface: ObjectId) -> Result<()> {
+        fn r#leave(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#serial: u32,
+            r#surface: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
         fn r#key(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#time: u32,
@@ -716,6 +852,7 @@ pub mod wayland {
             todo!()
         }
         fn r#modifiers(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#mods_depressed: u32,
@@ -725,11 +862,18 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#repeat_info(client: &mut Client, r#rate: i32, r#delay: i32) -> Result<()> {
+        fn r#repeat_info(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#rate: i32,
+            r#delay: i32,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlTouch {
+        const INTERFACE: &'static str = "wl_touch";
+        const VERSION: u32 = 9;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#release(client),
@@ -744,6 +888,7 @@ pub mod wayland {
         }
         fn r#release(client: &mut Client) -> Result<()>;
         fn r#down(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#time: u32,
@@ -754,10 +899,17 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#up(client: &mut Client, r#serial: u32, r#time: u32, r#id: i32) -> Result<()> {
+        fn r#up(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#serial: u32,
+            r#time: u32,
+            r#id: i32,
+        ) -> Result<()> {
             todo!()
         }
         fn r#motion(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#time: u32,
             r#id: i32,
@@ -766,20 +918,33 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#frame(client: &mut Client) -> Result<()> {
+        fn r#frame(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#cancel(client: &mut Client) -> Result<()> {
+        fn r#cancel(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#shape(client: &mut Client, r#id: i32, r#major: Fixed, r#minor: Fixed) -> Result<()> {
+        fn r#shape(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#id: i32,
+            r#major: Fixed,
+            r#minor: Fixed,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#orientation(client: &mut Client, r#id: i32, r#orientation: Fixed) -> Result<()> {
+        fn r#orientation(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#id: i32,
+            r#orientation: Fixed,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlOutput {
+        const INTERFACE: &'static str = "wl_output";
+        const VERSION: u32 = 4;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#release(client),
@@ -794,6 +959,7 @@ pub mod wayland {
         }
         fn r#release(client: &mut Client) -> Result<()>;
         fn r#geometry(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#x: i32,
             r#y: i32,
@@ -807,6 +973,7 @@ pub mod wayland {
             todo!()
         }
         fn r#mode(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#flags: u32,
             r#width: i32,
@@ -815,20 +982,26 @@ pub mod wayland {
         ) -> Result<()> {
             todo!()
         }
-        fn r#done(client: &mut Client) -> Result<()> {
+        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#scale(client: &mut Client, r#factor: i32) -> Result<()> {
+        fn r#scale(dispatcher: &Dispatcher, client: &mut Client, r#factor: i32) -> Result<()> {
             todo!()
         }
-        fn r#name(client: &mut Client, r#name: String) -> Result<()> {
+        fn r#name(dispatcher: &Dispatcher, client: &mut Client, r#name: String) -> Result<()> {
             todo!()
         }
-        fn r#description(client: &mut Client, r#description: String) -> Result<()> {
+        fn r#description(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#description: String,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WlRegion {
+        const INTERFACE: &'static str = "wl_region";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -872,6 +1045,8 @@ pub mod wayland {
         ) -> Result<()>;
     }
     pub trait r#WlSubcompositor {
+        const INTERFACE: &'static str = "wl_subcompositor";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -899,6 +1074,8 @@ pub mod wayland {
         ) -> Result<()>;
     }
     pub trait r#WlSubsurface {
+        const INTERFACE: &'static str = "wl_subsurface";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -938,6 +1115,8 @@ pub mod linux_dmabuf_v1 {
     };
     use std::os::fd::RawFd;
     pub trait r#ZwpLinuxDmabufV1 {
+        const INTERFACE: &'static str = "zwp_linux_dmabuf_v1";
+        const VERSION: u32 = 5;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -971,10 +1150,11 @@ pub mod linux_dmabuf_v1 {
             r#id: ObjectId,
             r#surface: ObjectId,
         ) -> Result<()>;
-        fn r#format(client: &mut Client, r#format: u32) -> Result<()> {
+        fn r#format(dispatcher: &Dispatcher, client: &mut Client, r#format: u32) -> Result<()> {
             todo!()
         }
         fn r#modifier(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#format: u32,
             r#modifier_hi: u32,
@@ -984,6 +1164,8 @@ pub mod linux_dmabuf_v1 {
         }
     }
     pub trait r#ZwpLinuxBufferParamsV1 {
+        const INTERFACE: &'static str = "zwp_linux_buffer_params_v1";
+        const VERSION: u32 = 5;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1045,14 +1227,20 @@ pub mod linux_dmabuf_v1 {
             r#format: u32,
             r#flags: u32,
         ) -> Result<()>;
-        fn r#created(client: &mut Client, r#buffer: ObjectId) -> Result<()> {
+        fn r#created(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#buffer: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#failed(client: &mut Client) -> Result<()> {
+        fn r#failed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
     }
     pub trait r#ZwpLinuxDmabufFeedbackV1 {
+        const INTERFACE: &'static str = "zwp_linux_dmabuf_feedback_v1";
+        const VERSION: u32 = 5;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1066,25 +1254,46 @@ pub mod linux_dmabuf_v1 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#done(client: &mut Client) -> Result<()> {
+        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#format_table(client: &mut Client, r#fd: RawFd, r#size: u32) -> Result<()> {
+        fn r#format_table(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#fd: RawFd,
+            r#size: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#main_device(client: &mut Client, r#device: Vec<u8>) -> Result<()> {
+        fn r#main_device(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#device: Vec<u8>,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#tranche_done(client: &mut Client) -> Result<()> {
+        fn r#tranche_done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#tranche_target_device(client: &mut Client, r#device: Vec<u8>) -> Result<()> {
+        fn r#tranche_target_device(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#device: Vec<u8>,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#tranche_formats(client: &mut Client, r#indices: Vec<u8>) -> Result<()> {
+        fn r#tranche_formats(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#indices: Vec<u8>,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#tranche_flags(client: &mut Client, r#flags: u32) -> Result<()> {
+        fn r#tranche_flags(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#flags: u32,
+        ) -> Result<()> {
             todo!()
         }
     }
@@ -1097,6 +1306,8 @@ pub mod presentation_time {
     };
     use std::os::fd::RawFd;
     pub trait r#WpPresentation {
+        const INTERFACE: &'static str = "wp_presentation";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1117,11 +1328,13 @@ pub mod presentation_time {
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#feedback(client: &mut Client, r#surface: ObjectId, r#callback: ObjectId)
             -> Result<()>;
-        fn r#clock_id(client: &mut Client, r#clk_id: u32) -> Result<()> {
+        fn r#clock_id(dispatcher: &Dispatcher, client: &mut Client, r#clk_id: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#WpPresentationFeedback {
+        const INTERFACE: &'static str = "wp_presentation_feedback";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 _ => Err(Error::UnknownOpcode),
@@ -1133,10 +1346,15 @@ pub mod presentation_time {
                 id,
             }
         }
-        fn r#sync_output(client: &mut Client, r#output: ObjectId) -> Result<()> {
+        fn r#sync_output(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#output: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
         fn r#presented(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#tv_sec_hi: u32,
             r#tv_sec_lo: u32,
@@ -1148,7 +1366,7 @@ pub mod presentation_time {
         ) -> Result<()> {
             todo!()
         }
-        fn r#discarded(client: &mut Client) -> Result<()> {
+        fn r#discarded(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
     }
@@ -1161,6 +1379,8 @@ pub mod tablet_v2 {
     };
     use std::os::fd::RawFd;
     pub trait r#ZwpTabletManagerV2 {
+        const INTERFACE: &'static str = "zwp_tablet_manager_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#get_tablet_seat(
@@ -1186,6 +1406,8 @@ pub mod tablet_v2 {
         fn r#destroy(client: &mut Client) -> Result<()>;
     }
     pub trait r#ZwpTabletSeatV2 {
+        const INTERFACE: &'static str = "zwp_tablet_seat_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1199,17 +1421,27 @@ pub mod tablet_v2 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#tablet_added(client: &mut Client, r#id: ObjectId) -> Result<()> {
+        fn r#tablet_added(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#id: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#tool_added(client: &mut Client, r#id: ObjectId) -> Result<()> {
+        fn r#tool_added(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#id: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#pad_added(client: &mut Client, r#id: ObjectId) -> Result<()> {
+        fn r#pad_added(dispatcher: &Dispatcher, client: &mut Client, r#id: ObjectId) -> Result<()> {
             todo!()
         }
     }
     pub trait r#ZwpTabletToolV2 {
+        const INTERFACE: &'static str = "zwp_tablet_tool_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#set_cursor(
@@ -1237,10 +1469,11 @@ pub mod tablet_v2 {
             r#hotspot_y: i32,
         ) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#type(client: &mut Client, r#tool_type: u32) -> Result<()> {
+        fn r#type(dispatcher: &Dispatcher, client: &mut Client, r#tool_type: u32) -> Result<()> {
             todo!()
         }
         fn r#hardware_serial(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#hardware_serial_hi: u32,
             r#hardware_serial_lo: u32,
@@ -1248,22 +1481,28 @@ pub mod tablet_v2 {
             todo!()
         }
         fn r#hardware_id_wacom(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#hardware_id_hi: u32,
             r#hardware_id_lo: u32,
         ) -> Result<()> {
             todo!()
         }
-        fn r#capability(client: &mut Client, r#capability: u32) -> Result<()> {
+        fn r#capability(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#capability: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#done(client: &mut Client) -> Result<()> {
+        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#removed(client: &mut Client) -> Result<()> {
+        fn r#removed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
         fn r#proximity_in(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#tablet: ObjectId,
@@ -1271,44 +1510,71 @@ pub mod tablet_v2 {
         ) -> Result<()> {
             todo!()
         }
-        fn r#proximity_out(client: &mut Client) -> Result<()> {
+        fn r#proximity_out(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#down(client: &mut Client, r#serial: u32) -> Result<()> {
+        fn r#down(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
             todo!()
         }
-        fn r#up(client: &mut Client) -> Result<()> {
+        fn r#up(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#motion(client: &mut Client, r#x: Fixed, r#y: Fixed) -> Result<()> {
+        fn r#motion(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#x: Fixed,
+            r#y: Fixed,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#pressure(client: &mut Client, r#pressure: u32) -> Result<()> {
+        fn r#pressure(dispatcher: &Dispatcher, client: &mut Client, r#pressure: u32) -> Result<()> {
             todo!()
         }
-        fn r#distance(client: &mut Client, r#distance: u32) -> Result<()> {
+        fn r#distance(dispatcher: &Dispatcher, client: &mut Client, r#distance: u32) -> Result<()> {
             todo!()
         }
-        fn r#tilt(client: &mut Client, r#tilt_x: Fixed, r#tilt_y: Fixed) -> Result<()> {
+        fn r#tilt(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#tilt_x: Fixed,
+            r#tilt_y: Fixed,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#rotation(client: &mut Client, r#degrees: Fixed) -> Result<()> {
+        fn r#rotation(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#degrees: Fixed,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#slider(client: &mut Client, r#position: i32) -> Result<()> {
+        fn r#slider(dispatcher: &Dispatcher, client: &mut Client, r#position: i32) -> Result<()> {
             todo!()
         }
-        fn r#wheel(client: &mut Client, r#degrees: Fixed, r#clicks: i32) -> Result<()> {
+        fn r#wheel(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#degrees: Fixed,
+            r#clicks: i32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#button(client: &mut Client, r#serial: u32, r#button: u32, r#state: u32) -> Result<()> {
+        fn r#button(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#serial: u32,
+            r#button: u32,
+            r#state: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#frame(client: &mut Client, r#time: u32) -> Result<()> {
+        fn r#frame(dispatcher: &Dispatcher, client: &mut Client, r#time: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#ZwpTabletV2 {
+        const INTERFACE: &'static str = "zwp_tablet_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1322,23 +1588,30 @@ pub mod tablet_v2 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#name(client: &mut Client, r#name: String) -> Result<()> {
+        fn r#name(dispatcher: &Dispatcher, client: &mut Client, r#name: String) -> Result<()> {
             todo!()
         }
-        fn r#id(client: &mut Client, r#vid: u32, r#pid: u32) -> Result<()> {
+        fn r#id(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#vid: u32,
+            r#pid: u32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#path(client: &mut Client, r#path: String) -> Result<()> {
+        fn r#path(dispatcher: &Dispatcher, client: &mut Client, r#path: String) -> Result<()> {
             todo!()
         }
-        fn r#done(client: &mut Client) -> Result<()> {
+        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#removed(client: &mut Client) -> Result<()> {
+        fn r#removed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
     }
     pub trait r#ZwpTabletPadRingV2 {
+        const INTERFACE: &'static str = "zwp_tablet_pad_ring_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#set_feedback(
@@ -1358,20 +1631,22 @@ pub mod tablet_v2 {
         }
         fn r#set_feedback(client: &mut Client, r#description: String, r#serial: u32) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#source(client: &mut Client, r#source: u32) -> Result<()> {
+        fn r#source(dispatcher: &Dispatcher, client: &mut Client, r#source: u32) -> Result<()> {
             todo!()
         }
-        fn r#angle(client: &mut Client, r#degrees: Fixed) -> Result<()> {
+        fn r#angle(dispatcher: &Dispatcher, client: &mut Client, r#degrees: Fixed) -> Result<()> {
             todo!()
         }
-        fn r#stop(client: &mut Client) -> Result<()> {
+        fn r#stop(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#frame(client: &mut Client, r#time: u32) -> Result<()> {
+        fn r#frame(dispatcher: &Dispatcher, client: &mut Client, r#time: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#ZwpTabletPadStripV2 {
+        const INTERFACE: &'static str = "zwp_tablet_pad_strip_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#set_feedback(
@@ -1391,20 +1666,22 @@ pub mod tablet_v2 {
         }
         fn r#set_feedback(client: &mut Client, r#description: String, r#serial: u32) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#source(client: &mut Client, r#source: u32) -> Result<()> {
+        fn r#source(dispatcher: &Dispatcher, client: &mut Client, r#source: u32) -> Result<()> {
             todo!()
         }
-        fn r#position(client: &mut Client, r#position: u32) -> Result<()> {
+        fn r#position(dispatcher: &Dispatcher, client: &mut Client, r#position: u32) -> Result<()> {
             todo!()
         }
-        fn r#stop(client: &mut Client) -> Result<()> {
+        fn r#stop(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#frame(client: &mut Client, r#time: u32) -> Result<()> {
+        fn r#frame(dispatcher: &Dispatcher, client: &mut Client, r#time: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#ZwpTabletPadGroupV2 {
+        const INTERFACE: &'static str = "zwp_tablet_pad_group_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1418,22 +1695,27 @@ pub mod tablet_v2 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#buttons(client: &mut Client, r#buttons: Vec<u8>) -> Result<()> {
+        fn r#buttons(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#buttons: Vec<u8>,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#ring(client: &mut Client, r#ring: ObjectId) -> Result<()> {
+        fn r#ring(dispatcher: &Dispatcher, client: &mut Client, r#ring: ObjectId) -> Result<()> {
             todo!()
         }
-        fn r#strip(client: &mut Client, r#strip: ObjectId) -> Result<()> {
+        fn r#strip(dispatcher: &Dispatcher, client: &mut Client, r#strip: ObjectId) -> Result<()> {
             todo!()
         }
-        fn r#modes(client: &mut Client, r#modes: u32) -> Result<()> {
+        fn r#modes(dispatcher: &Dispatcher, client: &mut Client, r#modes: u32) -> Result<()> {
             todo!()
         }
-        fn r#done(client: &mut Client) -> Result<()> {
+        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
         fn r#mode_switch(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#time: u32,
             r#serial: u32,
@@ -1443,6 +1725,8 @@ pub mod tablet_v2 {
         }
     }
     pub trait r#ZwpTabletPadV2 {
+        const INTERFACE: &'static str = "zwp_tablet_pad_v2";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#set_feedback(
@@ -1468,22 +1752,33 @@ pub mod tablet_v2 {
             r#serial: u32,
         ) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#group(client: &mut Client, r#pad_group: ObjectId) -> Result<()> {
+        fn r#group(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#pad_group: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#path(client: &mut Client, r#path: String) -> Result<()> {
+        fn r#path(dispatcher: &Dispatcher, client: &mut Client, r#path: String) -> Result<()> {
             todo!()
         }
-        fn r#buttons(client: &mut Client, r#buttons: u32) -> Result<()> {
+        fn r#buttons(dispatcher: &Dispatcher, client: &mut Client, r#buttons: u32) -> Result<()> {
             todo!()
         }
-        fn r#done(client: &mut Client) -> Result<()> {
+        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#button(client: &mut Client, r#time: u32, r#button: u32, r#state: u32) -> Result<()> {
+        fn r#button(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#time: u32,
+            r#button: u32,
+            r#state: u32,
+        ) -> Result<()> {
             todo!()
         }
         fn r#enter(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#serial: u32,
             r#tablet: ObjectId,
@@ -1491,10 +1786,15 @@ pub mod tablet_v2 {
         ) -> Result<()> {
             todo!()
         }
-        fn r#leave(client: &mut Client, r#serial: u32, r#surface: ObjectId) -> Result<()> {
+        fn r#leave(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#serial: u32,
+            r#surface: ObjectId,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#removed(client: &mut Client) -> Result<()> {
+        fn r#removed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
     }
@@ -1507,6 +1807,8 @@ pub mod viewporter {
     };
     use std::os::fd::RawFd;
     pub trait r#WpViewporter {
+        const INTERFACE: &'static str = "wp_viewporter";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1528,6 +1830,8 @@ pub mod viewporter {
         fn r#get_viewport(client: &mut Client, r#id: ObjectId, r#surface: ObjectId) -> Result<()>;
     }
     pub trait r#WpViewport {
+        const INTERFACE: &'static str = "wp_viewport";
+        const VERSION: u32 = 1;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1567,6 +1871,8 @@ pub mod xdg_shell {
     };
     use std::os::fd::RawFd;
     pub trait r#XdgWmBase {
+        const INTERFACE: &'static str = "xdg_wm_base";
+        const VERSION: u32 = 6;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1597,11 +1903,13 @@ pub mod xdg_shell {
             r#surface: ObjectId,
         ) -> Result<()>;
         fn r#pong(client: &mut Client, r#serial: u32) -> Result<()>;
-        fn r#ping(client: &mut Client, r#serial: u32) -> Result<()> {
+        fn r#ping(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#XdgPositioner {
+        const INTERFACE: &'static str = "xdg_positioner";
+        const VERSION: u32 = 6;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1654,6 +1962,8 @@ pub mod xdg_shell {
         fn r#set_parent_configure(client: &mut Client, r#serial: u32) -> Result<()>;
     }
     pub trait r#XdgSurface {
+        const INTERFACE: &'static str = "xdg_surface";
+        const VERSION: u32 = 6;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1700,11 +2010,13 @@ pub mod xdg_shell {
             r#height: i32,
         ) -> Result<()>;
         fn r#ack_configure(client: &mut Client, r#serial: u32) -> Result<()>;
-        fn r#configure(client: &mut Client, r#serial: u32) -> Result<()> {
+        fn r#configure(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
             todo!()
         }
     }
     pub trait r#XdgToplevel {
+        const INTERFACE: &'static str = "xdg_toplevel";
+        const VERSION: u32 = 6;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1777,6 +2089,7 @@ pub mod xdg_shell {
         fn r#unset_fullscreen(client: &mut Client) -> Result<()>;
         fn r#set_minimized(client: &mut Client) -> Result<()>;
         fn r#configure(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#width: i32,
             r#height: i32,
@@ -1784,17 +2097,28 @@ pub mod xdg_shell {
         ) -> Result<()> {
             todo!()
         }
-        fn r#close(client: &mut Client) -> Result<()> {
+        fn r#close(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#configure_bounds(client: &mut Client, r#width: i32, r#height: i32) -> Result<()> {
+        fn r#configure_bounds(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#width: i32,
+            r#height: i32,
+        ) -> Result<()> {
             todo!()
         }
-        fn r#wm_capabilities(client: &mut Client, r#capabilities: Vec<u8>) -> Result<()> {
+        fn r#wm_capabilities(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#capabilities: Vec<u8>,
+        ) -> Result<()> {
             todo!()
         }
     }
     pub trait r#XdgPopup {
+        const INTERFACE: &'static str = "xdg_popup";
+        const VERSION: u32 = 6;
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(client),
@@ -1821,6 +2145,7 @@ pub mod xdg_shell {
         fn r#grab(client: &mut Client, r#seat: ObjectId, r#serial: u32) -> Result<()>;
         fn r#reposition(client: &mut Client, r#positioner: ObjectId, r#token: u32) -> Result<()>;
         fn r#configure(
+            dispatcher: &Dispatcher,
             client: &mut Client,
             r#x: i32,
             r#y: i32,
@@ -1829,10 +2154,14 @@ pub mod xdg_shell {
         ) -> Result<()> {
             todo!()
         }
-        fn r#popup_done(client: &mut Client) -> Result<()> {
+        fn r#popup_done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
             todo!()
         }
-        fn r#repositioned(client: &mut Client, r#token: u32) -> Result<()> {
+        fn r#repositioned(
+            dispatcher: &Dispatcher,
+            client: &mut Client,
+            r#token: u32,
+        ) -> Result<()> {
             todo!()
         }
     }
