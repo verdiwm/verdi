@@ -45,6 +45,14 @@ pub enum DecodeError {
 }
 
 impl Message {
+    pub fn new(object_id: ObjectId, opcode: u16, payload: Bytes) -> Self {
+        Self {
+            object_id,
+            opcode,
+            payload,
+        }
+    }
+
     pub fn to_bytes(&self, buf: &mut BytesMut) {
         buf.reserve(8 + self.payload.len());
         buf.put_u32_ne(self.object_id.0.get());
