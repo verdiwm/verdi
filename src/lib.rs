@@ -13,7 +13,7 @@ pub mod message;
 pub mod proto;
 
 use message::{DecodeError, Message, MessageCodec, NewId, ObjectId};
-use proto::wayland::{WlCompositor, WlDisplay, WlRegistry};
+use proto::wayland::{WlCallback, WlCompositor, WlDisplay, WlRegistry};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
 
@@ -54,6 +54,7 @@ pub struct Client {
     stream: Framed<UnixStream, MessageCodec>,
     store: Store,
     _next_id: usize,
+    event_serial: u32,
 }
 
 impl Client {
@@ -62,7 +63,15 @@ impl Client {
             stream: Framed::new(stream, MessageCodec::new()),
             _next_id: 0xff000000,
             store: Store::new(),
+            event_serial: 0,
         }
+    }
+
+    pub fn next_event_serial(&mut self) -> u32 {
+        let prev = self.event_serial;
+        self.event_serial = self.event_serial.wrapping_add(1);
+
+        prev
     }
 
     pub fn insert(&mut self, id: ObjectId, object: Arc<Box<dyn Dispatcher + Send + Sync>>) {
@@ -113,8 +122,12 @@ pub trait Dispatcher {
 pub struct Display;
 
 impl WlDisplay for Display {
-    async fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
-        Ok(())
+    async fn sync(client: &mut Client, callback: ObjectId) -> Result<()> {
+        let serial = client.next_event_serial();
+
+        Callback::done(callback, client, serial).await?;
+
+        Self::delete_id(unsafe { ObjectId::from_raw(1) }, client, callback.as_raw()).await
     }
 
     async fn get_registry(client: &mut Client, registry_id: ObjectId) -> Result<()> {
@@ -128,9 +141,7 @@ impl WlDisplay for Display {
             Compositor::INTERFACE.to_string(),
             Compositor::VERSION,
         )
-        .await?;
-
-        Ok(())
+        .await
     }
 
     fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
@@ -179,5 +190,21 @@ impl WlCompositor for Compositor {
 
     fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
         todo!()
+    }
+}
+
+#[derive(Debug)]
+pub struct Callback;
+
+impl WlCallback for Callback {
+    fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        Arc::new(Box::new(Self {}))
+    }
+}
+
+#[async_trait]
+impl Dispatcher for Callback {
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        <Self as WlCallback>::handle_request(client, message).await
     }
 }
