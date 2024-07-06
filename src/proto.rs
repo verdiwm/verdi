@@ -42,6 +42,7 @@ pub mod wayland {
             r#code: u32,
             r#message: String,
         ) -> Result<()> {
+            debug!("wl_display -> error");
             let payload = PayloadBuilder::new()
                 .put_object(Some(object_id))
                 .put_uint(code)
@@ -57,6 +58,7 @@ pub mod wayland {
             client: &mut Client,
             r#id: u32,
         ) -> Result<()> {
+            debug!("wl_display -> delete_id");
             let payload = PayloadBuilder::new().put_uint(id).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -85,6 +87,7 @@ pub mod wayland {
             r#interface: String,
             r#version: u32,
         ) -> Result<()> {
+            debug!("wl_registry -> global");
             let payload = PayloadBuilder::new()
                 .put_uint(name)
                 .put_string(Some(interface))
@@ -100,6 +103,7 @@ pub mod wayland {
             client: &mut Client,
             r#name: u32,
         ) -> Result<()> {
+            debug!("wl_registry -> global_remove");
             let payload = PayloadBuilder::new().put_uint(name).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -121,6 +125,7 @@ pub mod wayland {
             client: &mut Client,
             r#callback_data: u32,
         ) -> Result<()> {
+            debug!("wl_callback -> done");
             let payload = PayloadBuilder::new().put_uint(callback_data).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -233,6 +238,7 @@ pub mod wayland {
             client: &mut Client,
             r#format: u32,
         ) -> Result<()> {
+            debug!("wl_shm -> format");
             let payload = PayloadBuilder::new().put_uint(format).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -255,6 +261,7 @@ pub mod wayland {
         fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>>;
         async fn r#destroy(client: &mut Client) -> Result<()>;
         async fn r#release(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_buffer -> release");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -314,6 +321,7 @@ pub mod wayland {
             client: &mut Client,
             r#mime_type: String,
         ) -> Result<()> {
+            debug!("wl_data_offer -> offer");
             let payload = PayloadBuilder::new().put_string(Some(mime_type)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -325,6 +333,7 @@ pub mod wayland {
             client: &mut Client,
             r#source_actions: u32,
         ) -> Result<()> {
+            debug!("wl_data_offer -> source_actions");
             let payload = PayloadBuilder::new().put_uint(source_actions).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -336,6 +345,7 @@ pub mod wayland {
             client: &mut Client,
             r#dnd_action: u32,
         ) -> Result<()> {
+            debug!("wl_data_offer -> action");
             let payload = PayloadBuilder::new().put_uint(dnd_action).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -376,6 +386,7 @@ pub mod wayland {
             client: &mut Client,
             r#mime_type: Option<String>,
         ) -> Result<()> {
+            debug!("wl_data_source -> target");
             let payload = PayloadBuilder::new().put_string(mime_type).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -388,6 +399,7 @@ pub mod wayland {
             r#mime_type: String,
             r#fd: RawFd,
         ) -> Result<()> {
+            debug!("wl_data_source -> send");
             let payload = PayloadBuilder::new()
                 .put_string(Some(mime_type))
                 .put_int(fd)
@@ -398,6 +410,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#cancelled(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_data_source -> cancelled");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -405,6 +418,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#dnd_drop_performed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_data_source -> dnd_drop_performed");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -412,6 +426,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#dnd_finished(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_data_source -> dnd_finished");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -423,6 +438,7 @@ pub mod wayland {
             client: &mut Client,
             r#dnd_action: u32,
         ) -> Result<()> {
+            debug!("wl_data_source -> action");
             let payload = PayloadBuilder::new().put_uint(dnd_action).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -476,6 +492,7 @@ pub mod wayland {
             client: &mut Client,
             r#id: ObjectId,
         ) -> Result<()> {
+            debug!("wl_data_device -> data_offer");
             let payload = PayloadBuilder::new().put_object(Some(id)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -491,6 +508,7 @@ pub mod wayland {
             r#y: Fixed,
             r#id: Option<ObjectId>,
         ) -> Result<()> {
+            debug!("wl_data_device -> enter");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(surface))
@@ -504,6 +522,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#leave(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_data_device -> leave");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -517,6 +536,7 @@ pub mod wayland {
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
+            debug!("wl_data_device -> motion");
             let payload = PayloadBuilder::new()
                 .put_uint(time)
                 .put_fixed(x)
@@ -528,6 +548,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#drop(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_data_device -> drop");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -539,6 +560,7 @@ pub mod wayland {
             client: &mut Client,
             r#id: Option<ObjectId>,
         ) -> Result<()> {
+            debug!("wl_data_device -> selection");
             let payload = PayloadBuilder::new().put_object(id).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -728,6 +750,7 @@ pub mod wayland {
         async fn r#set_title(client: &mut Client, r#title: String) -> Result<()>;
         async fn r#set_class(client: &mut Client, r#class: String) -> Result<()>;
         async fn r#ping(dispatcher_id: ObjectId, client: &mut Client, r#serial: u32) -> Result<()> {
+            debug!("wl_shell_surface -> ping");
             let payload = PayloadBuilder::new().put_uint(serial).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -741,6 +764,7 @@ pub mod wayland {
             r#width: i32,
             r#height: i32,
         ) -> Result<()> {
+            debug!("wl_shell_surface -> configure");
             let payload = PayloadBuilder::new()
                 .put_uint(edges)
                 .put_int(width)
@@ -752,6 +776,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#popup_done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_shell_surface -> popup_done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -864,6 +889,7 @@ pub mod wayland {
             client: &mut Client,
             r#output: ObjectId,
         ) -> Result<()> {
+            debug!("wl_surface -> enter");
             let payload = PayloadBuilder::new().put_object(Some(output)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -875,6 +901,7 @@ pub mod wayland {
             client: &mut Client,
             r#output: ObjectId,
         ) -> Result<()> {
+            debug!("wl_surface -> leave");
             let payload = PayloadBuilder::new().put_object(Some(output)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -886,6 +913,7 @@ pub mod wayland {
             client: &mut Client,
             r#factor: i32,
         ) -> Result<()> {
+            debug!("wl_surface -> preferred_buffer_scale");
             let payload = PayloadBuilder::new().put_int(factor).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -897,6 +925,7 @@ pub mod wayland {
             client: &mut Client,
             r#transform: u32,
         ) -> Result<()> {
+            debug!("wl_surface -> preferred_buffer_transform");
             let payload = PayloadBuilder::new().put_uint(transform).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -950,6 +979,7 @@ pub mod wayland {
             client: &mut Client,
             r#capabilities: u32,
         ) -> Result<()> {
+            debug!("wl_seat -> capabilities");
             let payload = PayloadBuilder::new().put_uint(capabilities).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -961,6 +991,7 @@ pub mod wayland {
             client: &mut Client,
             r#name: String,
         ) -> Result<()> {
+            debug!("wl_seat -> name");
             let payload = PayloadBuilder::new().put_string(Some(name)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1008,6 +1039,7 @@ pub mod wayland {
             r#surface_x: Fixed,
             r#surface_y: Fixed,
         ) -> Result<()> {
+            debug!("wl_pointer -> enter");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(surface))
@@ -1025,6 +1057,7 @@ pub mod wayland {
             r#serial: u32,
             r#surface: ObjectId,
         ) -> Result<()> {
+            debug!("wl_pointer -> leave");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(surface))
@@ -1041,6 +1074,7 @@ pub mod wayland {
             r#surface_x: Fixed,
             r#surface_y: Fixed,
         ) -> Result<()> {
+            debug!("wl_pointer -> motion");
             let payload = PayloadBuilder::new()
                 .put_uint(time)
                 .put_fixed(surface_x)
@@ -1059,6 +1093,7 @@ pub mod wayland {
             r#button: u32,
             r#state: u32,
         ) -> Result<()> {
+            debug!("wl_pointer -> button");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_uint(time)
@@ -1077,6 +1112,7 @@ pub mod wayland {
             r#axis: u32,
             r#value: Fixed,
         ) -> Result<()> {
+            debug!("wl_pointer -> axis");
             let payload = PayloadBuilder::new()
                 .put_uint(time)
                 .put_uint(axis)
@@ -1088,6 +1124,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#frame(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_pointer -> frame");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1099,6 +1136,7 @@ pub mod wayland {
             client: &mut Client,
             r#axis_source: u32,
         ) -> Result<()> {
+            debug!("wl_pointer -> axis_source");
             let payload = PayloadBuilder::new().put_uint(axis_source).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1111,6 +1149,7 @@ pub mod wayland {
             r#time: u32,
             r#axis: u32,
         ) -> Result<()> {
+            debug!("wl_pointer -> axis_stop");
             let payload = PayloadBuilder::new().put_uint(time).put_uint(axis).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1123,6 +1162,7 @@ pub mod wayland {
             r#axis: u32,
             r#discrete: i32,
         ) -> Result<()> {
+            debug!("wl_pointer -> axis_discrete");
             let payload = PayloadBuilder::new()
                 .put_uint(axis)
                 .put_int(discrete)
@@ -1138,6 +1178,7 @@ pub mod wayland {
             r#axis: u32,
             r#value120: i32,
         ) -> Result<()> {
+            debug!("wl_pointer -> axis_value120");
             let payload = PayloadBuilder::new()
                 .put_uint(axis)
                 .put_int(value120)
@@ -1153,6 +1194,7 @@ pub mod wayland {
             r#axis: u32,
             r#direction: u32,
         ) -> Result<()> {
+            debug!("wl_pointer -> axis_relative_direction");
             let payload = PayloadBuilder::new()
                 .put_uint(axis)
                 .put_uint(direction)
@@ -1184,6 +1226,7 @@ pub mod wayland {
             r#fd: RawFd,
             r#size: u32,
         ) -> Result<()> {
+            debug!("wl_keyboard -> keymap");
             let payload = PayloadBuilder::new()
                 .put_uint(format)
                 .put_int(fd)
@@ -1201,6 +1244,7 @@ pub mod wayland {
             r#surface: ObjectId,
             r#keys: Vec<u8>,
         ) -> Result<()> {
+            debug!("wl_keyboard -> enter");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(surface))
@@ -1217,6 +1261,7 @@ pub mod wayland {
             r#serial: u32,
             r#surface: ObjectId,
         ) -> Result<()> {
+            debug!("wl_keyboard -> leave");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(surface))
@@ -1234,6 +1279,7 @@ pub mod wayland {
             r#key: u32,
             r#state: u32,
         ) -> Result<()> {
+            debug!("wl_keyboard -> key");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_uint(time)
@@ -1254,6 +1300,7 @@ pub mod wayland {
             r#mods_locked: u32,
             r#group: u32,
         ) -> Result<()> {
+            debug!("wl_keyboard -> modifiers");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_uint(mods_depressed)
@@ -1272,6 +1319,7 @@ pub mod wayland {
             r#rate: i32,
             r#delay: i32,
         ) -> Result<()> {
+            debug!("wl_keyboard -> repeat_info");
             let payload = PayloadBuilder::new().put_int(rate).put_int(delay).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1303,6 +1351,7 @@ pub mod wayland {
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
+            debug!("wl_touch -> down");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_uint(time)
@@ -1323,6 +1372,7 @@ pub mod wayland {
             r#time: u32,
             r#id: i32,
         ) -> Result<()> {
+            debug!("wl_touch -> up");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_uint(time)
@@ -1341,6 +1391,7 @@ pub mod wayland {
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
+            debug!("wl_touch -> motion");
             let payload = PayloadBuilder::new()
                 .put_uint(time)
                 .put_int(id)
@@ -1353,6 +1404,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#frame(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_touch -> frame");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1360,6 +1412,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#cancel(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_touch -> cancel");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1373,6 +1426,7 @@ pub mod wayland {
             r#major: Fixed,
             r#minor: Fixed,
         ) -> Result<()> {
+            debug!("wl_touch -> shape");
             let payload = PayloadBuilder::new()
                 .put_int(id)
                 .put_fixed(major)
@@ -1389,6 +1443,7 @@ pub mod wayland {
             r#id: i32,
             r#orientation: Fixed,
         ) -> Result<()> {
+            debug!("wl_touch -> orientation");
             let payload = PayloadBuilder::new()
                 .put_int(id)
                 .put_fixed(orientation)
@@ -1425,6 +1480,7 @@ pub mod wayland {
             r#model: String,
             r#transform: i32,
         ) -> Result<()> {
+            debug!("wl_output -> geometry");
             let payload = PayloadBuilder::new()
                 .put_int(x)
                 .put_int(y)
@@ -1448,6 +1504,7 @@ pub mod wayland {
             r#height: i32,
             r#refresh: i32,
         ) -> Result<()> {
+            debug!("wl_output -> mode");
             let payload = PayloadBuilder::new()
                 .put_uint(flags)
                 .put_int(width)
@@ -1460,6 +1517,7 @@ pub mod wayland {
                 .map_err(Error::IoError)
         }
         async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wl_output -> done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1471,6 +1529,7 @@ pub mod wayland {
             client: &mut Client,
             r#factor: i32,
         ) -> Result<()> {
+            debug!("wl_output -> scale");
             let payload = PayloadBuilder::new().put_int(factor).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1482,6 +1541,7 @@ pub mod wayland {
             client: &mut Client,
             r#name: String,
         ) -> Result<()> {
+            debug!("wl_output -> name");
             let payload = PayloadBuilder::new().put_string(Some(name)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1493,6 +1553,7 @@ pub mod wayland {
             client: &mut Client,
             r#description: String,
         ) -> Result<()> {
+            debug!("wl_output -> description");
             let payload = PayloadBuilder::new().put_string(Some(description)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1690,6 +1751,7 @@ pub mod linux_dmabuf_v1 {
             client: &mut Client,
             r#format: u32,
         ) -> Result<()> {
+            debug!("zwp_linux_dmabuf_v1 -> format");
             let payload = PayloadBuilder::new().put_uint(format).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1703,6 +1765,7 @@ pub mod linux_dmabuf_v1 {
             r#modifier_hi: u32,
             r#modifier_lo: u32,
         ) -> Result<()> {
+            debug!("zwp_linux_dmabuf_v1 -> modifier");
             let payload = PayloadBuilder::new()
                 .put_uint(format)
                 .put_uint(modifier_hi)
@@ -1793,6 +1856,7 @@ pub mod linux_dmabuf_v1 {
             client: &mut Client,
             r#buffer: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_linux_buffer_params_v1 -> created");
             let payload = PayloadBuilder::new().put_object(Some(buffer)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1800,6 +1864,7 @@ pub mod linux_dmabuf_v1 {
                 .map_err(Error::IoError)
         }
         async fn r#failed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_linux_buffer_params_v1 -> failed");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1822,6 +1887,7 @@ pub mod linux_dmabuf_v1 {
         fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>>;
         async fn r#destroy(client: &mut Client) -> Result<()>;
         async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_linux_dmabuf_feedback_v1 -> done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1834,6 +1900,7 @@ pub mod linux_dmabuf_v1 {
             r#fd: RawFd,
             r#size: u32,
         ) -> Result<()> {
+            debug!("zwp_linux_dmabuf_feedback_v1 -> format_table");
             let payload = PayloadBuilder::new().put_int(fd).put_uint(size).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1845,6 +1912,7 @@ pub mod linux_dmabuf_v1 {
             client: &mut Client,
             r#device: Vec<u8>,
         ) -> Result<()> {
+            debug!("zwp_linux_dmabuf_feedback_v1 -> main_device");
             let payload = PayloadBuilder::new().put_array(device).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1852,6 +1920,7 @@ pub mod linux_dmabuf_v1 {
                 .map_err(Error::IoError)
         }
         async fn r#tranche_done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1863,6 +1932,7 @@ pub mod linux_dmabuf_v1 {
             client: &mut Client,
             r#device: Vec<u8>,
         ) -> Result<()> {
+            debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_target_device");
             let payload = PayloadBuilder::new().put_array(device).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1874,6 +1944,7 @@ pub mod linux_dmabuf_v1 {
             client: &mut Client,
             r#indices: Vec<u8>,
         ) -> Result<()> {
+            debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_formats");
             let payload = PayloadBuilder::new().put_array(indices).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1885,6 +1956,7 @@ pub mod linux_dmabuf_v1 {
             client: &mut Client,
             r#flags: u32,
         ) -> Result<()> {
+            debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_flags");
             let payload = PayloadBuilder::new().put_uint(flags).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1934,6 +2006,7 @@ pub mod presentation_time {
             client: &mut Client,
             r#clk_id: u32,
         ) -> Result<()> {
+            debug!("wp_presentation -> clock_id");
             let payload = PayloadBuilder::new().put_uint(clk_id).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1955,6 +2028,7 @@ pub mod presentation_time {
             client: &mut Client,
             r#output: ObjectId,
         ) -> Result<()> {
+            debug!("wp_presentation_feedback -> sync_output");
             let payload = PayloadBuilder::new().put_object(Some(output)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -1972,6 +2046,7 @@ pub mod presentation_time {
             r#seq_lo: u32,
             r#flags: u32,
         ) -> Result<()> {
+            debug!("wp_presentation_feedback -> presented");
             let payload = PayloadBuilder::new()
                 .put_uint(tv_sec_hi)
                 .put_uint(tv_sec_lo)
@@ -1987,6 +2062,7 @@ pub mod presentation_time {
                 .map_err(Error::IoError)
         }
         async fn r#discarded(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("wp_presentation_feedback -> discarded");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2051,6 +2127,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#id: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_seat_v2 -> tablet_added");
             let payload = PayloadBuilder::new().put_object(Some(id)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2062,6 +2139,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#id: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_seat_v2 -> tool_added");
             let payload = PayloadBuilder::new().put_object(Some(id)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2073,6 +2151,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#id: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_seat_v2 -> pad_added");
             let payload = PayloadBuilder::new().put_object(Some(id)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2117,6 +2196,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#tool_type: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> type");
             let payload = PayloadBuilder::new().put_uint(tool_type).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2129,6 +2209,7 @@ pub mod tablet_v2 {
             r#hardware_serial_hi: u32,
             r#hardware_serial_lo: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> hardware_serial");
             let payload = PayloadBuilder::new()
                 .put_uint(hardware_serial_hi)
                 .put_uint(hardware_serial_lo)
@@ -2144,6 +2225,7 @@ pub mod tablet_v2 {
             r#hardware_id_hi: u32,
             r#hardware_id_lo: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> hardware_id_wacom");
             let payload = PayloadBuilder::new()
                 .put_uint(hardware_id_hi)
                 .put_uint(hardware_id_lo)
@@ -2158,6 +2240,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#capability: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> capability");
             let payload = PayloadBuilder::new().put_uint(capability).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2165,6 +2248,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2172,6 +2256,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#removed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> removed");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2185,6 +2270,7 @@ pub mod tablet_v2 {
             r#tablet: ObjectId,
             r#surface: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> proximity_in");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(tablet))
@@ -2196,6 +2282,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#proximity_out(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> proximity_out");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2203,6 +2290,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#down(dispatcher_id: ObjectId, client: &mut Client, r#serial: u32) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> down");
             let payload = PayloadBuilder::new().put_uint(serial).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2210,6 +2298,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#up(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> up");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2222,6 +2311,7 @@ pub mod tablet_v2 {
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> motion");
             let payload = PayloadBuilder::new().put_fixed(x).put_fixed(y).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2233,6 +2323,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#pressure: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> pressure");
             let payload = PayloadBuilder::new().put_uint(pressure).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2244,6 +2335,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#distance: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> distance");
             let payload = PayloadBuilder::new().put_uint(distance).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2256,6 +2348,7 @@ pub mod tablet_v2 {
             r#tilt_x: Fixed,
             r#tilt_y: Fixed,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> tilt");
             let payload = PayloadBuilder::new()
                 .put_fixed(tilt_x)
                 .put_fixed(tilt_y)
@@ -2270,6 +2363,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#degrees: Fixed,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> rotation");
             let payload = PayloadBuilder::new().put_fixed(degrees).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2281,6 +2375,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#position: i32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> slider");
             let payload = PayloadBuilder::new().put_int(position).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2293,6 +2388,7 @@ pub mod tablet_v2 {
             r#degrees: Fixed,
             r#clicks: i32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> wheel");
             let payload = PayloadBuilder::new()
                 .put_fixed(degrees)
                 .put_int(clicks)
@@ -2309,6 +2405,7 @@ pub mod tablet_v2 {
             r#button: u32,
             r#state: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> button");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_uint(button)
@@ -2320,6 +2417,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#frame(dispatcher_id: ObjectId, client: &mut Client, r#time: u32) -> Result<()> {
+            debug!("zwp_tablet_tool_v2 -> frame");
             let payload = PayloadBuilder::new().put_uint(time).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2346,6 +2444,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#name: String,
         ) -> Result<()> {
+            debug!("zwp_tablet_v2 -> name");
             let payload = PayloadBuilder::new().put_string(Some(name)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2358,6 +2457,7 @@ pub mod tablet_v2 {
             r#vid: u32,
             r#pid: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_v2 -> id");
             let payload = PayloadBuilder::new().put_uint(vid).put_uint(pid).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2369,6 +2469,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#path: String,
         ) -> Result<()> {
+            debug!("zwp_tablet_v2 -> path");
             let payload = PayloadBuilder::new().put_string(Some(path)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2376,6 +2477,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_v2 -> done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2383,6 +2485,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#removed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_v2 -> removed");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2423,6 +2526,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#source: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_ring_v2 -> source");
             let payload = PayloadBuilder::new().put_uint(source).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2434,6 +2538,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#degrees: Fixed,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_ring_v2 -> angle");
             let payload = PayloadBuilder::new().put_fixed(degrees).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2441,6 +2546,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#stop(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_pad_ring_v2 -> stop");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2448,6 +2554,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#frame(dispatcher_id: ObjectId, client: &mut Client, r#time: u32) -> Result<()> {
+            debug!("zwp_tablet_pad_ring_v2 -> frame");
             let payload = PayloadBuilder::new().put_uint(time).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2488,6 +2595,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#source: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_strip_v2 -> source");
             let payload = PayloadBuilder::new().put_uint(source).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2499,6 +2607,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#position: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_strip_v2 -> position");
             let payload = PayloadBuilder::new().put_uint(position).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2506,6 +2615,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#stop(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_pad_strip_v2 -> stop");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2513,6 +2623,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#frame(dispatcher_id: ObjectId, client: &mut Client, r#time: u32) -> Result<()> {
+            debug!("zwp_tablet_pad_strip_v2 -> frame");
             let payload = PayloadBuilder::new().put_uint(time).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2539,6 +2650,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#buttons: Vec<u8>,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_group_v2 -> buttons");
             let payload = PayloadBuilder::new().put_array(buttons).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2550,6 +2662,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#ring: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_group_v2 -> ring");
             let payload = PayloadBuilder::new().put_object(Some(ring)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2561,6 +2674,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#strip: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_group_v2 -> strip");
             let payload = PayloadBuilder::new().put_object(Some(strip)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2568,6 +2682,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#modes(dispatcher_id: ObjectId, client: &mut Client, r#modes: u32) -> Result<()> {
+            debug!("zwp_tablet_pad_group_v2 -> modes");
             let payload = PayloadBuilder::new().put_uint(modes).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2575,6 +2690,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_pad_group_v2 -> done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2588,6 +2704,7 @@ pub mod tablet_v2 {
             r#serial: u32,
             r#mode: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_group_v2 -> mode_switch");
             let payload = PayloadBuilder::new()
                 .put_uint(time)
                 .put_uint(serial)
@@ -2634,6 +2751,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#pad_group: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> group");
             let payload = PayloadBuilder::new().put_object(Some(pad_group)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2645,6 +2763,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#path: String,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> path");
             let payload = PayloadBuilder::new().put_string(Some(path)).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2656,6 +2775,7 @@ pub mod tablet_v2 {
             client: &mut Client,
             r#buttons: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> buttons");
             let payload = PayloadBuilder::new().put_uint(buttons).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2663,6 +2783,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2676,6 +2797,7 @@ pub mod tablet_v2 {
             r#button: u32,
             r#state: u32,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> button");
             let payload = PayloadBuilder::new()
                 .put_uint(time)
                 .put_uint(button)
@@ -2693,6 +2815,7 @@ pub mod tablet_v2 {
             r#tablet: ObjectId,
             r#surface: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> enter");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(tablet))
@@ -2709,6 +2832,7 @@ pub mod tablet_v2 {
             r#serial: u32,
             r#surface: ObjectId,
         ) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> leave");
             let payload = PayloadBuilder::new()
                 .put_uint(serial)
                 .put_object(Some(surface))
@@ -2719,6 +2843,7 @@ pub mod tablet_v2 {
                 .map_err(Error::IoError)
         }
         async fn r#removed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("zwp_tablet_pad_v2 -> removed");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -2854,6 +2979,7 @@ pub mod xdg_shell {
         ) -> Result<()>;
         async fn r#pong(client: &mut Client, r#serial: u32) -> Result<()>;
         async fn r#ping(dispatcher_id: ObjectId, client: &mut Client, r#serial: u32) -> Result<()> {
+            debug!("xdg_wm_base -> ping");
             let payload = PayloadBuilder::new().put_uint(serial).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -3008,6 +3134,7 @@ pub mod xdg_shell {
             client: &mut Client,
             r#serial: u32,
         ) -> Result<()> {
+            debug!("xdg_surface -> configure");
             let payload = PayloadBuilder::new().put_uint(serial).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -3138,6 +3265,7 @@ pub mod xdg_shell {
             r#height: i32,
             r#states: Vec<u8>,
         ) -> Result<()> {
+            debug!("xdg_toplevel -> configure");
             let payload = PayloadBuilder::new()
                 .put_int(width)
                 .put_int(height)
@@ -3149,6 +3277,7 @@ pub mod xdg_shell {
                 .map_err(Error::IoError)
         }
         async fn r#close(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("xdg_toplevel -> close");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -3161,6 +3290,7 @@ pub mod xdg_shell {
             r#width: i32,
             r#height: i32,
         ) -> Result<()> {
+            debug!("xdg_toplevel -> configure_bounds");
             let payload = PayloadBuilder::new().put_int(width).put_int(height).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -3172,6 +3302,7 @@ pub mod xdg_shell {
             client: &mut Client,
             r#capabilities: Vec<u8>,
         ) -> Result<()> {
+            debug!("xdg_toplevel -> wm_capabilities");
             let payload = PayloadBuilder::new().put_array(capabilities).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -3225,6 +3356,7 @@ pub mod xdg_shell {
             r#width: i32,
             r#height: i32,
         ) -> Result<()> {
+            debug!("xdg_popup -> configure");
             let payload = PayloadBuilder::new()
                 .put_int(x)
                 .put_int(y)
@@ -3237,6 +3369,7 @@ pub mod xdg_shell {
                 .map_err(Error::IoError)
         }
         async fn r#popup_done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            debug!("xdg_popup -> popup_done");
             let payload = PayloadBuilder::new().build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))
@@ -3248,6 +3381,7 @@ pub mod xdg_shell {
             client: &mut Client,
             r#token: u32,
         ) -> Result<()> {
+            debug!("xdg_popup -> repositioned");
             let payload = PayloadBuilder::new().put_uint(token).build();
             client
                 .send_message(Message::new(dispatcher_id, 0, payload))

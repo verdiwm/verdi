@@ -303,9 +303,12 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    r#"let payload = PayloadBuilder::new()
+                    r#"debug!("{interface_name} -> {name}");
+                    let payload = PayloadBuilder::new()
                     {build_args}
-                    .build();"#
+                    .build();"#,
+                    name = event.name.to_snek_case(),
+                    interface_name = interface.name
                 )?;
 
                 writeln!(
