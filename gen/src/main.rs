@@ -200,7 +200,8 @@ fn main() -> Result<()> {
             &mut generated_path,
             r#"pub mod {name} {{
                 use crate::{{Result, Dispatcher, message::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
-                use std::{{os::fd::RawFd,sync::Arc}};"#,
+                use std::{{os::fd::RawFd,sync::Arc}};
+                use tracing::debug;"#,
             name = &protocol.name
         )?;
 
@@ -235,8 +236,9 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    "{opcode} => Self::r#{name}({args}).await,",
+                    r#"{opcode} => {{debug!("{interface_name} -> {name}");  Self::r#{name}({args}).await}}"#,
                     name = request.name.to_snek_case(),
+                    interface_name = interface.name
                 )?;
             }
 

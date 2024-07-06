@@ -7,12 +7,14 @@ pub mod wayland {
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
+    use tracing::debug;
     pub trait r#WlDisplay {
         const INTERFACE: &'static str = "wl_display";
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_display -> sync");
                     Self::r#sync(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -20,6 +22,7 @@ pub mod wayland {
                     .await
                 }
                 1 => {
+                    debug!("wl_display -> get_registry");
                     Self::r#get_registry(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -66,7 +69,10 @@ pub mod wayland {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#bind(client, message.uint()?, message.new_id()?).await,
+                0 => {
+                    debug!("wl_registry -> bind");
+                    Self::r#bind(client, message.uint()?, message.new_id()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -128,6 +134,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_compositor -> create_surface");
                     Self::r#create_surface(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -135,6 +142,7 @@ pub mod wayland {
                     .await
                 }
                 1 => {
+                    debug!("wl_compositor -> create_region");
                     Self::r#create_region(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -154,6 +162,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_shm_pool -> create_buffer");
                     Self::r#create_buffer(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -165,8 +174,14 @@ pub mod wayland {
                     )
                     .await
                 }
-                1 => Self::r#destroy(client).await,
-                2 => Self::r#resize(client, message.int()?).await,
+                1 => {
+                    debug!("wl_shm_pool -> destroy");
+                    Self::r#destroy(client).await
+                }
+                2 => {
+                    debug!("wl_shm_pool -> resize");
+                    Self::r#resize(client, message.int()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -189,6 +204,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_shm -> create_pool");
                     Self::r#create_pool(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -197,7 +213,10 @@ pub mod wayland {
                     )
                     .await
                 }
-                1 => Self::r#release(client).await,
+                1 => {
+                    debug!("wl_shm -> release");
+                    Self::r#release(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -226,7 +245,10 @@ pub mod wayland {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("wl_buffer -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -245,8 +267,12 @@ pub mod wayland {
         const VERSION: u32 = 3;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#accept(client, message.uint()?, message.string()?).await,
+                0 => {
+                    debug!("wl_data_offer -> accept");
+                    Self::r#accept(client, message.uint()?, message.string()?).await
+                }
                 1 => {
+                    debug!("wl_data_offer -> receive");
                     Self::r#receive(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
@@ -254,9 +280,18 @@ pub mod wayland {
                     )
                     .await
                 }
-                2 => Self::r#destroy(client).await,
-                3 => Self::r#finish(client).await,
-                4 => Self::r#set_actions(client, message.uint()?, message.uint()?).await,
+                2 => {
+                    debug!("wl_data_offer -> destroy");
+                    Self::r#destroy(client).await
+                }
+                3 => {
+                    debug!("wl_data_offer -> finish");
+                    Self::r#finish(client).await
+                }
+                4 => {
+                    debug!("wl_data_offer -> set_actions");
+                    Self::r#set_actions(client, message.uint()?, message.uint()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -314,14 +349,21 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_data_source -> offer");
                     Self::r#offer(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
                     )
                     .await
                 }
-                1 => Self::r#destroy(client).await,
-                2 => Self::r#set_actions(client, message.uint()?).await,
+                1 => {
+                    debug!("wl_data_source -> destroy");
+                    Self::r#destroy(client).await
+                }
+                2 => {
+                    debug!("wl_data_source -> set_actions");
+                    Self::r#set_actions(client, message.uint()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -394,6 +436,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_data_device -> start_drag");
                     Self::r#start_drag(
                         client,
                         message.object()?,
@@ -403,8 +446,14 @@ pub mod wayland {
                     )
                     .await
                 }
-                1 => Self::r#set_selection(client, message.object()?, message.uint()?).await,
-                2 => Self::r#release(client).await,
+                1 => {
+                    debug!("wl_data_device -> set_selection");
+                    Self::r#set_selection(client, message.object()?, message.uint()?).await
+                }
+                2 => {
+                    debug!("wl_data_device -> release");
+                    Self::r#release(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -503,6 +552,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_data_device_manager -> create_data_source");
                     Self::r#create_data_source(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -510,6 +560,7 @@ pub mod wayland {
                     .await
                 }
                 1 => {
+                    debug!("wl_data_device_manager -> get_data_device");
                     Self::r#get_data_device(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -534,6 +585,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_shell -> get_shell_surface");
                     Self::r#get_shell_surface(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -556,8 +608,12 @@ pub mod wayland {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#pong(client, message.uint()?).await,
+                0 => {
+                    debug!("wl_shell_surface -> pong");
+                    Self::r#pong(client, message.uint()?).await
+                }
                 1 => {
+                    debug!("wl_shell_surface -> move");
                     Self::r#move(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -566,6 +622,7 @@ pub mod wayland {
                     .await
                 }
                 2 => {
+                    debug!("wl_shell_surface -> resize");
                     Self::r#resize(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -574,8 +631,12 @@ pub mod wayland {
                     )
                     .await
                 }
-                3 => Self::r#set_toplevel(client).await,
+                3 => {
+                    debug!("wl_shell_surface -> set_toplevel");
+                    Self::r#set_toplevel(client).await
+                }
                 4 => {
+                    debug!("wl_shell_surface -> set_transient");
                     Self::r#set_transient(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -586,6 +647,7 @@ pub mod wayland {
                     .await
                 }
                 5 => {
+                    debug!("wl_shell_surface -> set_fullscreen");
                     Self::r#set_fullscreen(
                         client,
                         message.uint()?,
@@ -595,6 +657,7 @@ pub mod wayland {
                     .await
                 }
                 6 => {
+                    debug!("wl_shell_surface -> set_popup");
                     Self::r#set_popup(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -606,8 +669,12 @@ pub mod wayland {
                     )
                     .await
                 }
-                7 => Self::r#set_maximized(client, message.object()?).await,
+                7 => {
+                    debug!("wl_shell_surface -> set_maximized");
+                    Self::r#set_maximized(client, message.object()?).await
+                }
                 8 => {
+                    debug!("wl_shell_surface -> set_title");
                     Self::r#set_title(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
@@ -615,6 +682,7 @@ pub mod wayland {
                     .await
                 }
                 9 => {
+                    debug!("wl_shell_surface -> set_class");
                     Self::r#set_class(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
@@ -696,11 +764,16 @@ pub mod wayland {
         const VERSION: u32 = 6;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("wl_surface -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("wl_surface -> attach");
                     Self::r#attach(client, message.object()?, message.int()?, message.int()?).await
                 }
                 2 => {
+                    debug!("wl_surface -> damage");
                     Self::r#damage(
                         client,
                         message.int()?,
@@ -711,18 +784,35 @@ pub mod wayland {
                     .await
                 }
                 3 => {
+                    debug!("wl_surface -> frame");
                     Self::r#frame(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     )
                     .await
                 }
-                4 => Self::r#set_opaque_region(client, message.object()?).await,
-                5 => Self::r#set_input_region(client, message.object()?).await,
-                6 => Self::r#commit(client).await,
-                7 => Self::r#set_buffer_transform(client, message.int()?).await,
-                8 => Self::r#set_buffer_scale(client, message.int()?).await,
+                4 => {
+                    debug!("wl_surface -> set_opaque_region");
+                    Self::r#set_opaque_region(client, message.object()?).await
+                }
+                5 => {
+                    debug!("wl_surface -> set_input_region");
+                    Self::r#set_input_region(client, message.object()?).await
+                }
+                6 => {
+                    debug!("wl_surface -> commit");
+                    Self::r#commit(client).await
+                }
+                7 => {
+                    debug!("wl_surface -> set_buffer_transform");
+                    Self::r#set_buffer_transform(client, message.int()?).await
+                }
+                8 => {
+                    debug!("wl_surface -> set_buffer_scale");
+                    Self::r#set_buffer_scale(client, message.int()?).await
+                }
                 9 => {
+                    debug!("wl_surface -> damage_buffer");
                     Self::r#damage_buffer(
                         client,
                         message.int()?,
@@ -732,7 +822,10 @@ pub mod wayland {
                     )
                     .await
                 }
-                10 => Self::r#offset(client, message.int()?, message.int()?).await,
+                10 => {
+                    debug!("wl_surface -> offset");
+                    Self::r#offset(client, message.int()?, message.int()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -817,6 +910,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_seat -> get_pointer");
                     Self::r#get_pointer(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -824,6 +918,7 @@ pub mod wayland {
                     .await
                 }
                 1 => {
+                    debug!("wl_seat -> get_keyboard");
                     Self::r#get_keyboard(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -831,13 +926,17 @@ pub mod wayland {
                     .await
                 }
                 2 => {
+                    debug!("wl_seat -> get_touch");
                     Self::r#get_touch(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     )
                     .await
                 }
-                3 => Self::r#release(client).await,
+                3 => {
+                    debug!("wl_seat -> release");
+                    Self::r#release(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -875,6 +974,7 @@ pub mod wayland {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("wl_pointer -> set_cursor");
                     Self::r#set_cursor(
                         client,
                         message.uint()?,
@@ -884,7 +984,10 @@ pub mod wayland {
                     )
                     .await
                 }
-                1 => Self::r#release(client).await,
+                1 => {
+                    debug!("wl_pointer -> release");
+                    Self::r#release(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1065,7 +1168,10 @@ pub mod wayland {
         const VERSION: u32 = 9;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#release(client).await,
+                0 => {
+                    debug!("wl_keyboard -> release");
+                    Self::r#release(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1178,7 +1284,10 @@ pub mod wayland {
         const VERSION: u32 = 9;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#release(client).await,
+                0 => {
+                    debug!("wl_touch -> release");
+                    Self::r#release(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1295,7 +1404,10 @@ pub mod wayland {
         const VERSION: u32 = 4;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#release(client).await,
+                0 => {
+                    debug!("wl_output -> release");
+                    Self::r#release(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1393,8 +1505,12 @@ pub mod wayland {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("wl_region -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("wl_region -> add");
                     Self::r#add(
                         client,
                         message.int()?,
@@ -1405,6 +1521,7 @@ pub mod wayland {
                     .await
                 }
                 2 => {
+                    debug!("wl_region -> subtract");
                     Self::r#subtract(
                         client,
                         message.int()?,
@@ -1439,8 +1556,12 @@ pub mod wayland {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("wl_subcompositor -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("wl_subcompositor -> get_subsurface");
                     Self::r#get_subsurface(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1466,9 +1587,16 @@ pub mod wayland {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
-                1 => Self::r#set_position(client, message.int()?, message.int()?).await,
+                0 => {
+                    debug!("wl_subsurface -> destroy");
+                    Self::r#destroy(client).await
+                }
+                1 => {
+                    debug!("wl_subsurface -> set_position");
+                    Self::r#set_position(client, message.int()?, message.int()?).await
+                }
                 2 => {
+                    debug!("wl_subsurface -> place_above");
                     Self::r#place_above(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1476,14 +1604,21 @@ pub mod wayland {
                     .await
                 }
                 3 => {
+                    debug!("wl_subsurface -> place_below");
                     Self::r#place_below(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     )
                     .await
                 }
-                4 => Self::r#set_sync(client).await,
-                5 => Self::r#set_desync(client).await,
+                4 => {
+                    debug!("wl_subsurface -> set_sync");
+                    Self::r#set_sync(client).await
+                }
+                5 => {
+                    debug!("wl_subsurface -> set_desync");
+                    Self::r#set_desync(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1503,13 +1638,18 @@ pub mod linux_dmabuf_v1 {
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
+    use tracing::debug;
     pub trait r#ZwpLinuxDmabufV1 {
         const INTERFACE: &'static str = "zwp_linux_dmabuf_v1";
         const VERSION: u32 = 5;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("zwp_linux_dmabuf_v1 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("zwp_linux_dmabuf_v1 -> create_params");
                     Self::r#create_params(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1517,6 +1657,7 @@ pub mod linux_dmabuf_v1 {
                     .await
                 }
                 2 => {
+                    debug!("zwp_linux_dmabuf_v1 -> get_default_feedback");
                     Self::r#get_default_feedback(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1524,6 +1665,7 @@ pub mod linux_dmabuf_v1 {
                     .await
                 }
                 3 => {
+                    debug!("zwp_linux_dmabuf_v1 -> get_surface_feedback");
                     Self::r#get_surface_feedback(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1577,8 +1719,12 @@ pub mod linux_dmabuf_v1 {
         const VERSION: u32 = 5;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("zwp_linux_buffer_params_v1 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("zwp_linux_buffer_params_v1 -> add");
                     Self::r#add(
                         client,
                         message.int()?,
@@ -1591,6 +1737,7 @@ pub mod linux_dmabuf_v1 {
                     .await
                 }
                 2 => {
+                    debug!("zwp_linux_buffer_params_v1 -> create");
                     Self::r#create(
                         client,
                         message.int()?,
@@ -1601,6 +1748,7 @@ pub mod linux_dmabuf_v1 {
                     .await
                 }
                 3 => {
+                    debug!("zwp_linux_buffer_params_v1 -> create_immed");
                     Self::r#create_immed(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1664,7 +1812,10 @@ pub mod linux_dmabuf_v1 {
         const VERSION: u32 = 5;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("zwp_linux_dmabuf_feedback_v1 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1749,13 +1900,18 @@ pub mod presentation_time {
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
+    use tracing::debug;
     pub trait r#WpPresentation {
         const INTERFACE: &'static str = "wp_presentation";
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("wp_presentation -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("wp_presentation -> feedback");
                     Self::r#feedback(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1846,12 +2002,14 @@ pub mod tablet_v2 {
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
+    use tracing::debug;
     pub trait r#ZwpTabletManagerV2 {
         const INTERFACE: &'static str = "zwp_tablet_manager_v2";
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("zwp_tablet_manager_v2 -> get_tablet_seat");
                     Self::r#get_tablet_seat(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -1859,7 +2017,10 @@ pub mod tablet_v2 {
                     )
                     .await
                 }
-                1 => Self::r#destroy(client).await,
+                1 => {
+                    debug!("zwp_tablet_manager_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1876,7 +2037,10 @@ pub mod tablet_v2 {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("zwp_tablet_seat_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -1922,6 +2086,7 @@ pub mod tablet_v2 {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("zwp_tablet_tool_v2 -> set_cursor");
                     Self::r#set_cursor(
                         client,
                         message.uint()?,
@@ -1931,7 +2096,10 @@ pub mod tablet_v2 {
                     )
                     .await
                 }
-                1 => Self::r#destroy(client).await,
+                1 => {
+                    debug!("zwp_tablet_tool_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2164,7 +2332,10 @@ pub mod tablet_v2 {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("zwp_tablet_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2225,6 +2396,7 @@ pub mod tablet_v2 {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("zwp_tablet_pad_ring_v2 -> set_feedback");
                     Self::r#set_feedback(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2232,7 +2404,10 @@ pub mod tablet_v2 {
                     )
                     .await
                 }
-                1 => Self::r#destroy(client).await,
+                1 => {
+                    debug!("zwp_tablet_pad_ring_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2286,6 +2461,7 @@ pub mod tablet_v2 {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("zwp_tablet_pad_strip_v2 -> set_feedback");
                     Self::r#set_feedback(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2293,7 +2469,10 @@ pub mod tablet_v2 {
                     )
                     .await
                 }
-                1 => Self::r#destroy(client).await,
+                1 => {
+                    debug!("zwp_tablet_pad_strip_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2346,7 +2525,10 @@ pub mod tablet_v2 {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("zwp_tablet_pad_group_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2423,6 +2605,7 @@ pub mod tablet_v2 {
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => {
+                    debug!("zwp_tablet_pad_v2 -> set_feedback");
                     Self::r#set_feedback(
                         client,
                         message.uint()?,
@@ -2431,7 +2614,10 @@ pub mod tablet_v2 {
                     )
                     .await
                 }
-                1 => Self::r#destroy(client).await,
+                1 => {
+                    debug!("zwp_tablet_pad_v2 -> destroy");
+                    Self::r#destroy(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2548,13 +2734,18 @@ pub mod viewporter {
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
+    use tracing::debug;
     pub trait r#WpViewporter {
         const INTERFACE: &'static str = "wp_viewporter";
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("wp_viewporter -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("wp_viewporter -> get_viewport");
                     Self::r#get_viewport(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2578,8 +2769,12 @@ pub mod viewporter {
         const VERSION: u32 = 1;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("wp_viewport -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("wp_viewport -> set_source");
                     Self::r#set_source(
                         client,
                         message.fixed()?,
@@ -2589,7 +2784,10 @@ pub mod viewporter {
                     )
                     .await
                 }
-                2 => Self::r#set_destination(client, message.int()?, message.int()?).await,
+                2 => {
+                    debug!("wp_viewport -> set_destination");
+                    Self::r#set_destination(client, message.int()?, message.int()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2612,13 +2810,18 @@ pub mod xdg_shell {
         Client, Dispatcher, Result,
     };
     use std::{os::fd::RawFd, sync::Arc};
+    use tracing::debug;
     pub trait r#XdgWmBase {
         const INTERFACE: &'static str = "xdg_wm_base";
         const VERSION: u32 = 6;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("xdg_wm_base -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("xdg_wm_base -> create_positioner");
                     Self::r#create_positioner(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2626,6 +2829,7 @@ pub mod xdg_shell {
                     .await
                 }
                 2 => {
+                    debug!("xdg_wm_base -> get_xdg_surface");
                     Self::r#get_xdg_surface(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2633,7 +2837,10 @@ pub mod xdg_shell {
                     )
                     .await
                 }
-                3 => Self::r#pong(client, message.uint()?).await,
+                3 => {
+                    debug!("xdg_wm_base -> pong");
+                    Self::r#pong(client, message.uint()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2659,9 +2866,16 @@ pub mod xdg_shell {
         const VERSION: u32 = 6;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
-                1 => Self::r#set_size(client, message.int()?, message.int()?).await,
+                0 => {
+                    debug!("xdg_positioner -> destroy");
+                    Self::r#destroy(client).await
+                }
+                1 => {
+                    debug!("xdg_positioner -> set_size");
+                    Self::r#set_size(client, message.int()?, message.int()?).await
+                }
                 2 => {
+                    debug!("xdg_positioner -> set_anchor_rect");
                     Self::r#set_anchor_rect(
                         client,
                         message.int()?,
@@ -2671,13 +2885,34 @@ pub mod xdg_shell {
                     )
                     .await
                 }
-                3 => Self::r#set_anchor(client, message.uint()?).await,
-                4 => Self::r#set_gravity(client, message.uint()?).await,
-                5 => Self::r#set_constraint_adjustment(client, message.uint()?).await,
-                6 => Self::r#set_offset(client, message.int()?, message.int()?).await,
-                7 => Self::r#set_reactive(client).await,
-                8 => Self::r#set_parent_size(client, message.int()?, message.int()?).await,
-                9 => Self::r#set_parent_configure(client, message.uint()?).await,
+                3 => {
+                    debug!("xdg_positioner -> set_anchor");
+                    Self::r#set_anchor(client, message.uint()?).await
+                }
+                4 => {
+                    debug!("xdg_positioner -> set_gravity");
+                    Self::r#set_gravity(client, message.uint()?).await
+                }
+                5 => {
+                    debug!("xdg_positioner -> set_constraint_adjustment");
+                    Self::r#set_constraint_adjustment(client, message.uint()?).await
+                }
+                6 => {
+                    debug!("xdg_positioner -> set_offset");
+                    Self::r#set_offset(client, message.int()?, message.int()?).await
+                }
+                7 => {
+                    debug!("xdg_positioner -> set_reactive");
+                    Self::r#set_reactive(client).await
+                }
+                8 => {
+                    debug!("xdg_positioner -> set_parent_size");
+                    Self::r#set_parent_size(client, message.int()?, message.int()?).await
+                }
+                9 => {
+                    debug!("xdg_positioner -> set_parent_configure");
+                    Self::r#set_parent_configure(client, message.uint()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2711,8 +2946,12 @@ pub mod xdg_shell {
         const VERSION: u32 = 6;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("xdg_surface -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("xdg_surface -> get_toplevel");
                     Self::r#get_toplevel(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2720,6 +2959,7 @@ pub mod xdg_shell {
                     .await
                 }
                 2 => {
+                    debug!("xdg_surface -> get_popup");
                     Self::r#get_popup(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2729,6 +2969,7 @@ pub mod xdg_shell {
                     .await
                 }
                 3 => {
+                    debug!("xdg_surface -> set_window_geometry");
                     Self::r#set_window_geometry(
                         client,
                         message.int()?,
@@ -2738,7 +2979,10 @@ pub mod xdg_shell {
                     )
                     .await
                 }
-                4 => Self::r#ack_configure(client, message.uint()?).await,
+                4 => {
+                    debug!("xdg_surface -> ack_configure");
+                    Self::r#ack_configure(client, message.uint()?).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2776,9 +3020,16 @@ pub mod xdg_shell {
         const VERSION: u32 = 6;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
-                1 => Self::r#set_parent(client, message.object()?).await,
+                0 => {
+                    debug!("xdg_toplevel -> destroy");
+                    Self::r#destroy(client).await
+                }
+                1 => {
+                    debug!("xdg_toplevel -> set_parent");
+                    Self::r#set_parent(client, message.object()?).await
+                }
                 2 => {
+                    debug!("xdg_toplevel -> set_title");
                     Self::r#set_title(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2786,6 +3037,7 @@ pub mod xdg_shell {
                     .await
                 }
                 3 => {
+                    debug!("xdg_toplevel -> set_app_id");
                     Self::r#set_app_id(
                         client,
                         message.string()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2793,6 +3045,7 @@ pub mod xdg_shell {
                     .await
                 }
                 4 => {
+                    debug!("xdg_toplevel -> show_window_menu");
                     Self::r#show_window_menu(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2803,6 +3056,7 @@ pub mod xdg_shell {
                     .await
                 }
                 5 => {
+                    debug!("xdg_toplevel -> move");
                     Self::r#move(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2811,6 +3065,7 @@ pub mod xdg_shell {
                     .await
                 }
                 6 => {
+                    debug!("xdg_toplevel -> resize");
                     Self::r#resize(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2819,13 +3074,34 @@ pub mod xdg_shell {
                     )
                     .await
                 }
-                7 => Self::r#set_max_size(client, message.int()?, message.int()?).await,
-                8 => Self::r#set_min_size(client, message.int()?, message.int()?).await,
-                9 => Self::r#set_maximized(client).await,
-                10 => Self::r#unset_maximized(client).await,
-                11 => Self::r#set_fullscreen(client, message.object()?).await,
-                12 => Self::r#unset_fullscreen(client).await,
-                13 => Self::r#set_minimized(client).await,
+                7 => {
+                    debug!("xdg_toplevel -> set_max_size");
+                    Self::r#set_max_size(client, message.int()?, message.int()?).await
+                }
+                8 => {
+                    debug!("xdg_toplevel -> set_min_size");
+                    Self::r#set_min_size(client, message.int()?, message.int()?).await
+                }
+                9 => {
+                    debug!("xdg_toplevel -> set_maximized");
+                    Self::r#set_maximized(client).await
+                }
+                10 => {
+                    debug!("xdg_toplevel -> unset_maximized");
+                    Self::r#unset_maximized(client).await
+                }
+                11 => {
+                    debug!("xdg_toplevel -> set_fullscreen");
+                    Self::r#set_fullscreen(client, message.object()?).await
+                }
+                12 => {
+                    debug!("xdg_toplevel -> unset_fullscreen");
+                    Self::r#unset_fullscreen(client).await
+                }
+                13 => {
+                    debug!("xdg_toplevel -> set_minimized");
+                    Self::r#set_minimized(client).await
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -2908,8 +3184,12 @@ pub mod xdg_shell {
         const VERSION: u32 = 6;
         async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#destroy(client).await,
+                0 => {
+                    debug!("xdg_popup -> destroy");
+                    Self::r#destroy(client).await
+                }
                 1 => {
+                    debug!("xdg_popup -> grab");
                     Self::r#grab(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
@@ -2918,6 +3198,7 @@ pub mod xdg_shell {
                     .await
                 }
                 2 => {
+                    debug!("xdg_popup -> reposition");
                     Self::r#reposition(
                         client,
                         message.object()?.ok_or(DecodeError::MalformedPayload)?,
