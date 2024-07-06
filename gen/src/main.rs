@@ -269,7 +269,7 @@ fn main() -> Result<()> {
                 )?;
             }
 
-            for event in &interface.events {
+            for (opcode, event) in interface.events.iter().enumerate() {
                 let mut args = "dispatcher_id: ObjectId, client: &mut Client,".to_string();
                 let mut build_args = String::new();
 
@@ -314,7 +314,7 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"client
-                .send_message(Message::new(dispatcher_id, 0, payload))
+                .send_message(Message::new(dispatcher_id, {opcode}, payload))
                 .await
                 .map_err(Error::IoError)"#
                 )?;
