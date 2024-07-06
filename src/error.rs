@@ -4,10 +4,12 @@ use crate::message::DecodeError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("")]
+    #[error("Not found")]
+    NotFound,
+    #[error("Malformed")]
     Malformed(#[from] DecodeError),
-    #[error("")]
+    #[error("Io error")]
     IoError(#[from] io::Error),
-    #[error("")]
+    #[error("Unknown Opcode")]
     UnknownOpcode,
 }
