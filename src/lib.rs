@@ -43,9 +43,14 @@ impl Verdi {
             Ok((stream, _)) => {
                 let mut client = Client::new(stream);
 
+                let id = unsafe { ObjectId::from_raw(1) };
+
                 client.insert(
-                    unsafe { ObjectId::from_raw(1) },
-                    Box::new(DisplayInterface {}),
+                    id,
+                    Dispatcher {
+                        dipatch_fn: DisplayInterface::handle_request,
+                        id,
+                    },
                 );
 
                 Some(Ok(client))
@@ -71,7 +76,7 @@ impl Client {
         }
     }
 
-    pub fn insert(&mut self, id: ObjectId, object: Box<dyn Interface + Send + Sync>) {
+    pub fn insert(&mut self, id: ObjectId, object: Dispatcher) {
         self.store.insert(id, object)
     }
 
@@ -92,7 +97,7 @@ impl Client {
 
 #[derive(Debug)]
 struct Store {
-    objects: HashMap<ObjectId, Arc<Box<dyn Interface + Send + Sync>>>,
+    objects: HashMap<ObjectId, Arc<Dispatcher>>,
 }
 
 impl Store {
@@ -102,27 +107,27 @@ impl Store {
         }
     }
     // FIXME: handle possible error if id already exists
-    fn insert(&mut self, id: ObjectId, object: Box<dyn Interface + Send + Sync>) {
+    fn insert(&mut self, id: ObjectId, object: Dispatcher) {
         self.objects.insert(id, Arc::new(object));
     }
 
-    fn get(&self, id: &ObjectId) -> Option<Arc<Box<dyn Interface + Send + Sync>>> {
+    fn get(&self, id: &ObjectId) -> Option<Arc<Dispatcher>> {
         self.objects.get(id).map(|id| id.clone())
     }
 }
 
-pub trait Interface: std::fmt::Debug {
-    fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
-}
+// pub trait Interface: std::fmt::Debug {
+//     fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
+// }
 
 #[derive(Debug)]
 pub struct DisplayInterface {}
 
-impl Interface for DisplayInterface {
-    fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        <Self as WlDisplay>::handle_request(client, message)
-    }
-}
+// impl Interface for DisplayInterface {
+//     fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+//         <Self as WlDisplay>::handle_request(client, message)
+//     }
+// }
 
 impl WlDisplay for DisplayInterface {
     fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
@@ -133,5 +138,17 @@ impl WlDisplay for DisplayInterface {
     fn get_registry(_client: &mut Client, _registry: ObjectId) -> Result<()> {
         debug!("Handling get_registry");
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct Dispatcher {
+    dipatch_fn: fn(&mut Client, &mut Message) -> Result<()>,
+    id: ObjectId,
+}
+
+impl Dispatcher {
+    pub fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        (self.dipatch_fn)(client, message)
     }
 }
