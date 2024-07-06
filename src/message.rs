@@ -127,10 +127,6 @@ impl Message {
     }
 
     pub fn array(&mut self) -> Result<Vec<u8>, DecodeError> {
-        if self.payload.remaining() < 4 {
-            return Err(DecodeError::MalformedPayload);
-        }
-
         let len = self.uint()? as usize;
 
         if len == 0 {
