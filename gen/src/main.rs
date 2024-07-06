@@ -198,7 +198,7 @@ fn main() -> Result<()> {
         writeln!(
             &mut generated_path,
             r#"pub mod {name} {{
-                use crate::{{Result, message::{{Message,Fixed,ObjectId,NewId,DecodeError}}, error::Error, Client}};
+                use crate::{{Result, Dispatcher, message::{{Message,Fixed,ObjectId,NewId,DecodeError}}, error::Error, Client}};
                 use std::os::fd::RawFd;"#,
             name = &protocol.name
         )?;
@@ -236,6 +236,16 @@ fn main() -> Result<()> {
             }
 
             writeln!(&mut generated_path, "_ => Err(Error::UnknownOpcode) }} }}")?;
+
+            writeln!(
+                &mut generated_path,
+                r#"fn create_dispatcher(id: ObjectId) -> Dispatcher {{
+                    Dispatcher {{
+                        dipatch_fn: Self::handle_request,
+                        id,
+                    }}
+                }}"#
+            )?;
 
             for request in &interface.requests {
                 let mut args = "client: &mut Client,".to_string();
@@ -276,7 +286,7 @@ fn main() -> Result<()> {
                     name = event.name.to_snek_case()
                 )?;
 
-                writeln!(&mut generated_path, "todo!()");
+                writeln!(&mut generated_path, "todo!()")?;
 
                 writeln!(&mut generated_path, "}}")?;
             }

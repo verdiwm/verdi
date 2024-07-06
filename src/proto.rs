@@ -3,7 +3,7 @@ pub mod wayland {
     use crate::{
         error::Error,
         message::{DecodeError, Fixed, Message, NewId, ObjectId},
-        Client, Result,
+        Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#WlDisplay {
@@ -18,6 +18,12 @@ pub mod wayland {
                     message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#sync(client: &mut Client, r#callback: ObjectId) -> Result<()>;
@@ -41,6 +47,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#bind(client: &mut Client, r#name: u32, r#id: NewId) -> Result<()>;
         fn r#global(
             client: &mut Client,
@@ -58,6 +70,12 @@ pub mod wayland {
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#done(client: &mut Client, r#callback_data: u32) -> Result<()> {
@@ -78,6 +96,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#create_surface(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#create_region(client: &mut Client, r#id: ObjectId) -> Result<()>;
     }
@@ -96,6 +120,12 @@ pub mod wayland {
                 1 => Self::r#destroy(client),
                 2 => Self::r#resize(client, message.int()?),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#create_buffer(
@@ -123,6 +153,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#create_pool(
             client: &mut Client,
             r#id: ObjectId,
@@ -139,6 +175,12 @@ pub mod wayland {
             match message.opcode {
                 0 => Self::r#destroy(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -159,6 +201,12 @@ pub mod wayland {
                 3 => Self::r#finish(client),
                 4 => Self::r#set_actions(client, message.uint()?, message.uint()?),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#accept(client: &mut Client, r#serial: u32, r#mime_type: Option<String>) -> Result<()>;
@@ -190,6 +238,12 @@ pub mod wayland {
                 1 => Self::r#destroy(client),
                 2 => Self::r#set_actions(client, message.uint()?),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#offer(client: &mut Client, r#mime_type: String) -> Result<()>;
@@ -227,6 +281,12 @@ pub mod wayland {
                 1 => Self::r#set_selection(client, message.object()?, message.uint()?),
                 2 => Self::r#release(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#start_drag(
@@ -283,6 +343,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#create_data_source(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#get_data_device(client: &mut Client, r#id: ObjectId, r#seat: ObjectId) -> Result<()>;
     }
@@ -295,6 +361,12 @@ pub mod wayland {
                     message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#get_shell_surface(
@@ -351,6 +423,12 @@ pub mod wayland {
                     message.string()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#pong(client: &mut Client, r#serial: u32) -> Result<()>;
@@ -434,6 +512,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#attach(
             client: &mut Client,
@@ -494,6 +578,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#get_pointer(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#get_keyboard(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#get_touch(client: &mut Client, r#id: ObjectId) -> Result<()>;
@@ -517,6 +607,12 @@ pub mod wayland {
                 ),
                 1 => Self::r#release(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#set_cursor(
@@ -589,6 +685,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#release(client: &mut Client) -> Result<()>;
         fn r#keymap(client: &mut Client, r#format: u32, r#fd: RawFd, r#size: u32) -> Result<()> {
             todo!()
@@ -634,6 +736,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#release(client: &mut Client) -> Result<()>;
         fn r#down(
             client: &mut Client,
@@ -676,6 +784,12 @@ pub mod wayland {
             match message.opcode {
                 0 => Self::r#release(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#release(client: &mut Client) -> Result<()>;
@@ -735,6 +849,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#add(
             client: &mut Client,
@@ -764,6 +884,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#get_subsurface(
             client: &mut Client,
@@ -790,6 +916,12 @@ pub mod wayland {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#set_position(client: &mut Client, r#x: i32, r#y: i32) -> Result<()>;
         fn r#place_above(client: &mut Client, r#sibling: ObjectId) -> Result<()>;
@@ -802,7 +934,7 @@ pub mod linux_dmabuf_v1 {
     use crate::{
         error::Error,
         message::{DecodeError, Fixed, Message, NewId, ObjectId},
-        Client, Result,
+        Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#ZwpLinuxDmabufV1 {
@@ -823,6 +955,12 @@ pub mod linux_dmabuf_v1 {
                     message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -876,6 +1014,12 @@ pub mod linux_dmabuf_v1 {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#add(
             client: &mut Client,
@@ -915,6 +1059,12 @@ pub mod linux_dmabuf_v1 {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#done(client: &mut Client) -> Result<()> {
             todo!()
@@ -943,7 +1093,7 @@ pub mod presentation_time {
     use crate::{
         error::Error,
         message::{DecodeError, Fixed, Message, NewId, ObjectId},
-        Client, Result,
+        Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#WpPresentation {
@@ -958,6 +1108,12 @@ pub mod presentation_time {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#feedback(client: &mut Client, r#surface: ObjectId, r#callback: ObjectId)
             -> Result<()>;
@@ -969,6 +1125,12 @@ pub mod presentation_time {
         fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#sync_output(client: &mut Client, r#output: ObjectId) -> Result<()> {
@@ -995,7 +1157,7 @@ pub mod tablet_v2 {
     use crate::{
         error::Error,
         message::{DecodeError, Fixed, Message, NewId, ObjectId},
-        Client, Result,
+        Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#ZwpTabletManagerV2 {
@@ -1010,6 +1172,12 @@ pub mod tablet_v2 {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#get_tablet_seat(
             client: &mut Client,
             r#tablet_seat: ObjectId,
@@ -1022,6 +1190,12 @@ pub mod tablet_v2 {
             match message.opcode {
                 0 => Self::r#destroy(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -1047,6 +1221,12 @@ pub mod tablet_v2 {
                 ),
                 1 => Self::r#destroy(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#set_cursor(
@@ -1135,6 +1315,12 @@ pub mod tablet_v2 {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#name(client: &mut Client, r#name: String) -> Result<()> {
             todo!()
@@ -1164,6 +1350,12 @@ pub mod tablet_v2 {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#set_feedback(client: &mut Client, r#description: String, r#serial: u32) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#source(client: &mut Client, r#source: u32) -> Result<()> {
@@ -1191,6 +1383,12 @@ pub mod tablet_v2 {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#set_feedback(client: &mut Client, r#description: String, r#serial: u32) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#source(client: &mut Client, r#source: u32) -> Result<()> {
@@ -1211,6 +1409,12 @@ pub mod tablet_v2 {
             match message.opcode {
                 0 => Self::r#destroy(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -1249,6 +1453,12 @@ pub mod tablet_v2 {
                 ),
                 1 => Self::r#destroy(client),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#set_feedback(
@@ -1293,7 +1503,7 @@ pub mod viewporter {
     use crate::{
         error::Error,
         message::{DecodeError, Fixed, Message, NewId, ObjectId},
-        Client, Result,
+        Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#WpViewporter {
@@ -1306,6 +1516,12 @@ pub mod viewporter {
                     message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -1326,6 +1542,12 @@ pub mod viewporter {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#set_source(
             client: &mut Client,
@@ -1341,7 +1563,7 @@ pub mod xdg_shell {
     use crate::{
         error::Error,
         message::{DecodeError, Fixed, Message, NewId, ObjectId},
-        Client, Result,
+        Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#XdgWmBase {
@@ -1359,6 +1581,12 @@ pub mod xdg_shell {
                 ),
                 3 => Self::r#pong(client, message.uint()?),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -1393,6 +1621,12 @@ pub mod xdg_shell {
                 8 => Self::r#set_parent_size(client, message.int()?, message.int()?),
                 9 => Self::r#set_parent_configure(client, message.uint()?),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -1442,6 +1676,12 @@ pub mod xdg_shell {
                 ),
                 4 => Self::r#ack_configure(client, message.uint()?),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
@@ -1505,6 +1745,12 @@ pub mod xdg_shell {
                 _ => Err(Error::UnknownOpcode),
             }
         }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
+            }
+        }
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#set_parent(client: &mut Client, r#parent: Option<ObjectId>) -> Result<()>;
         fn r#set_title(client: &mut Client, r#title: String) -> Result<()>;
@@ -1563,6 +1809,12 @@ pub mod xdg_shell {
                     message.uint()?,
                 ),
                 _ => Err(Error::UnknownOpcode),
+            }
+        }
+        fn create_dispatcher(id: ObjectId) -> Dispatcher {
+            Dispatcher {
+                dipatch_fn: Self::handle_request,
+                id,
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
