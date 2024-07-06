@@ -209,15 +209,6 @@ fn main() -> Result<()> {
         )?;
 
         for interface in protocol.interfaces {
-            // writeln!(
-            //     &mut generated_path,
-            //     r#"pub mod {name} {{
-            //                 use crate::{{Result, Dispatcher, wire::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
-            //     use std::{{os::fd::RawFd,sync::Arc}};
-            //     use tracing::debug;"#,
-            //     name = interface.name
-            // )?;
-
             writeln!(
                 &mut generated_path,
                 "pub mod {name} {{",
@@ -225,9 +216,37 @@ fn main() -> Result<()> {
             )?;
 
             for enu in interface.enums {
+                let mut variants = String::new();
+
+                for entry in enu.entries {
+                    let mut prefix = "";
+
+                    if entry.name.chars().next().unwrap().is_numeric() {
+                        prefix = "_"
+                    }
+
+                    if let Some(description) = entry.description {
+                        for line in description.lines() {
+                            writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+                        }
+                    }
+
+                    variants.push_str(&format!(
+                        "r#{prefix}{name},",
+                        name = entry.name.to_upper_camel_case()
+                    ))
+                }
+
+                if let Some(description) = enu.description {
+                    for line in description.lines() {
+                        writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+                    }
+                }
+
                 writeln!(
                     &mut generated_path,
-                    "enum r#{name} {{}}",
+                    r#"#[repr(u32)]
+                    pub enum r#{name} {{{variants}}}"#,
                     name = enu.name.to_upper_camel_case()
                 )?;
             }
