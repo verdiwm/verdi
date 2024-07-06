@@ -2,7 +2,15 @@
 #![allow(async_fn_in_trait)]
 pub mod wayland {
     pub mod wl_display {
-        enum r#Error {}
+        #[doc = r#"These errors are global and can be emitted in response to any"#]
+        #[doc = r#"server request."#]
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidObject,
+            r#InvalidMethod,
+            r#NoMemory,
+            r#Implementation,
+        }
         #[doc = r#"The core global object.  This is a special singleton object.  It"#]
         #[doc = r#"is used for internal Wayland protocol features."#]
         pub trait r#WlDisplay {
@@ -376,8 +384,151 @@ pub mod wayland {
         }
     }
     pub mod wl_shm {
-        enum r#Error {}
-        enum r#Format {}
+        #[doc = r#"These errors can be emitted in response to wl_shm requests."#]
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidFormat,
+            r#InvalidStride,
+            r#InvalidFd,
+        }
+        #[doc = r#"This describes the memory layout of an individual pixel."#]
+        #[doc = r#""#]
+        #[doc = r#"All renderers should support argb8888 and xrgb8888 but any other"#]
+        #[doc = r#"formats are optional and may not be supported by the particular"#]
+        #[doc = r#"renderer in use."#]
+        #[doc = r#""#]
+        #[doc = r#"The drm format codes match the macros defined in drm_fourcc.h, except"#]
+        #[doc = r#"argb8888 and xrgb8888. The formats actually supported by the compositor"#]
+        #[doc = r#"will be reported by the format event."#]
+        #[doc = r#""#]
+        #[doc = r#"For all wl_shm formats and unless specified in another protocol"#]
+        #[doc = r#"extension, pre-multiplied alpha is used for pixel values."#]
+        #[repr(u32)]
+        pub enum r#Format {
+            r#Argb8888,
+            r#Xrgb8888,
+            r#C8,
+            r#Rgb332,
+            r#Bgr233,
+            r#Xrgb4444,
+            r#Xbgr4444,
+            r#Rgbx4444,
+            r#Bgrx4444,
+            r#Argb4444,
+            r#Abgr4444,
+            r#Rgba4444,
+            r#Bgra4444,
+            r#Xrgb1555,
+            r#Xbgr1555,
+            r#Rgbx5551,
+            r#Bgrx5551,
+            r#Argb1555,
+            r#Abgr1555,
+            r#Rgba5551,
+            r#Bgra5551,
+            r#Rgb565,
+            r#Bgr565,
+            r#Rgb888,
+            r#Bgr888,
+            r#Xbgr8888,
+            r#Rgbx8888,
+            r#Bgrx8888,
+            r#Abgr8888,
+            r#Rgba8888,
+            r#Bgra8888,
+            r#Xrgb2101010,
+            r#Xbgr2101010,
+            r#Rgbx1010102,
+            r#Bgrx1010102,
+            r#Argb2101010,
+            r#Abgr2101010,
+            r#Rgba1010102,
+            r#Bgra1010102,
+            r#Yuyv,
+            r#Yvyu,
+            r#Uyvy,
+            r#Vyuy,
+            r#Ayuv,
+            r#Nv12,
+            r#Nv21,
+            r#Nv16,
+            r#Nv61,
+            r#Yuv410,
+            r#Yvu410,
+            r#Yuv411,
+            r#Yvu411,
+            r#Yuv420,
+            r#Yvu420,
+            r#Yuv422,
+            r#Yvu422,
+            r#Yuv444,
+            r#Yvu444,
+            r#R8,
+            r#R16,
+            r#Rg88,
+            r#Gr88,
+            r#Rg1616,
+            r#Gr1616,
+            r#Xrgb16161616f,
+            r#Xbgr16161616f,
+            r#Argb16161616f,
+            r#Abgr16161616f,
+            r#Xyuv8888,
+            r#Vuy888,
+            r#Vuy101010,
+            r#Y210,
+            r#Y212,
+            r#Y216,
+            r#Y410,
+            r#Y412,
+            r#Y416,
+            r#Xvyu2101010,
+            r#Xvyu1216161616,
+            r#Xvyu16161616,
+            r#Y0l0,
+            r#X0l0,
+            r#Y0l2,
+            r#X0l2,
+            r#Yuv4208bit,
+            r#Yuv42010bit,
+            r#Xrgb8888A8,
+            r#Xbgr8888A8,
+            r#Rgbx8888A8,
+            r#Bgrx8888A8,
+            r#Rgb888A8,
+            r#Bgr888A8,
+            r#Rgb565A8,
+            r#Bgr565A8,
+            r#Nv24,
+            r#Nv42,
+            r#P210,
+            r#P010,
+            r#P012,
+            r#P016,
+            r#Axbxgxrx106106106106,
+            r#Nv15,
+            r#Q410,
+            r#Q401,
+            r#Xrgb16161616,
+            r#Xbgr16161616,
+            r#Argb16161616,
+            r#Abgr16161616,
+            r#C1,
+            r#C2,
+            r#C4,
+            r#D1,
+            r#D2,
+            r#D4,
+            r#D8,
+            r#R1,
+            r#R2,
+            r#R4,
+            r#R10,
+            r#R12,
+            r#Avuy8888,
+            r#Xvuy8888,
+            r#P030,
+        }
         #[doc = r#"A singleton global object that provides support for shared"#]
         #[doc = r#"memory."#]
         #[doc = r#""#]
@@ -515,7 +666,13 @@ pub mod wayland {
         }
     }
     pub mod wl_data_offer {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidFinish,
+            r#InvalidActionMask,
+            r#InvalidAction,
+            r#InvalidOffer,
+        }
         #[doc = r#"A wl_data_offer represents a piece of data offered for transfer"#]
         #[doc = r#"by another client (the source client).  It is used by the"#]
         #[doc = r#"copy-and-paste and drag-and-drop mechanisms.  The offer"#]
@@ -741,7 +898,11 @@ pub mod wayland {
         }
     }
     pub mod wl_data_source {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidActionMask,
+            r#InvalidSource,
+        }
         #[doc = r#"The wl_data_source object is the source side of a wl_data_offer."#]
         #[doc = r#"It is created by the source client in a data transfer and"#]
         #[doc = r#"provides a way to describe the offered data and a way to respond"#]
@@ -948,7 +1109,11 @@ pub mod wayland {
         }
     }
     pub mod wl_data_device {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#Role,
+            r#UsedSource,
+        }
         #[doc = r#"There is one wl_data_device per seat which can be obtained"#]
         #[doc = r#"from the global wl_data_device_manager singleton."#]
         #[doc = r#""#]
@@ -1174,7 +1339,36 @@ pub mod wayland {
         }
     }
     pub mod wl_data_device_manager {
-        enum r#DndAction {}
+        #[doc = r#"This is a bitmask of the available/preferred actions in a"#]
+        #[doc = r#"drag-and-drop operation."#]
+        #[doc = r#""#]
+        #[doc = r#"In the compositor, the selected action is a result of matching the"#]
+        #[doc = r#"actions offered by the source and destination sides.  "action" events"#]
+        #[doc = r#"with a "none" action will be sent to both source and destination if"#]
+        #[doc = r#"there is no match. All further checks will effectively happen on"#]
+        #[doc = r#"(source actions ∩ destination actions)."#]
+        #[doc = r#""#]
+        #[doc = r#"In addition, compositors may also pick different actions in"#]
+        #[doc = r#"reaction to key modifiers being pressed. One common design that"#]
+        #[doc = r#"is used in major toolkits (and the behavior recommended for"#]
+        #[doc = r#"compositors) is:"#]
+        #[doc = r#""#]
+        #[doc = r#"- If no modifiers are pressed, the first match (in bit order)"#]
+        #[doc = r#"will be used."#]
+        #[doc = r#"- Pressing Shift selects "move", if enabled in the mask."#]
+        #[doc = r#"- Pressing Control selects "copy", if enabled in the mask."#]
+        #[doc = r#""#]
+        #[doc = r#"Behavior beyond that is considered implementation-dependent."#]
+        #[doc = r#"Compositors may for example bind other modifiers (like Alt/Meta)"#]
+        #[doc = r#"or drags initiated with other buttons than BTN_LEFT to specific"#]
+        #[doc = r#"actions (e.g. "ask")."#]
+        #[repr(u32)]
+        pub enum r#DndAction {
+            r#None,
+            r#Copy,
+            r#Move,
+            r#Ask,
+        }
         #[doc = r#"The wl_data_device_manager is a singleton global object that"#]
         #[doc = r#"provides access to inter-client data transfer mechanisms such as"#]
         #[doc = r#"copy-and-paste and drag-and-drop.  These mechanisms are tied to"#]
@@ -1236,7 +1430,10 @@ pub mod wayland {
         }
     }
     pub mod wl_shell {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#Role,
+        }
         #[doc = r#"This interface is implemented by servers that provide"#]
         #[doc = r#"desktop-style user interfaces."#]
         #[doc = r#""#]
@@ -1286,9 +1483,38 @@ pub mod wayland {
         }
     }
     pub mod wl_shell_surface {
-        enum r#Resize {}
-        enum r#Transient {}
-        enum r#FullscreenMethod {}
+        #[doc = r#"These values are used to indicate which edge of a surface"#]
+        #[doc = r#"is being dragged in a resize operation. The server may"#]
+        #[doc = r#"use this information to adapt its behavior, e.g. choose"#]
+        #[doc = r#"an appropriate cursor image."#]
+        #[repr(u32)]
+        pub enum r#Resize {
+            r#None,
+            r#Top,
+            r#Bottom,
+            r#Left,
+            r#TopLeft,
+            r#BottomLeft,
+            r#Right,
+            r#TopRight,
+            r#BottomRight,
+        }
+        #[doc = r#"These flags specify details of the expected behaviour"#]
+        #[doc = r#"of transient surfaces. Used in the set_transient request."#]
+        #[repr(u32)]
+        pub enum r#Transient {
+            r#Inactive,
+        }
+        #[doc = r#"Hints to indicate to the compositor how to deal with a conflict"#]
+        #[doc = r#"between the dimensions of the surface and the dimensions of the"#]
+        #[doc = r#"output. The compositor is free to ignore this parameter."#]
+        #[repr(u32)]
+        pub enum r#FullscreenMethod {
+            r#Default,
+            r#Scale,
+            r#Driver,
+            r#Fill,
+        }
         #[doc = r#"An interface that may be implemented by a wl_surface, for"#]
         #[doc = r#"implementations that provide a desktop-style user interface."#]
         #[doc = r#""#]
@@ -1621,7 +1847,15 @@ pub mod wayland {
         }
     }
     pub mod wl_surface {
-        enum r#Error {}
+        #[doc = r#"These errors can be emitted in response to wl_surface requests."#]
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidScale,
+            r#InvalidTransform,
+            r#InvalidSize,
+            r#InvalidOffset,
+            r#DefunctRoleObject,
+        }
         #[doc = r#"A surface is a rectangular area that may be displayed on zero"#]
         #[doc = r#"or more outputs, and shown any number of times at the compositor's"#]
         #[doc = r#"discretion. They can present wl_buffers, receive user input, and"#]
@@ -2159,8 +2393,19 @@ pub mod wayland {
         }
     }
     pub mod wl_seat {
-        enum r#Capability {}
-        enum r#Error {}
+        #[doc = r#"This is a bitmask of capabilities this seat has; if a member is"#]
+        #[doc = r#"set, then it is present on the seat."#]
+        #[repr(u32)]
+        pub enum r#Capability {
+            r#Pointer,
+            r#Keyboard,
+            r#Touch,
+        }
+        #[doc = r#"These errors can be emitted in response to wl_seat requests."#]
+        #[repr(u32)]
+        pub enum r#Error {
+            r#MissingCapability,
+        }
         #[doc = r#"A seat is a group of keyboards, pointer and touch devices. This"#]
         #[doc = r#"object is published as a global during start up, or when such a"#]
         #[doc = r#"device is hot plugged.  A seat typically has a pointer and"#]
@@ -2323,11 +2568,53 @@ pub mod wayland {
         }
     }
     pub mod wl_pointer {
-        enum r#Error {}
-        enum r#ButtonState {}
-        enum r#Axis {}
-        enum r#AxisSource {}
-        enum r#AxisRelativeDirection {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#Role,
+        }
+        #[doc = r#"Describes the physical state of a button that produced the button"#]
+        #[doc = r#"event."#]
+        #[repr(u32)]
+        pub enum r#ButtonState {
+            r#Released,
+            r#Pressed,
+        }
+        #[doc = r#"Describes the axis types of scroll events."#]
+        #[repr(u32)]
+        pub enum r#Axis {
+            r#VerticalScroll,
+            r#HorizontalScroll,
+        }
+        #[doc = r#"Describes the source types for axis events. This indicates to the"#]
+        #[doc = r#"client how an axis event was physically generated; a client may"#]
+        #[doc = r#"adjust the user interface accordingly. For example, scroll events"#]
+        #[doc = r#"from a "finger" source may be in a smooth coordinate space with"#]
+        #[doc = r#"kinetic scrolling whereas a "wheel" source may be in discrete steps"#]
+        #[doc = r#"of a number of lines."#]
+        #[doc = r#""#]
+        #[doc = r#"The "continuous" axis source is a device generating events in a"#]
+        #[doc = r#"continuous coordinate space, but using something other than a"#]
+        #[doc = r#"finger. One example for this source is button-based scrolling where"#]
+        #[doc = r#"the vertical motion of a device is converted to scroll events while"#]
+        #[doc = r#"a button is held down."#]
+        #[doc = r#""#]
+        #[doc = r#"The "wheel tilt" axis source indicates that the actual device is a"#]
+        #[doc = r#"wheel but the scroll event is not caused by a rotation but a"#]
+        #[doc = r#"(usually sideways) tilt of the wheel."#]
+        #[repr(u32)]
+        pub enum r#AxisSource {
+            r#Wheel,
+            r#Finger,
+            r#Continuous,
+            r#WheelTilt,
+        }
+        #[doc = r#"This specifies the direction of the physical motion that caused a"#]
+        #[doc = r#"wl_pointer.axis event, relative to the wl_pointer.axis direction."#]
+        #[repr(u32)]
+        pub enum r#AxisRelativeDirection {
+            r#Identical,
+            r#Inverted,
+        }
         #[doc = r#"The wl_pointer interface represents one or more input devices,"#]
         #[doc = r#"such as mice, which control the pointer location and pointer_focus"#]
         #[doc = r#"of a seat."#]
@@ -2798,8 +3085,19 @@ pub mod wayland {
         }
     }
     pub mod wl_keyboard {
-        enum r#KeymapFormat {}
-        enum r#KeyState {}
+        #[doc = r#"This specifies the format of the keymap provided to the"#]
+        #[doc = r#"client with the wl_keyboard.keymap event."#]
+        #[repr(u32)]
+        pub enum r#KeymapFormat {
+            r#NoKeymap,
+            r#XkbV1,
+        }
+        #[doc = r#"Describes the physical state of a key that produced the key event."#]
+        #[repr(u32)]
+        pub enum r#KeyState {
+            r#Released,
+            r#Pressed,
+        }
         #[doc = r#"The wl_keyboard interface represents one or more keyboards"#]
         #[doc = r#"associated with a seat."#]
         #[doc = r#""#]
@@ -3233,9 +3531,45 @@ pub mod wayland {
         }
     }
     pub mod wl_output {
-        enum r#Subpixel {}
-        enum r#Transform {}
-        enum r#Mode {}
+        #[doc = r#"This enumeration describes how the physical"#]
+        #[doc = r#"pixels on an output are laid out."#]
+        #[repr(u32)]
+        pub enum r#Subpixel {
+            r#Unknown,
+            r#None,
+            r#HorizontalRgb,
+            r#HorizontalBgr,
+            r#VerticalRgb,
+            r#VerticalBgr,
+        }
+        #[doc = r#"This describes transformations that clients and compositors apply to"#]
+        #[doc = r#"buffer contents."#]
+        #[doc = r#""#]
+        #[doc = r#"The flipped values correspond to an initial flip around a"#]
+        #[doc = r#"vertical axis followed by rotation."#]
+        #[doc = r#""#]
+        #[doc = r#"The purpose is mainly to allow clients to render accordingly and"#]
+        #[doc = r#"tell the compositor, so that for fullscreen surfaces, the"#]
+        #[doc = r#"compositor will still be able to scan out directly from client"#]
+        #[doc = r#"surfaces."#]
+        #[repr(u32)]
+        pub enum r#Transform {
+            r#Normal,
+            r#_90,
+            r#_180,
+            r#_270,
+            r#Flipped,
+            r#Flipped90,
+            r#Flipped180,
+            r#Flipped270,
+        }
+        #[doc = r#"These flags describe properties of an output mode."#]
+        #[doc = r#"They are used in the flags bitfield of the mode event."#]
+        #[repr(u32)]
+        pub enum r#Mode {
+            r#Current,
+            r#Preferred,
+        }
         #[doc = r#"An output describes part of the compositor geometry.  The"#]
         #[doc = r#"compositor works in the 'compositor coordinate system' and an"#]
         #[doc = r#"output corresponds to a rectangular area in that space that is"#]
@@ -3548,7 +3882,11 @@ pub mod wayland {
         }
     }
     pub mod wl_subcompositor {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#BadSurface,
+            r#BadParent,
+        }
         #[doc = r#"The global interface exposing sub-surface compositing capabilities."#]
         #[doc = r#"A wl_surface, that has sub-surfaces associated, is called the"#]
         #[doc = r#"parent surface. Sub-surfaces can be arbitrarily nested and create"#]
@@ -3634,7 +3972,10 @@ pub mod wayland {
         }
     }
     pub mod wl_subsurface {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#BadSurface,
+        }
         #[doc = r#"An additional interface to a wl_surface object, which has been"#]
         #[doc = r#"made a sub-surface. A sub-surface has one parent surface. A"#]
         #[doc = r#"sub-surface's size and position are not limited to that of the parent."#]
@@ -4035,8 +4376,23 @@ pub mod linux_dmabuf_v1 {
         }
     }
     pub mod zwp_linux_buffer_params_v1 {
-        enum r#Error {}
-        enum r#Flags {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#AlreadyUsed,
+            r#PlaneIdx,
+            r#PlaneSet,
+            r#Incomplete,
+            r#InvalidFormat,
+            r#InvalidDimensions,
+            r#OutOfBounds,
+            r#InvalidWlBuffer,
+        }
+        #[repr(u32)]
+        pub enum r#Flags {
+            r#YInvert,
+            r#Interlaced,
+            r#BottomFirst,
+        }
         #[doc = r#"This temporary object is a collection of dmabufs and other"#]
         #[doc = r#"parameters that together form a single logical buffer. The temporary"#]
         #[doc = r#"object may eventually create one wl_buffer unless cancelled by"#]
@@ -4274,7 +4630,10 @@ pub mod linux_dmabuf_v1 {
         }
     }
     pub mod zwp_linux_dmabuf_feedback_v1 {
-        enum r#TrancheFlags {}
+        #[repr(u32)]
+        pub enum r#TrancheFlags {
+            r#Scanout,
+        }
         #[doc = r#"This object advertises dmabuf parameters feedback. This includes the"#]
         #[doc = r#"preferred devices and the supported formats/modifiers."#]
         #[doc = r#""#]
@@ -4518,7 +4877,13 @@ pub mod linux_dmabuf_v1 {
 }
 pub mod presentation_time {
     pub mod wp_presentation {
-        enum r#Error {}
+        #[doc = r#"These fatal protocol errors may be emitted in response to"#]
+        #[doc = r#"illegal presentation requests."#]
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidTimestamp,
+            r#InvalidFlag,
+        }
         #[doc = r#"The main feature of this interface is accurate presentation"#]
         #[doc = r#"timing feedback to ensure smooth video playback while maintaining"#]
         #[doc = r#"audio/video synchronization. Some features use the concept of a"#]
@@ -4629,7 +4994,36 @@ pub mod presentation_time {
         }
     }
     pub mod wp_presentation_feedback {
-        enum r#Kind {}
+        #[doc = r#"The presentation was synchronized to the "vertical retrace" by"#]
+        #[doc = r#"the display hardware such that tearing does not happen."#]
+        #[doc = r#"Relying on software scheduling is not acceptable for this"#]
+        #[doc = r#"flag. If presentation is done by a copy to the active"#]
+        #[doc = r#"frontbuffer, then it must guarantee that tearing cannot"#]
+        #[doc = r#"happen."#]
+        #[doc = r#"The display hardware provided measurements that the hardware"#]
+        #[doc = r#"driver converted into a presentation timestamp. Sampling a"#]
+        #[doc = r#"clock in software is not acceptable for this flag."#]
+        #[doc = r#"The display hardware signalled that it started using the new"#]
+        #[doc = r#"image content. The opposite of this is e.g. a timer being used"#]
+        #[doc = r#"to guess when the display hardware has switched to the new"#]
+        #[doc = r#"image content."#]
+        #[doc = r#"The presentation of this update was done zero-copy. This means"#]
+        #[doc = r#"the buffer from the client was given to display hardware as"#]
+        #[doc = r#"is, without copying it. Compositing with OpenGL counts as"#]
+        #[doc = r#"copying, even if textured directly from the client buffer."#]
+        #[doc = r#"Possible zero-copy cases include direct scanout of a"#]
+        #[doc = r#"fullscreen surface and a surface on a hardware overlay."#]
+        #[doc = r#"These flags provide information about how the presentation of"#]
+        #[doc = r#"the related content update was done. The intent is to help"#]
+        #[doc = r#"clients assess the reliability of the feedback and the visual"#]
+        #[doc = r#"quality with respect to possible tearing and timings."#]
+        #[repr(u32)]
+        pub enum r#Kind {
+            r#Vsync,
+            r#HwClock,
+            r#HwCompletion,
+            r#ZeroCopy,
+        }
         #[doc = r#"A presentation_feedback object returns an indication that a"#]
         #[doc = r#"wl_surface content update has become visible to the user."#]
         #[doc = r#"One object corresponds to one content update submission"#]
@@ -4971,10 +5365,49 @@ pub mod tablet_v2 {
         }
     }
     pub mod zwp_tablet_tool_v2 {
-        enum r#Type {}
-        enum r#Capability {}
-        enum r#ButtonState {}
-        enum r#Error {}
+        #[doc = r#"Describes the physical type of a tool. The physical type of a tool"#]
+        #[doc = r#"generally defines its base usage."#]
+        #[doc = r#""#]
+        #[doc = r#"The mouse tool represents a mouse-shaped tool that is not a relative"#]
+        #[doc = r#"device but bound to the tablet's surface, providing absolute"#]
+        #[doc = r#"coordinates."#]
+        #[doc = r#""#]
+        #[doc = r#"The lens tool is a mouse-shaped tool with an attached lens to"#]
+        #[doc = r#"provide precision focus."#]
+        #[repr(u32)]
+        pub enum r#Type {
+            r#Pen,
+            r#Eraser,
+            r#Brush,
+            r#Pencil,
+            r#Airbrush,
+            r#Finger,
+            r#Mouse,
+            r#Lens,
+        }
+        #[doc = r#"Describes extra capabilities on a tablet."#]
+        #[doc = r#""#]
+        #[doc = r#"Any tool must provide x and y values, extra axes are"#]
+        #[doc = r#"device-specific."#]
+        #[repr(u32)]
+        pub enum r#Capability {
+            r#Tilt,
+            r#Pressure,
+            r#Distance,
+            r#Rotation,
+            r#Slider,
+            r#Wheel,
+        }
+        #[doc = r#"Describes the physical state of a button that produced the button event."#]
+        #[repr(u32)]
+        pub enum r#ButtonState {
+            r#Released,
+            r#Pressed,
+        }
+        #[repr(u32)]
+        pub enum r#Error {
+            r#Role,
+        }
         #[doc = r#"An object that represents a physical tool that has been, or is"#]
         #[doc = r#"currently in use with a tablet in this seat. Each wp_tablet_tool"#]
         #[doc = r#"object stays valid until the client destroys it; the compositor"#]
@@ -5613,7 +6046,14 @@ pub mod tablet_v2 {
         }
     }
     pub mod zwp_tablet_pad_ring_v2 {
-        enum r#Source {}
+        #[doc = r#"Describes the source types for ring events. This indicates to the"#]
+        #[doc = r#"client how a ring event was physically generated; a client may"#]
+        #[doc = r#"adjust the user interface accordingly. For example, events"#]
+        #[doc = r#"from a "finger" source may trigger kinetic scrolling."#]
+        #[repr(u32)]
+        pub enum r#Source {
+            r#Finger,
+        }
         #[doc = r#"A circular interaction area, such as the touch ring on the Wacom Intuos"#]
         #[doc = r#"Pro series tablets."#]
         #[doc = r#""#]
@@ -5765,7 +6205,14 @@ pub mod tablet_v2 {
         }
     }
     pub mod zwp_tablet_pad_strip_v2 {
-        enum r#Source {}
+        #[doc = r#"Describes the source types for strip events. This indicates to the"#]
+        #[doc = r#"client how a strip event was physically generated; a client may"#]
+        #[doc = r#"adjust the user interface accordingly. For example, events"#]
+        #[doc = r#"from a "finger" source may trigger kinetic scrolling."#]
+        #[repr(u32)]
+        pub enum r#Source {
+            r#Finger,
+        }
         #[doc = r#"A linear interaction area, such as the strips found in Wacom Cintiq"#]
         #[doc = r#"models."#]
         #[doc = r#""#]
@@ -6112,7 +6559,13 @@ pub mod tablet_v2 {
         }
     }
     pub mod zwp_tablet_pad_v2 {
-        enum r#ButtonState {}
+        #[doc = r#"Describes the physical state of a button that caused the button"#]
+        #[doc = r#"event."#]
+        #[repr(u32)]
+        pub enum r#ButtonState {
+            r#Released,
+            r#Pressed,
+        }
         #[doc = r#"A pad device is a set of buttons, rings and strips"#]
         #[doc = r#"usually physically present on the tablet device itself. Some"#]
         #[doc = r#"exceptions exist where the pad device is physically detached, e.g. the"#]
@@ -6351,7 +6804,10 @@ pub mod tablet_v2 {
 }
 pub mod viewporter {
     pub mod wp_viewporter {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#ViewportExists,
+        }
         #[doc = r#"The global interface exposing surface cropping and scaling"#]
         #[doc = r#"capabilities is used to instantiate an interface extension for a"#]
         #[doc = r#"wl_surface object. This extended interface will then allow"#]
@@ -6405,7 +6861,13 @@ pub mod viewporter {
         }
     }
     pub mod wp_viewport {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#BadValue,
+            r#BadSize,
+            r#OutOfBuffer,
+            r#NoSurface,
+        }
         #[doc = r#"An additional interface to a wl_surface object, which allows the"#]
         #[doc = r#"client to specify the cropping and scaling of the surface"#]
         #[doc = r#"contents."#]
@@ -6536,7 +6998,16 @@ pub mod viewporter {
 }
 pub mod xdg_shell {
     pub mod xdg_wm_base {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#Role,
+            r#DefunctSurfaces,
+            r#NotTheTopmostPopup,
+            r#InvalidPopupParent,
+            r#InvalidSurfaceState,
+            r#InvalidPositioner,
+            r#Unresponsive,
+        }
         #[doc = r#"The xdg_wm_base interface is exposed as a global object enabling clients"#]
         #[doc = r#"to turn their wl_surfaces into windows in a desktop environment. It"#]
         #[doc = r#"defines the basic functionality needed for clients and the compositor to"#]
@@ -6650,10 +7121,102 @@ pub mod xdg_shell {
         }
     }
     pub mod xdg_positioner {
-        enum r#Error {}
-        enum r#Anchor {}
-        enum r#Gravity {}
-        enum r#ConstraintAdjustment {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidInput,
+        }
+        #[repr(u32)]
+        pub enum r#Anchor {
+            r#None,
+            r#Top,
+            r#Bottom,
+            r#Left,
+            r#Right,
+            r#TopLeft,
+            r#BottomLeft,
+            r#TopRight,
+            r#BottomRight,
+        }
+        #[repr(u32)]
+        pub enum r#Gravity {
+            r#None,
+            r#Top,
+            r#Bottom,
+            r#Left,
+            r#Right,
+            r#TopLeft,
+            r#BottomLeft,
+            r#TopRight,
+            r#BottomRight,
+        }
+        #[doc = r#"Don't alter the surface position even if it is constrained on some"#]
+        #[doc = r#"axis, for example partially outside the edge of an output."#]
+        #[doc = r#"Slide the surface along the x axis until it is no longer constrained."#]
+        #[doc = r#""#]
+        #[doc = r#"First try to slide towards the direction of the gravity on the x axis"#]
+        #[doc = r#"until either the edge in the opposite direction of the gravity is"#]
+        #[doc = r#"unconstrained or the edge in the direction of the gravity is"#]
+        #[doc = r#"constrained."#]
+        #[doc = r#""#]
+        #[doc = r#"Then try to slide towards the opposite direction of the gravity on the"#]
+        #[doc = r#"x axis until either the edge in the direction of the gravity is"#]
+        #[doc = r#"unconstrained or the edge in the opposite direction of the gravity is"#]
+        #[doc = r#"constrained."#]
+        #[doc = r#"Slide the surface along the y axis until it is no longer constrained."#]
+        #[doc = r#""#]
+        #[doc = r#"First try to slide towards the direction of the gravity on the y axis"#]
+        #[doc = r#"until either the edge in the opposite direction of the gravity is"#]
+        #[doc = r#"unconstrained or the edge in the direction of the gravity is"#]
+        #[doc = r#"constrained."#]
+        #[doc = r#""#]
+        #[doc = r#"Then try to slide towards the opposite direction of the gravity on the"#]
+        #[doc = r#"y axis until either the edge in the direction of the gravity is"#]
+        #[doc = r#"unconstrained or the edge in the opposite direction of the gravity is"#]
+        #[doc = r#"constrained."#]
+        #[doc = r#"Invert the anchor and gravity on the x axis if the surface is"#]
+        #[doc = r#"constrained on the x axis. For example, if the left edge of the"#]
+        #[doc = r#"surface is constrained, the gravity is 'left' and the anchor is"#]
+        #[doc = r#"'left', change the gravity to 'right' and the anchor to 'right'."#]
+        #[doc = r#""#]
+        #[doc = r#"If the adjusted position also ends up being constrained, the resulting"#]
+        #[doc = r#"position of the flip_x adjustment will be the one before the"#]
+        #[doc = r#"adjustment."#]
+        #[doc = r#"Invert the anchor and gravity on the y axis if the surface is"#]
+        #[doc = r#"constrained on the y axis. For example, if the bottom edge of the"#]
+        #[doc = r#"surface is constrained, the gravity is 'bottom' and the anchor is"#]
+        #[doc = r#"'bottom', change the gravity to 'top' and the anchor to 'top'."#]
+        #[doc = r#""#]
+        #[doc = r#"The adjusted position is calculated given the original anchor"#]
+        #[doc = r#"rectangle and offset, but with the new flipped anchor and gravity"#]
+        #[doc = r#"values."#]
+        #[doc = r#""#]
+        #[doc = r#"If the adjusted position also ends up being constrained, the resulting"#]
+        #[doc = r#"position of the flip_y adjustment will be the one before the"#]
+        #[doc = r#"adjustment."#]
+        #[doc = r#"Resize the surface horizontally so that it is completely"#]
+        #[doc = r#"unconstrained."#]
+        #[doc = r#"Resize the surface vertically so that it is completely unconstrained."#]
+        #[doc = r#"The constraint adjustment value define ways the compositor will adjust"#]
+        #[doc = r#"the position of the surface, if the unadjusted position would result"#]
+        #[doc = r#"in the surface being partly constrained."#]
+        #[doc = r#""#]
+        #[doc = r#"Whether a surface is considered 'constrained' is left to the compositor"#]
+        #[doc = r#"to determine. For example, the surface may be partly outside the"#]
+        #[doc = r#"compositor's defined 'work area', thus necessitating the child surface's"#]
+        #[doc = r#"position be adjusted until it is entirely inside the work area."#]
+        #[doc = r#""#]
+        #[doc = r#"The adjustments can be combined, according to a defined precedence: 1)"#]
+        #[doc = r#"Flip, 2) Slide, 3) Resize."#]
+        #[repr(u32)]
+        pub enum r#ConstraintAdjustment {
+            r#None,
+            r#SlideX,
+            r#SlideY,
+            r#FlipX,
+            r#FlipY,
+            r#ResizeX,
+            r#ResizeY,
+        }
         #[doc = r#"The xdg_positioner provides a collection of rules for the placement of a"#]
         #[doc = r#"child surface relative to a parent surface. Rules can be defined to ensure"#]
         #[doc = r#"the child surface remains within the visible area's borders, and to"#]
@@ -6842,7 +7405,15 @@ pub mod xdg_shell {
         }
     }
     pub mod xdg_surface {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#NotConstructed,
+            r#AlreadyConstructed,
+            r#UnconfiguredBuffer,
+            r#InvalidSerial,
+            r#InvalidSize,
+            r#DefunctRoleObject,
+        }
         #[doc = r#"An interface that may be implemented by a wl_surface, for"#]
         #[doc = r#"implementations that provide a desktop-style user interface."#]
         #[doc = r#""#]
@@ -7086,10 +7657,93 @@ pub mod xdg_shell {
         }
     }
     pub mod xdg_toplevel {
-        enum r#Error {}
-        enum r#ResizeEdge {}
-        enum r#State {}
-        enum r#WmCapabilities {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidResizeEdge,
+            r#InvalidParent,
+            r#InvalidSize,
+        }
+        #[doc = r#"These values are used to indicate which edge of a surface"#]
+        #[doc = r#"is being dragged in a resize operation."#]
+        #[repr(u32)]
+        pub enum r#ResizeEdge {
+            r#None,
+            r#Top,
+            r#Bottom,
+            r#Left,
+            r#TopLeft,
+            r#BottomLeft,
+            r#Right,
+            r#TopRight,
+            r#BottomRight,
+        }
+        #[doc = r#"The surface is maximized. The window geometry specified in the configure"#]
+        #[doc = r#"event must be obeyed by the client, or the xdg_wm_base.invalid_surface_state"#]
+        #[doc = r#"error is raised."#]
+        #[doc = r#""#]
+        #[doc = r#"The client should draw without shadow or other"#]
+        #[doc = r#"decoration outside of the window geometry."#]
+        #[doc = r#"The surface is fullscreen. The window geometry specified in the"#]
+        #[doc = r#"configure event is a maximum; the client cannot resize beyond it. For"#]
+        #[doc = r#"a surface to cover the whole fullscreened area, the geometry"#]
+        #[doc = r#"dimensions must be obeyed by the client. For more details, see"#]
+        #[doc = r#"xdg_toplevel.set_fullscreen."#]
+        #[doc = r#"The surface is being resized. The window geometry specified in the"#]
+        #[doc = r#"configure event is a maximum; the client cannot resize beyond it."#]
+        #[doc = r#"Clients that have aspect ratio or cell sizing configuration can use"#]
+        #[doc = r#"a smaller size, however."#]
+        #[doc = r#"Client window decorations should be painted as if the window is"#]
+        #[doc = r#"active. Do not assume this means that the window actually has"#]
+        #[doc = r#"keyboard or pointer focus."#]
+        #[doc = r#"The window is currently in a tiled layout and the left edge is"#]
+        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
+        #[doc = r#""#]
+        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
+        #[doc = r#"the window geometry on the left edge."#]
+        #[doc = r#"The window is currently in a tiled layout and the right edge is"#]
+        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
+        #[doc = r#""#]
+        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
+        #[doc = r#"the window geometry on the right edge."#]
+        #[doc = r#"The window is currently in a tiled layout and the top edge is"#]
+        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
+        #[doc = r#""#]
+        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
+        #[doc = r#"the window geometry on the top edge."#]
+        #[doc = r#"The window is currently in a tiled layout and the bottom edge is"#]
+        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
+        #[doc = r#""#]
+        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
+        #[doc = r#"the window geometry on the bottom edge."#]
+        #[doc = r#"The surface is currently not ordinarily being repainted; for"#]
+        #[doc = r#"example because its content is occluded by another window, or its"#]
+        #[doc = r#"outputs are switched off due to screen locking."#]
+        #[doc = r#"The different state values used on the surface. This is designed for"#]
+        #[doc = r#"state values like maximized, fullscreen. It is paired with the"#]
+        #[doc = r#"configure event to ensure that both the client and the compositor"#]
+        #[doc = r#"setting the state can be synchronized."#]
+        #[doc = r#""#]
+        #[doc = r#"States set in this way are double-buffered. They will get applied on"#]
+        #[doc = r#"the next commit."#]
+        #[repr(u32)]
+        pub enum r#State {
+            r#Maximized,
+            r#Fullscreen,
+            r#Resizing,
+            r#Activated,
+            r#TiledLeft,
+            r#TiledRight,
+            r#TiledTop,
+            r#TiledBottom,
+            r#Suspended,
+        }
+        #[repr(u32)]
+        pub enum r#WmCapabilities {
+            r#WindowMenu,
+            r#Maximize,
+            r#Fullscreen,
+            r#Minimize,
+        }
         #[doc = r#"This interface defines an xdg_surface role which allows a surface to,"#]
         #[doc = r#"among other things, set window-like properties such as maximize,"#]
         #[doc = r#"fullscreen, and minimize, set application-specific metadata like title and"#]
@@ -7654,7 +8308,10 @@ pub mod xdg_shell {
         }
     }
     pub mod xdg_popup {
-        enum r#Error {}
+        #[repr(u32)]
+        pub enum r#Error {
+            r#InvalidGrab,
+        }
         #[doc = r#"A popup surface is a short-lived, temporary surface. It can be used to"#]
         #[doc = r#"implement for example menus, popovers, tooltips and other similar user"#]
         #[doc = r#"interface concepts."#]
