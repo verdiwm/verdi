@@ -12,7 +12,7 @@ pub mod error;
 pub mod message;
 pub mod proto;
 
-use message::{DecodeError, Message, MessageCodec, ObjectId};
+use message::{DecodeError, Message, MessageCodec, NewId, ObjectId};
 use proto::wayland::{WlCompositor, WlDisplay, WlRegistry};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
@@ -41,7 +41,7 @@ impl Verdi {
 
                 let id = unsafe { ObjectId::from_raw(1) };
 
-                client.insert(id, DisplayInterface::create_dispatcher(id));
+                client.insert(id, Display::create_dispatcher(id));
 
                 Some(Ok(client))
             }
@@ -110,18 +110,18 @@ pub trait Dispatcher {
 }
 
 #[derive(Debug)]
-pub struct DisplayInterface;
+pub struct Display;
 
-impl WlDisplay for DisplayInterface {
+impl WlDisplay for Display {
     async fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
         Ok(())
     }
 
     async fn get_registry(client: &mut Client, registry_id: ObjectId) -> Result<()> {
-        let registry = RegistryInterface::create_dispatcher(registry_id);
+        let registry = Registry::create_dispatcher(registry_id);
         client.insert(registry_id, registry);
 
-        RegistryInterface::global(
+        Registry::global(
             registry_id,
             client,
             0,
@@ -139,17 +139,17 @@ impl WlDisplay for DisplayInterface {
 }
 
 #[async_trait]
-impl Dispatcher for DisplayInterface {
+impl Dispatcher for Display {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
         <Self as WlDisplay>::handle_request(client, message).await
     }
 }
 
 #[derive(Debug)]
-pub struct RegistryInterface;
+pub struct Registry;
 
-impl WlRegistry for RegistryInterface {
-    async fn r#bind(client: &mut Client, r#name: u32, r#id: message::NewId) -> Result<()> {
+impl WlRegistry for Registry {
+    async fn r#bind(client: &mut Client, r#name: u32, r#id: NewId) -> Result<()> {
         todo!()
     }
 
@@ -159,7 +159,7 @@ impl WlRegistry for RegistryInterface {
 }
 
 #[async_trait]
-impl Dispatcher for RegistryInterface {
+impl Dispatcher for Registry {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
         <Self as WlRegistry>::handle_request(client, message).await
     }
