@@ -247,6 +247,7 @@ fn main() -> Result<()> {
                     &mut generated_path,
                     r#"#[repr(u32)]
                     #[non_exhaustive]
+                    #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
                     pub enum r#{name} {{{variants}}}"#,
                     name = enu.name.to_upper_camel_case()
                 )?;
