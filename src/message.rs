@@ -62,8 +62,28 @@ impl PayloadBuilder {
     }
 
     pub fn put_string<T: AsRef<str>>(mut self, string: Option<T>) -> Self {
-        todo!();
-        self
+        if let Some(string) = string {
+            let string = string.as_ref();
+            let total_len = 4 + string.len();
+            let mut padding = 0;
+
+            if total_len % 4 != 0 {
+                padding = 4 - (total_len % 4);
+            }
+
+            self.0.reserve(total_len + padding);
+            self.0.put_u32_ne((string.len() + 1) as u32);
+            self.0.put_slice(string.as_bytes());
+            self.0.put_u8(b'\0');
+
+            for _ in 0..padding {
+                self.0.put_u8(0);
+            }
+
+            return self;
+        }
+
+        self.put_uint(0)
     }
 
     pub fn put_object(mut self, object: Option<ObjectId>) -> Self {
