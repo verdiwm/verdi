@@ -8,9 +8,13 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Server couldn't find object"#]
             r#InvalidObject,
+            #[doc = r#"Method doesn't exist on the specified interface or malformed request"#]
             r#InvalidMethod,
+            #[doc = r#"Server is out of memory"#]
             r#NoMemory,
+            #[doc = r#"Implementation error in compositor"#]
             r#Implementation,
         }
         #[doc = r#"The core global object.  This is a special singleton object.  It"#]
@@ -391,8 +395,11 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Buffer format is not known"#]
             r#InvalidFormat,
+            #[doc = r#"Invalid size or stride during pool or buffer creation"#]
             r#InvalidStride,
+            #[doc = r#"Mmapping the file descriptor failed"#]
             r#InvalidFd,
         }
         #[doc = r#"This describes the memory layout of an individual pixel."#]
@@ -411,89 +418,173 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Format {
+            #[doc = r#"32-bit ARGB format, [31:0] A:R:G:B 8:8:8:8 little endian"#]
             r#Argb8888,
+            #[doc = r#"32-bit RGB format, [31:0] x:R:G:B 8:8:8:8 little endian"#]
             r#Xrgb8888,
+            #[doc = r#"8-bit color index format, [7:0] C"#]
             r#C8,
+            #[doc = r#"8-bit RGB format, [7:0] R:G:B 3:3:2"#]
             r#Rgb332,
+            #[doc = r#"8-bit BGR format, [7:0] B:G:R 2:3:3"#]
             r#Bgr233,
+            #[doc = r#"16-bit xRGB format, [15:0] x:R:G:B 4:4:4:4 little endian"#]
             r#Xrgb4444,
+            #[doc = r#"16-bit xBGR format, [15:0] x:B:G:R 4:4:4:4 little endian"#]
             r#Xbgr4444,
+            #[doc = r#"16-bit RGBx format, [15:0] R:G:B:x 4:4:4:4 little endian"#]
             r#Rgbx4444,
+            #[doc = r#"16-bit BGRx format, [15:0] B:G:R:x 4:4:4:4 little endian"#]
             r#Bgrx4444,
+            #[doc = r#"16-bit ARGB format, [15:0] A:R:G:B 4:4:4:4 little endian"#]
             r#Argb4444,
+            #[doc = r#"16-bit ABGR format, [15:0] A:B:G:R 4:4:4:4 little endian"#]
             r#Abgr4444,
+            #[doc = r#"16-bit RBGA format, [15:0] R:G:B:A 4:4:4:4 little endian"#]
             r#Rgba4444,
+            #[doc = r#"16-bit BGRA format, [15:0] B:G:R:A 4:4:4:4 little endian"#]
             r#Bgra4444,
+            #[doc = r#"16-bit xRGB format, [15:0] x:R:G:B 1:5:5:5 little endian"#]
             r#Xrgb1555,
+            #[doc = r#"16-bit xBGR 1555 format, [15:0] x:B:G:R 1:5:5:5 little endian"#]
             r#Xbgr1555,
+            #[doc = r#"16-bit RGBx 5551 format, [15:0] R:G:B:x 5:5:5:1 little endian"#]
             r#Rgbx5551,
+            #[doc = r#"16-bit BGRx 5551 format, [15:0] B:G:R:x 5:5:5:1 little endian"#]
             r#Bgrx5551,
+            #[doc = r#"16-bit ARGB 1555 format, [15:0] A:R:G:B 1:5:5:5 little endian"#]
             r#Argb1555,
+            #[doc = r#"16-bit ABGR 1555 format, [15:0] A:B:G:R 1:5:5:5 little endian"#]
             r#Abgr1555,
+            #[doc = r#"16-bit RGBA 5551 format, [15:0] R:G:B:A 5:5:5:1 little endian"#]
             r#Rgba5551,
+            #[doc = r#"16-bit BGRA 5551 format, [15:0] B:G:R:A 5:5:5:1 little endian"#]
             r#Bgra5551,
+            #[doc = r#"16-bit RGB 565 format, [15:0] R:G:B 5:6:5 little endian"#]
             r#Rgb565,
+            #[doc = r#"16-bit BGR 565 format, [15:0] B:G:R 5:6:5 little endian"#]
             r#Bgr565,
+            #[doc = r#"24-bit RGB format, [23:0] R:G:B little endian"#]
             r#Rgb888,
+            #[doc = r#"24-bit BGR format, [23:0] B:G:R little endian"#]
             r#Bgr888,
+            #[doc = r#"32-bit xBGR format, [31:0] x:B:G:R 8:8:8:8 little endian"#]
             r#Xbgr8888,
+            #[doc = r#"32-bit RGBx format, [31:0] R:G:B:x 8:8:8:8 little endian"#]
             r#Rgbx8888,
+            #[doc = r#"32-bit BGRx format, [31:0] B:G:R:x 8:8:8:8 little endian"#]
             r#Bgrx8888,
+            #[doc = r#"32-bit ABGR format, [31:0] A:B:G:R 8:8:8:8 little endian"#]
             r#Abgr8888,
+            #[doc = r#"32-bit RGBA format, [31:0] R:G:B:A 8:8:8:8 little endian"#]
             r#Rgba8888,
+            #[doc = r#"32-bit BGRA format, [31:0] B:G:R:A 8:8:8:8 little endian"#]
             r#Bgra8888,
+            #[doc = r#"32-bit xRGB format, [31:0] x:R:G:B 2:10:10:10 little endian"#]
             r#Xrgb2101010,
+            #[doc = r#"32-bit xBGR format, [31:0] x:B:G:R 2:10:10:10 little endian"#]
             r#Xbgr2101010,
+            #[doc = r#"32-bit RGBx format, [31:0] R:G:B:x 10:10:10:2 little endian"#]
             r#Rgbx1010102,
+            #[doc = r#"32-bit BGRx format, [31:0] B:G:R:x 10:10:10:2 little endian"#]
             r#Bgrx1010102,
+            #[doc = r#"32-bit ARGB format, [31:0] A:R:G:B 2:10:10:10 little endian"#]
             r#Argb2101010,
+            #[doc = r#"32-bit ABGR format, [31:0] A:B:G:R 2:10:10:10 little endian"#]
             r#Abgr2101010,
+            #[doc = r#"32-bit RGBA format, [31:0] R:G:B:A 10:10:10:2 little endian"#]
             r#Rgba1010102,
+            #[doc = r#"32-bit BGRA format, [31:0] B:G:R:A 10:10:10:2 little endian"#]
             r#Bgra1010102,
+            #[doc = r#"Packed YCbCr format, [31:0] Cr0:Y1:Cb0:Y0 8:8:8:8 little endian"#]
             r#Yuyv,
+            #[doc = r#"Packed YCbCr format, [31:0] Cb0:Y1:Cr0:Y0 8:8:8:8 little endian"#]
             r#Yvyu,
+            #[doc = r#"Packed YCbCr format, [31:0] Y1:Cr0:Y0:Cb0 8:8:8:8 little endian"#]
             r#Uyvy,
+            #[doc = r#"Packed YCbCr format, [31:0] Y1:Cb0:Y0:Cr0 8:8:8:8 little endian"#]
             r#Vyuy,
+            #[doc = r#"Packed AYCbCr format, [31:0] A:Y:Cb:Cr 8:8:8:8 little endian"#]
             r#Ayuv,
+            #[doc = r#"2 plane YCbCr Cr:Cb format, 2x2 subsampled Cr:Cb plane"#]
             r#Nv12,
+            #[doc = r#"2 plane YCbCr Cb:Cr format, 2x2 subsampled Cb:Cr plane"#]
             r#Nv21,
+            #[doc = r#"2 plane YCbCr Cr:Cb format, 2x1 subsampled Cr:Cb plane"#]
             r#Nv16,
+            #[doc = r#"2 plane YCbCr Cb:Cr format, 2x1 subsampled Cb:Cr plane"#]
             r#Nv61,
+            #[doc = r#"3 plane YCbCr format, 4x4 subsampled Cb (1) and Cr (2) planes"#]
             r#Yuv410,
+            #[doc = r#"3 plane YCbCr format, 4x4 subsampled Cr (1) and Cb (2) planes"#]
             r#Yvu410,
+            #[doc = r#"3 plane YCbCr format, 4x1 subsampled Cb (1) and Cr (2) planes"#]
             r#Yuv411,
+            #[doc = r#"3 plane YCbCr format, 4x1 subsampled Cr (1) and Cb (2) planes"#]
             r#Yvu411,
+            #[doc = r#"3 plane YCbCr format, 2x2 subsampled Cb (1) and Cr (2) planes"#]
             r#Yuv420,
+            #[doc = r#"3 plane YCbCr format, 2x2 subsampled Cr (1) and Cb (2) planes"#]
             r#Yvu420,
+            #[doc = r#"3 plane YCbCr format, 2x1 subsampled Cb (1) and Cr (2) planes"#]
             r#Yuv422,
+            #[doc = r#"3 plane YCbCr format, 2x1 subsampled Cr (1) and Cb (2) planes"#]
             r#Yvu422,
+            #[doc = r#"3 plane YCbCr format, non-subsampled Cb (1) and Cr (2) planes"#]
             r#Yuv444,
+            #[doc = r#"3 plane YCbCr format, non-subsampled Cr (1) and Cb (2) planes"#]
             r#Yvu444,
+            #[doc = r#"[7:0] R"#]
             r#R8,
+            #[doc = r#"[15:0] R little endian"#]
             r#R16,
+            #[doc = r#"[15:0] R:G 8:8 little endian"#]
             r#Rg88,
+            #[doc = r#"[15:0] G:R 8:8 little endian"#]
             r#Gr88,
+            #[doc = r#"[31:0] R:G 16:16 little endian"#]
             r#Rg1616,
+            #[doc = r#"[31:0] G:R 16:16 little endian"#]
             r#Gr1616,
+            #[doc = r#"[63:0] x:R:G:B 16:16:16:16 little endian"#]
             r#Xrgb16161616f,
+            #[doc = r#"[63:0] x:B:G:R 16:16:16:16 little endian"#]
             r#Xbgr16161616f,
+            #[doc = r#"[63:0] A:R:G:B 16:16:16:16 little endian"#]
             r#Argb16161616f,
+            #[doc = r#"[63:0] A:B:G:R 16:16:16:16 little endian"#]
             r#Abgr16161616f,
+            #[doc = r#"[31:0] X:Y:Cb:Cr 8:8:8:8 little endian"#]
             r#Xyuv8888,
+            #[doc = r#"[23:0] Cr:Cb:Y 8:8:8 little endian"#]
             r#Vuy888,
+            #[doc = r#"Y followed by U then V, 10:10:10. Non-linear modifier only"#]
             r#Vuy101010,
+            #[doc = r#"[63:0] Cr0:0:Y1:0:Cb0:0:Y0:0 10:6:10:6:10:6:10:6 little endian per 2 Y pixels"#]
             r#Y210,
+            #[doc = r#"[63:0] Cr0:0:Y1:0:Cb0:0:Y0:0 12:4:12:4:12:4:12:4 little endian per 2 Y pixels"#]
             r#Y212,
+            #[doc = r#"[63:0] Cr0:Y1:Cb0:Y0 16:16:16:16 little endian per 2 Y pixels"#]
             r#Y216,
+            #[doc = r#"[31:0] A:Cr:Y:Cb 2:10:10:10 little endian"#]
             r#Y410,
+            #[doc = r#"[63:0] A:0:Cr:0:Y:0:Cb:0 12:4:12:4:12:4:12:4 little endian"#]
             r#Y412,
+            #[doc = r#"[63:0] A:Cr:Y:Cb 16:16:16:16 little endian"#]
             r#Y416,
+            #[doc = r#"[31:0] X:Cr:Y:Cb 2:10:10:10 little endian"#]
             r#Xvyu2101010,
+            #[doc = r#"[63:0] X:0:Cr:0:Y:0:Cb:0 12:4:12:4:12:4:12:4 little endian"#]
             r#Xvyu1216161616,
+            #[doc = r#"[63:0] X:Cr:Y:Cb 16:16:16:16 little endian"#]
             r#Xvyu16161616,
+            #[doc = r#"[63:0]   A3:A2:Y3:0:Cr0:0:Y2:0:A1:A0:Y1:0:Cb0:0:Y0:0  1:1:8:2:8:2:8:2:1:1:8:2:8:2:8:2 little endian"#]
             r#Y0l0,
+            #[doc = r#"[63:0]   X3:X2:Y3:0:Cr0:0:Y2:0:X1:X0:Y1:0:Cb0:0:Y0:0  1:1:8:2:8:2:8:2:1:1:8:2:8:2:8:2 little endian"#]
             r#X0l0,
+            #[doc = r#"[63:0]   A3:A2:Y3:Cr0:Y2:A1:A0:Y1:Cb0:Y0  1:1:10:10:10:1:1:10:10:10 little endian"#]
             r#Y0l2,
+            #[doc = r#"[63:0]   X3:X2:Y3:Cr0:Y2:X1:X0:Y1:Cb0:Y0  1:1:10:10:10:1:1:10:10:10 little endian"#]
             r#X0l2,
             r#Yuv4208bit,
             r#Yuv42010bit,
@@ -505,34 +596,61 @@ pub mod wayland {
             r#Bgr888A8,
             r#Rgb565A8,
             r#Bgr565A8,
+            #[doc = r#"Non-subsampled Cr:Cb plane"#]
             r#Nv24,
+            #[doc = r#"Non-subsampled Cb:Cr plane"#]
             r#Nv42,
+            #[doc = r#"2x1 subsampled Cr:Cb plane, 10 bit per channel"#]
             r#P210,
+            #[doc = r#"2x2 subsampled Cr:Cb plane 10 bits per channel"#]
             r#P010,
+            #[doc = r#"2x2 subsampled Cr:Cb plane 12 bits per channel"#]
             r#P012,
+            #[doc = r#"2x2 subsampled Cr:Cb plane 16 bits per channel"#]
             r#P016,
+            #[doc = r#"[63:0] A:x:B:x:G:x:R:x 10:6:10:6:10:6:10:6 little endian"#]
             r#Axbxgxrx106106106106,
+            #[doc = r#"2x2 subsampled Cr:Cb plane"#]
             r#Nv15,
             r#Q410,
             r#Q401,
+            #[doc = r#"[63:0] x:R:G:B 16:16:16:16 little endian"#]
             r#Xrgb16161616,
+            #[doc = r#"[63:0] x:B:G:R 16:16:16:16 little endian"#]
             r#Xbgr16161616,
+            #[doc = r#"[63:0] A:R:G:B 16:16:16:16 little endian"#]
             r#Argb16161616,
+            #[doc = r#"[63:0] A:B:G:R 16:16:16:16 little endian"#]
             r#Abgr16161616,
+            #[doc = r#"[7:0] C0:C1:C2:C3:C4:C5:C6:C7 1:1:1:1:1:1:1:1 eight pixels/byte"#]
             r#C1,
+            #[doc = r#"[7:0] C0:C1:C2:C3 2:2:2:2 four pixels/byte"#]
             r#C2,
+            #[doc = r#"[7:0] C0:C1 4:4 two pixels/byte"#]
             r#C4,
+            #[doc = r#"[7:0] D0:D1:D2:D3:D4:D5:D6:D7 1:1:1:1:1:1:1:1 eight pixels/byte"#]
             r#D1,
+            #[doc = r#"[7:0] D0:D1:D2:D3 2:2:2:2 four pixels/byte"#]
             r#D2,
+            #[doc = r#"[7:0] D0:D1 4:4 two pixels/byte"#]
             r#D4,
+            #[doc = r#"[7:0] D"#]
             r#D8,
+            #[doc = r#"[7:0] R0:R1:R2:R3:R4:R5:R6:R7 1:1:1:1:1:1:1:1 eight pixels/byte"#]
             r#R1,
+            #[doc = r#"[7:0] R0:R1:R2:R3 2:2:2:2 four pixels/byte"#]
             r#R2,
+            #[doc = r#"[7:0] R0:R1 4:4 two pixels/byte"#]
             r#R4,
+            #[doc = r#"[15:0] x:R 6:10 little endian"#]
             r#R10,
+            #[doc = r#"[15:0] x:R 4:12 little endian"#]
             r#R12,
+            #[doc = r#"[31:0] A:Cr:Cb:Y 8:8:8:8 little endian"#]
             r#Avuy8888,
+            #[doc = r#"[31:0] X:Cr:Cb:Y 8:8:8:8 little endian"#]
             r#Xvuy8888,
+            #[doc = r#"2x2 subsampled Cr:Cb plane 10 bits per channel packed"#]
             r#P030,
         }
         #[doc = r#"A singleton global object that provides support for shared"#]
@@ -676,9 +794,13 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Finish request was called untimely"#]
             r#InvalidFinish,
+            #[doc = r#"Action mask contains invalid values"#]
             r#InvalidActionMask,
+            #[doc = r#"Action argument has an invalid value"#]
             r#InvalidAction,
+            #[doc = r#"Offer doesn't accept this request"#]
             r#InvalidOffer,
         }
         #[doc = r#"A wl_data_offer represents a piece of data offered for transfer"#]
@@ -910,7 +1032,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Action mask contains invalid values"#]
             r#InvalidActionMask,
+            #[doc = r#"Source doesn't accept this request"#]
             r#InvalidSource,
         }
         #[doc = r#"The wl_data_source object is the source side of a wl_data_offer."#]
@@ -1123,7 +1247,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Given wl_surface has another role"#]
             r#Role,
+            #[doc = r#"Source has already been used"#]
             r#UsedSource,
         }
         #[doc = r#"There is one wl_data_device per seat which can be obtained"#]
@@ -1378,9 +1504,13 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#DndAction {
+            #[doc = r#"No action"#]
             r#None,
+            #[doc = r#"Copy action"#]
             r#Copy,
+            #[doc = r#"Move action"#]
             r#Move,
+            #[doc = r#"Ask action"#]
             r#Ask,
         }
         #[doc = r#"The wl_data_device_manager is a singleton global object that"#]
@@ -1448,6 +1578,7 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Given wl_surface has another role"#]
             r#Role,
         }
         #[doc = r#"This interface is implemented by servers that provide"#]
@@ -1507,14 +1638,23 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Resize {
+            #[doc = r#"No edge"#]
             r#None,
+            #[doc = r#"Top edge"#]
             r#Top,
+            #[doc = r#"Bottom edge"#]
             r#Bottom,
+            #[doc = r#"Left edge"#]
             r#Left,
+            #[doc = r#"Top and left edges"#]
             r#TopLeft,
+            #[doc = r#"Bottom and left edges"#]
             r#BottomLeft,
+            #[doc = r#"Right edge"#]
             r#Right,
+            #[doc = r#"Top and right edges"#]
             r#TopRight,
+            #[doc = r#"Bottom and right edges"#]
             r#BottomRight,
         }
         #[doc = r#"These flags specify details of the expected behaviour"#]
@@ -1523,6 +1663,7 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Transient {
+            #[doc = r#"Do not set keyboard focus"#]
             r#Inactive,
         }
         #[doc = r#"Hints to indicate to the compositor how to deal with a conflict"#]
@@ -1532,9 +1673,13 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#FullscreenMethod {
+            #[doc = r#"No preference, apply default policy"#]
             r#Default,
+            #[doc = r#"Scale, preserve the surface's aspect ratio and center on output"#]
             r#Scale,
+            #[doc = r#"Switch output mode to the smallest mode that can fit the surface, add black borders to compensate size mismatch"#]
             r#Driver,
+            #[doc = r#"No upscaling, center on output and add black borders to compensate size mismatch"#]
             r#Fill,
         }
         #[doc = r#"An interface that may be implemented by a wl_surface, for"#]
@@ -1874,10 +2019,15 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Buffer scale value is invalid"#]
             r#InvalidScale,
+            #[doc = r#"Buffer transform value is invalid"#]
             r#InvalidTransform,
+            #[doc = r#"Buffer size is invalid"#]
             r#InvalidSize,
+            #[doc = r#"Buffer offset is invalid"#]
             r#InvalidOffset,
+            #[doc = r#"Surface was destroyed before its role object"#]
             r#DefunctRoleObject,
         }
         #[doc = r#"A surface is a rectangular area that may be displayed on zero"#]
@@ -2423,8 +2573,11 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Capability {
+            #[doc = r#"The seat has pointer devices"#]
             r#Pointer,
+            #[doc = r#"The seat has one or more keyboards"#]
             r#Keyboard,
+            #[doc = r#"The seat has touch devices"#]
             r#Touch,
         }
         #[doc = r#"These errors can be emitted in response to wl_seat requests."#]
@@ -2432,6 +2585,7 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Get_pointer, get_keyboard or get_touch called on seat without the matching capability"#]
             r#MissingCapability,
         }
         #[doc = r#"A seat is a group of keyboards, pointer and touch devices. This"#]
@@ -2600,6 +2754,7 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Given wl_surface has another role"#]
             r#Role,
         }
         #[doc = r#"Describes the physical state of a button that produced the button"#]
@@ -2608,7 +2763,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ButtonState {
+            #[doc = r#"The button is not pressed"#]
             r#Released,
+            #[doc = r#"The button is pressed"#]
             r#Pressed,
         }
         #[doc = r#"Describes the axis types of scroll events."#]
@@ -2616,7 +2773,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Axis {
+            #[doc = r#"Vertical axis"#]
             r#VerticalScroll,
+            #[doc = r#"Horizontal axis"#]
             r#HorizontalScroll,
         }
         #[doc = r#"Describes the source types for axis events. This indicates to the"#]
@@ -2639,9 +2798,13 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#AxisSource {
+            #[doc = r#"A physical wheel rotation"#]
             r#Wheel,
+            #[doc = r#"Finger on a touch surface"#]
             r#Finger,
+            #[doc = r#"Continuous coordinate space"#]
             r#Continuous,
+            #[doc = r#"A physical wheel tilt"#]
             r#WheelTilt,
         }
         #[doc = r#"This specifies the direction of the physical motion that caused a"#]
@@ -2650,7 +2813,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#AxisRelativeDirection {
+            #[doc = r#"Physical motion matches axis direction"#]
             r#Identical,
+            #[doc = r#"Physical motion is the inverse of the axis direction"#]
             r#Inverted,
         }
         #[doc = r#"The wl_pointer interface represents one or more input devices,"#]
@@ -3129,7 +3294,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#KeymapFormat {
+            #[doc = r#"No keymap; client must understand how to interpret the raw keycode"#]
             r#NoKeymap,
+            #[doc = r#"Libxkbcommon compatible, null-terminated string; to determine the xkb keycode, clients must add 8 to the key event keycode"#]
             r#XkbV1,
         }
         #[doc = r#"Describes the physical state of a key that produced the key event."#]
@@ -3137,7 +3304,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#KeyState {
+            #[doc = r#"Key is not pressed"#]
             r#Released,
+            #[doc = r#"Key is pressed"#]
             r#Pressed,
         }
         #[doc = r#"The wl_keyboard interface represents one or more keyboards"#]
@@ -3579,11 +3748,17 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Subpixel {
+            #[doc = r#"Unknown geometry"#]
             r#Unknown,
+            #[doc = r#"No geometry"#]
             r#None,
+            #[doc = r#"Horizontal RGB"#]
             r#HorizontalRgb,
+            #[doc = r#"Horizontal BGR"#]
             r#HorizontalBgr,
+            #[doc = r#"Vertical RGB"#]
             r#VerticalRgb,
+            #[doc = r#"Vertical BGR"#]
             r#VerticalBgr,
         }
         #[doc = r#"This describes transformations that clients and compositors apply to"#]
@@ -3600,13 +3775,21 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Transform {
+            #[doc = r#"No transform"#]
             r#Normal,
+            #[doc = r#"90 degrees counter-clockwise"#]
             r#_90,
+            #[doc = r#"180 degrees counter-clockwise"#]
             r#_180,
+            #[doc = r#"270 degrees counter-clockwise"#]
             r#_270,
+            #[doc = r#"180 degree flip around a vertical axis"#]
             r#Flipped,
+            #[doc = r#"Flip and rotate 90 degrees counter-clockwise"#]
             r#Flipped90,
+            #[doc = r#"Flip and rotate 180 degrees counter-clockwise"#]
             r#Flipped180,
+            #[doc = r#"Flip and rotate 270 degrees counter-clockwise"#]
             r#Flipped270,
         }
         #[doc = r#"These flags describe properties of an output mode."#]
@@ -3615,7 +3798,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Mode {
+            #[doc = r#"Indicates this is the current mode"#]
             r#Current,
+            #[doc = r#"Indicates this is the preferred mode"#]
             r#Preferred,
         }
         #[doc = r#"An output describes part of the compositor geometry.  The"#]
@@ -3934,7 +4119,9 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"The to-be sub-surface is invalid"#]
             r#BadSurface,
+            #[doc = r#"The to-be sub-surface parent is invalid"#]
             r#BadParent,
         }
         #[doc = r#"The global interface exposing sub-surface compositing capabilities."#]
@@ -4026,6 +4213,7 @@ pub mod wayland {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Wl_surface is not a sibling or the parent"#]
             r#BadSurface,
         }
         #[doc = r#"An additional interface to a wl_surface object, which has been"#]
@@ -4432,21 +4620,33 @@ pub mod linux_dmabuf_v1 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"The dmabuf_batch object has already been used to create a wl_buffer"#]
             r#AlreadyUsed,
+            #[doc = r#"Plane index out of bounds"#]
             r#PlaneIdx,
+            #[doc = r#"The plane index was already set"#]
             r#PlaneSet,
+            #[doc = r#"Missing or too many planes to create a buffer"#]
             r#Incomplete,
+            #[doc = r#"Format not supported"#]
             r#InvalidFormat,
+            #[doc = r#"Invalid width or height"#]
             r#InvalidDimensions,
+            #[doc = r#"Offset + stride * height goes out of dmabuf bounds"#]
             r#OutOfBounds,
+            #[doc = r#"Invalid wl_buffer resulted from importing dmabufs via"#]
+            #[doc = r#"The create_immed request on given buffer_params"#]
             r#InvalidWlBuffer,
         }
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Flags {
+            #[doc = r#"Contents are y-inverted"#]
             r#YInvert,
+            #[doc = r#"Content is interlaced"#]
             r#Interlaced,
+            #[doc = r#"Bottom field first"#]
             r#BottomFirst,
         }
         #[doc = r#"This temporary object is a collection of dmabufs and other"#]
@@ -4690,6 +4890,7 @@ pub mod linux_dmabuf_v1 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#TrancheFlags {
+            #[doc = r#"Direct scan-out tranche"#]
             r#Scanout,
         }
         #[doc = r#"This object advertises dmabuf parameters feedback. This includes the"#]
@@ -4941,7 +5142,9 @@ pub mod presentation_time {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Invalid value in tv_nsec"#]
             r#InvalidTimestamp,
+            #[doc = r#"Invalid flag"#]
             r#InvalidFlag,
         }
         #[doc = r#"The main feature of this interface is accurate presentation"#]
@@ -5054,25 +5257,6 @@ pub mod presentation_time {
         }
     }
     pub mod wp_presentation_feedback {
-        #[doc = r#"The presentation was synchronized to the "vertical retrace" by"#]
-        #[doc = r#"the display hardware such that tearing does not happen."#]
-        #[doc = r#"Relying on software scheduling is not acceptable for this"#]
-        #[doc = r#"flag. If presentation is done by a copy to the active"#]
-        #[doc = r#"frontbuffer, then it must guarantee that tearing cannot"#]
-        #[doc = r#"happen."#]
-        #[doc = r#"The display hardware provided measurements that the hardware"#]
-        #[doc = r#"driver converted into a presentation timestamp. Sampling a"#]
-        #[doc = r#"clock in software is not acceptable for this flag."#]
-        #[doc = r#"The display hardware signalled that it started using the new"#]
-        #[doc = r#"image content. The opposite of this is e.g. a timer being used"#]
-        #[doc = r#"to guess when the display hardware has switched to the new"#]
-        #[doc = r#"image content."#]
-        #[doc = r#"The presentation of this update was done zero-copy. This means"#]
-        #[doc = r#"the buffer from the client was given to display hardware as"#]
-        #[doc = r#"is, without copying it. Compositing with OpenGL counts as"#]
-        #[doc = r#"copying, even if textured directly from the client buffer."#]
-        #[doc = r#"Possible zero-copy cases include direct scanout of a"#]
-        #[doc = r#"fullscreen surface and a surface on a hardware overlay."#]
         #[doc = r#"These flags provide information about how the presentation of"#]
         #[doc = r#"the related content update was done. The intent is to help"#]
         #[doc = r#"clients assess the reliability of the feedback and the visual"#]
@@ -5440,13 +5624,21 @@ pub mod tablet_v2 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Type {
+            #[doc = r#"Pen"#]
             r#Pen,
+            #[doc = r#"Eraser"#]
             r#Eraser,
+            #[doc = r#"Brush"#]
             r#Brush,
+            #[doc = r#"Pencil"#]
             r#Pencil,
+            #[doc = r#"Airbrush"#]
             r#Airbrush,
+            #[doc = r#"Finger"#]
             r#Finger,
+            #[doc = r#"Mouse"#]
             r#Mouse,
+            #[doc = r#"Lens"#]
             r#Lens,
         }
         #[doc = r#"Describes extra capabilities on a tablet."#]
@@ -5457,11 +5649,17 @@ pub mod tablet_v2 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Capability {
+            #[doc = r#"Tilt axes"#]
             r#Tilt,
+            #[doc = r#"Pressure axis"#]
             r#Pressure,
+            #[doc = r#"Distance axis"#]
             r#Distance,
+            #[doc = r#"Z-rotation axis"#]
             r#Rotation,
+            #[doc = r#"Slider axis"#]
             r#Slider,
+            #[doc = r#"Wheel axis"#]
             r#Wheel,
         }
         #[doc = r#"Describes the physical state of a button that produced the button event."#]
@@ -5469,13 +5667,16 @@ pub mod tablet_v2 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ButtonState {
+            #[doc = r#"Button is not pressed"#]
             r#Released,
+            #[doc = r#"Button is pressed"#]
             r#Pressed,
         }
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Given wl_surface has another role"#]
             r#Role,
         }
         #[doc = r#"An object that represents a physical tool that has been, or is"#]
@@ -6124,6 +6325,7 @@ pub mod tablet_v2 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Source {
+            #[doc = r#"Finger"#]
             r#Finger,
         }
         #[doc = r#"A circular interaction area, such as the touch ring on the Wacom Intuos"#]
@@ -6285,6 +6487,7 @@ pub mod tablet_v2 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Source {
+            #[doc = r#"Finger"#]
             r#Finger,
         }
         #[doc = r#"A linear interaction area, such as the strips found in Wacom Cintiq"#]
@@ -6639,7 +6842,9 @@ pub mod tablet_v2 {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ButtonState {
+            #[doc = r#"The button is not pressed"#]
             r#Released,
+            #[doc = r#"The button is pressed"#]
             r#Pressed,
         }
         #[doc = r#"A pad device is a set of buttons, rings and strips"#]
@@ -6884,6 +7089,7 @@ pub mod viewporter {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"The surface already has a viewport object associated"#]
             r#ViewportExists,
         }
         #[doc = r#"The global interface exposing surface cropping and scaling"#]
@@ -6943,9 +7149,13 @@ pub mod viewporter {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Negative or zero values in width or height"#]
             r#BadValue,
+            #[doc = r#"Destination size is not integer"#]
             r#BadSize,
+            #[doc = r#"Source rectangle extends outside of the content area"#]
             r#OutOfBuffer,
+            #[doc = r#"The wl_surface was destroyed"#]
             r#NoSurface,
         }
         #[doc = r#"An additional interface to a wl_surface object, which allows the"#]
@@ -7082,12 +7292,19 @@ pub mod xdg_shell {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Given wl_surface has another role"#]
             r#Role,
+            #[doc = r#"Xdg_wm_base was destroyed before children"#]
             r#DefunctSurfaces,
+            #[doc = r#"The client tried to map or destroy a non-topmost popup"#]
             r#NotTheTopmostPopup,
+            #[doc = r#"The client specified an invalid popup parent surface"#]
             r#InvalidPopupParent,
+            #[doc = r#"The client provided an invalid surface state"#]
             r#InvalidSurfaceState,
+            #[doc = r#"The client provided an invalid positioner"#]
             r#InvalidPositioner,
+            #[doc = r#"The client didn’t respond to a ping event in time"#]
             r#Unresponsive,
         }
         #[doc = r#"The xdg_wm_base interface is exposed as a global object enabling clients"#]
@@ -7207,6 +7424,7 @@ pub mod xdg_shell {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Invalid input provided"#]
             r#InvalidInput,
         }
         #[repr(u32)]
@@ -7237,53 +7455,6 @@ pub mod xdg_shell {
             r#TopRight,
             r#BottomRight,
         }
-        #[doc = r#"Don't alter the surface position even if it is constrained on some"#]
-        #[doc = r#"axis, for example partially outside the edge of an output."#]
-        #[doc = r#"Slide the surface along the x axis until it is no longer constrained."#]
-        #[doc = r#""#]
-        #[doc = r#"First try to slide towards the direction of the gravity on the x axis"#]
-        #[doc = r#"until either the edge in the opposite direction of the gravity is"#]
-        #[doc = r#"unconstrained or the edge in the direction of the gravity is"#]
-        #[doc = r#"constrained."#]
-        #[doc = r#""#]
-        #[doc = r#"Then try to slide towards the opposite direction of the gravity on the"#]
-        #[doc = r#"x axis until either the edge in the direction of the gravity is"#]
-        #[doc = r#"unconstrained or the edge in the opposite direction of the gravity is"#]
-        #[doc = r#"constrained."#]
-        #[doc = r#"Slide the surface along the y axis until it is no longer constrained."#]
-        #[doc = r#""#]
-        #[doc = r#"First try to slide towards the direction of the gravity on the y axis"#]
-        #[doc = r#"until either the edge in the opposite direction of the gravity is"#]
-        #[doc = r#"unconstrained or the edge in the direction of the gravity is"#]
-        #[doc = r#"constrained."#]
-        #[doc = r#""#]
-        #[doc = r#"Then try to slide towards the opposite direction of the gravity on the"#]
-        #[doc = r#"y axis until either the edge in the direction of the gravity is"#]
-        #[doc = r#"unconstrained or the edge in the opposite direction of the gravity is"#]
-        #[doc = r#"constrained."#]
-        #[doc = r#"Invert the anchor and gravity on the x axis if the surface is"#]
-        #[doc = r#"constrained on the x axis. For example, if the left edge of the"#]
-        #[doc = r#"surface is constrained, the gravity is 'left' and the anchor is"#]
-        #[doc = r#"'left', change the gravity to 'right' and the anchor to 'right'."#]
-        #[doc = r#""#]
-        #[doc = r#"If the adjusted position also ends up being constrained, the resulting"#]
-        #[doc = r#"position of the flip_x adjustment will be the one before the"#]
-        #[doc = r#"adjustment."#]
-        #[doc = r#"Invert the anchor and gravity on the y axis if the surface is"#]
-        #[doc = r#"constrained on the y axis. For example, if the bottom edge of the"#]
-        #[doc = r#"surface is constrained, the gravity is 'bottom' and the anchor is"#]
-        #[doc = r#"'bottom', change the gravity to 'top' and the anchor to 'top'."#]
-        #[doc = r#""#]
-        #[doc = r#"The adjusted position is calculated given the original anchor"#]
-        #[doc = r#"rectangle and offset, but with the new flipped anchor and gravity"#]
-        #[doc = r#"values."#]
-        #[doc = r#""#]
-        #[doc = r#"If the adjusted position also ends up being constrained, the resulting"#]
-        #[doc = r#"position of the flip_y adjustment will be the one before the"#]
-        #[doc = r#"adjustment."#]
-        #[doc = r#"Resize the surface horizontally so that it is completely"#]
-        #[doc = r#"unconstrained."#]
-        #[doc = r#"Resize the surface vertically so that it is completely unconstrained."#]
         #[doc = r#"The constraint adjustment value define ways the compositor will adjust"#]
         #[doc = r#"the position of the surface, if the unadjusted position would result"#]
         #[doc = r#"in the surface being partly constrained."#]
@@ -7499,11 +7670,17 @@ pub mod xdg_shell {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Surface was not fully constructed"#]
             r#NotConstructed,
+            #[doc = r#"Surface was already constructed"#]
             r#AlreadyConstructed,
+            #[doc = r#"Attaching a buffer to an unconfigured surface"#]
             r#UnconfiguredBuffer,
+            #[doc = r#"Invalid serial number when acking a configure event"#]
             r#InvalidSerial,
+            #[doc = r#"Width or height was zero or negative"#]
             r#InvalidSize,
+            #[doc = r#"Surface was destroyed before its role object"#]
             r#DefunctRoleObject,
         }
         #[doc = r#"An interface that may be implemented by a wl_surface, for"#]
@@ -7753,8 +7930,12 @@ pub mod xdg_shell {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Provided value is"#]
+            #[doc = r#"Not a valid variant of the resize_edge enum"#]
             r#InvalidResizeEdge,
+            #[doc = r#"Invalid parent toplevel"#]
             r#InvalidParent,
+            #[doc = r#"Client provided an invalid min or max size"#]
             r#InvalidSize,
         }
         #[doc = r#"These values are used to indicate which edge of a surface"#]
@@ -7773,47 +7954,6 @@ pub mod xdg_shell {
             r#TopRight,
             r#BottomRight,
         }
-        #[doc = r#"The surface is maximized. The window geometry specified in the configure"#]
-        #[doc = r#"event must be obeyed by the client, or the xdg_wm_base.invalid_surface_state"#]
-        #[doc = r#"error is raised."#]
-        #[doc = r#""#]
-        #[doc = r#"The client should draw without shadow or other"#]
-        #[doc = r#"decoration outside of the window geometry."#]
-        #[doc = r#"The surface is fullscreen. The window geometry specified in the"#]
-        #[doc = r#"configure event is a maximum; the client cannot resize beyond it. For"#]
-        #[doc = r#"a surface to cover the whole fullscreened area, the geometry"#]
-        #[doc = r#"dimensions must be obeyed by the client. For more details, see"#]
-        #[doc = r#"xdg_toplevel.set_fullscreen."#]
-        #[doc = r#"The surface is being resized. The window geometry specified in the"#]
-        #[doc = r#"configure event is a maximum; the client cannot resize beyond it."#]
-        #[doc = r#"Clients that have aspect ratio or cell sizing configuration can use"#]
-        #[doc = r#"a smaller size, however."#]
-        #[doc = r#"Client window decorations should be painted as if the window is"#]
-        #[doc = r#"active. Do not assume this means that the window actually has"#]
-        #[doc = r#"keyboard or pointer focus."#]
-        #[doc = r#"The window is currently in a tiled layout and the left edge is"#]
-        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
-        #[doc = r#""#]
-        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
-        #[doc = r#"the window geometry on the left edge."#]
-        #[doc = r#"The window is currently in a tiled layout and the right edge is"#]
-        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
-        #[doc = r#""#]
-        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
-        #[doc = r#"the window geometry on the right edge."#]
-        #[doc = r#"The window is currently in a tiled layout and the top edge is"#]
-        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
-        #[doc = r#""#]
-        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
-        #[doc = r#"the window geometry on the top edge."#]
-        #[doc = r#"The window is currently in a tiled layout and the bottom edge is"#]
-        #[doc = r#"considered to be adjacent to another part of the tiling grid."#]
-        #[doc = r#""#]
-        #[doc = r#"The client should draw without shadow or other decoration outside of"#]
-        #[doc = r#"the window geometry on the bottom edge."#]
-        #[doc = r#"The surface is currently not ordinarily being repainted; for"#]
-        #[doc = r#"example because its content is occluded by another window, or its"#]
-        #[doc = r#"outputs are switched off due to screen locking."#]
         #[doc = r#"The different state values used on the surface. This is designed for"#]
         #[doc = r#"state values like maximized, fullscreen. It is paired with the"#]
         #[doc = r#"configure event to ensure that both the client and the compositor"#]
@@ -7825,9 +7965,13 @@ pub mod xdg_shell {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#State {
+            #[doc = r#"The surface is maximized"#]
             r#Maximized,
+            #[doc = r#"The surface is fullscreen"#]
             r#Fullscreen,
+            #[doc = r#"The surface is being resized"#]
             r#Resizing,
+            #[doc = r#"The surface is now activated"#]
             r#Activated,
             r#TiledLeft,
             r#TiledRight,
@@ -7839,9 +7983,13 @@ pub mod xdg_shell {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#WmCapabilities {
+            #[doc = r#"Show_window_menu is available"#]
             r#WindowMenu,
+            #[doc = r#"Set_maximized and unset_maximized are available"#]
             r#Maximize,
+            #[doc = r#"Set_fullscreen and unset_fullscreen are available"#]
             r#Fullscreen,
+            #[doc = r#"Set_minimized is available"#]
             r#Minimize,
         }
         #[doc = r#"This interface defines an xdg_surface role which allows a surface to,"#]
@@ -8412,6 +8560,7 @@ pub mod xdg_shell {
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
+            #[doc = r#"Tried to grab after being mapped"#]
             r#InvalidGrab,
         }
         #[doc = r#"A popup surface is a short-lived, temporary surface. It can be used to"#]
