@@ -130,18 +130,18 @@ impl Arg {
         match self.ty {
             ArgType::Int => "i32",
             ArgType::Uint => "u32",
-            ArgType::Fixed => "Fixed",
+            ArgType::Fixed => "crate::wire::Fixed",
             ArgType::String => "String",
-            ArgType::Object => "ObjectId",
+            ArgType::Object => "crate::wire::ObjectId",
             ArgType::NewId => {
                 if self.interface.is_some() {
-                    "ObjectId"
+                    "crate::wire::ObjectId"
                 } else {
-                    "NewId"
+                    "crate::wire::NewId"
                 }
             }
             ArgType::Array => "Vec<u8>",
-            ArgType::Fd => "RawFd",
+            ArgType::Fd => "std::os::fd::RawFd",
         }
     }
 
@@ -204,14 +204,34 @@ fn main() -> Result<()> {
 
         writeln!(
             &mut generated_path,
-            r#"pub mod {name} {{
-                use crate::{{Result, Dispatcher, wire::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
-                use std::{{os::fd::RawFd,sync::Arc}};
-                use tracing::debug;"#,
+            "pub mod {name} {{",
             name = &protocol.name
         )?;
 
         for interface in protocol.interfaces {
+            // writeln!(
+            //     &mut generated_path,
+            //     r#"pub mod {name} {{
+            //                 use crate::{{Result, Dispatcher, wire::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
+            //     use std::{{os::fd::RawFd,sync::Arc}};
+            //     use tracing::debug;"#,
+            //     name = interface.name
+            // )?;
+
+            writeln!(
+                &mut generated_path,
+                "pub mod {name} {{",
+                name = interface.name
+            )?;
+
+            for enu in interface.enums {
+                writeln!(
+                    &mut generated_path,
+                    "enum r#{name} {{}}",
+                    name = enu.name.to_upper_camel_case()
+                )?;
+            }
+
             for line in interface.description.lines() {
                 writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
             }
@@ -221,7 +241,7 @@ fn main() -> Result<()> {
                 r#"pub trait r#{trait_name} {{
                     const INTERFACE: &'static str = "{name}";
                     const VERSION: u32 = {version};
-                    async fn handle_request(client: &mut Client, message: &mut Message) -> Result<()> {{
+                    async fn handle_request(client: &mut crate::Client, message: &mut crate::wire::Message) -> crate::Result<()> {{
                     match message.opcode {{"#,
                 trait_name = interface.name.to_upper_camel_case(),
                 name = interface.name,
@@ -235,7 +255,7 @@ fn main() -> Result<()> {
                     let mut optional = "".to_string();
 
                     if !arg.allow_null && arg.is_return_option() {
-                        optional = format!(".ok_or(DecodeError::MalformedPayload)?");
+                        optional = format!(".ok_or(crate::wire::DecodeError::MalformedPayload)?");
                     }
 
                     args.push_str(&format!(
@@ -246,21 +266,24 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    r#"{opcode} => {{debug!("{interface_name} -> {name}");  Self::r#{name}({args}).await}}"#,
+                    r#"{opcode} => {{tracing::debug!("{interface_name} -> {name}");  Self::r#{name}({args}).await}}"#,
                     name = request.name.to_snek_case(),
                     interface_name = interface.name
                 )?;
             }
 
-            writeln!(&mut generated_path, "_ => Err(Error::UnknownOpcode) }} }}")?;
+            writeln!(
+                &mut generated_path,
+                "_ => Err(crate::error::Error::UnknownOpcode) }} }}"
+            )?;
 
             writeln!(
                 &mut generated_path,
-                "fn create_dispatcher(id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>>;"
+                "fn create_dispatcher(id: crate::wire::ObjectId) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;"
             )?;
 
             for request in &interface.requests {
-                let mut args = "client: &mut Client,".to_string();
+                let mut args = "client: &mut crate::Client,".to_string();
 
                 for arg in &request.args {
                     let mut ty = arg.to_rust_type().to_string();
@@ -278,13 +301,14 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    "async fn r#{name}({args}) -> Result<()>;",
+                    "async fn r#{name}({args}) -> crate::Result<()>;",
                     name = request.name.to_snek_case()
                 )?;
             }
 
             for (opcode, event) in interface.events.iter().enumerate() {
-                let mut args = "dispatcher_id: ObjectId, client: &mut Client,".to_string();
+                let mut args =
+                    "dispatcher_id: crate::wire::ObjectId, client: &mut crate::Client,".to_string();
                 let mut build_args = String::new();
 
                 for arg in &event.args {
@@ -311,18 +335,14 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    "async fn r#{name}({args}) -> Result<()> {{",
+                    "async fn r#{name}({args}) -> crate::Result<()> {{",
                     name = event.name.to_snek_case()
                 )?;
 
-                // .put_uint(name)
-                // .put_string(&interface)
-                // .put_uint(version)
-
                 writeln!(
                     &mut generated_path,
-                    r#"debug!("{interface_name} -> {name}");
-                    let payload = PayloadBuilder::new()
+                    r#"tracing::debug!("{interface_name} -> {name}");
+                    let payload = crate::wire::PayloadBuilder::new()
                     {build_args}
                     .build();"#,
                     name = event.name.to_snek_case(),
@@ -332,15 +352,15 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"client
-                .send_message(Message::new(dispatcher_id, {opcode}, payload))
+                .send_message(crate::wire::Message::new(dispatcher_id, {opcode}, payload))
                 .await
-                .map_err(Error::IoError)"#
+                .map_err(crate::error::Error::IoError)"#
                 )?;
 
                 writeln!(&mut generated_path, "}}")?;
             }
 
-            writeln!(&mut generated_path, "}}")?;
+            writeln!(&mut generated_path, "}} }}")?;
         }
         writeln!(&mut generated_path, "}}")?;
     }
