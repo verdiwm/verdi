@@ -1,8 +1,9 @@
 #![allow(unused)]
+#![allow(async_fn_in_trait)]
 pub mod wayland {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
@@ -30,17 +31,33 @@ pub mod wayland {
         }
         fn r#sync(client: &mut Client, r#callback: ObjectId) -> Result<()>;
         fn r#get_registry(client: &mut Client, r#registry: ObjectId) -> Result<()>;
-        fn r#error(
-            dispatcher: &Dispatcher,
+        async fn r#error(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#object_id: ObjectId,
             r#code: u32,
             r#message: String,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_object(Some(object_id))
+                .put_uint(code)
+                .put_string(Some(message))
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#delete_id(dispatcher: &Dispatcher, client: &mut Client, r#id: u32) -> Result<()> {
-            todo!()
+        async fn r#delete_id(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#id: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(id).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlRegistry {
@@ -59,21 +76,33 @@ pub mod wayland {
             }
         }
         fn r#bind(client: &mut Client, r#name: u32, r#id: NewId) -> Result<()>;
-        fn r#global(
-            dispatcher: &Dispatcher,
+        async fn r#global(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#name: u32,
             r#interface: String,
             r#version: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(name)
+                .put_string(Some(interface))
+                .put_uint(version)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#global_remove(
-            dispatcher: &Dispatcher,
+        async fn r#global_remove(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#name: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(name).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlCallback {
@@ -90,12 +119,16 @@ pub mod wayland {
                 id,
             }
         }
-        fn r#done(
-            dispatcher: &Dispatcher,
+        async fn r#done(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#callback_data: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(callback_data).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlCompositor {
@@ -188,8 +221,16 @@ pub mod wayland {
             r#size: i32,
         ) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#format(dispatcher: &Dispatcher, client: &mut Client, r#format: u32) -> Result<()> {
-            todo!()
+        async fn r#format(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#format: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(format).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlBuffer {
@@ -208,8 +249,12 @@ pub mod wayland {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#release(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#release(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlDataOffer {
@@ -244,22 +289,38 @@ pub mod wayland {
             r#dnd_actions: u32,
             r#preferred_action: u32,
         ) -> Result<()>;
-        fn r#offer(
-            dispatcher: &Dispatcher,
+        async fn r#offer(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#mime_type: String,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_string(Some(mime_type)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#source_actions(
-            dispatcher: &Dispatcher,
+        async fn r#source_actions(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#source_actions: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(source_actions).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#action(dispatcher: &Dispatcher, client: &mut Client, r#dnd_action: u32) -> Result<()> {
-            todo!()
+        async fn r#action(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#dnd_action: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(dnd_action).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlDataSource {
@@ -285,32 +346,63 @@ pub mod wayland {
         fn r#offer(client: &mut Client, r#mime_type: String) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#set_actions(client: &mut Client, r#dnd_actions: u32) -> Result<()>;
-        fn r#target(
-            dispatcher: &Dispatcher,
+        async fn r#target(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#mime_type: Option<String>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_string(mime_type).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#send(
-            dispatcher: &Dispatcher,
+        async fn r#send(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#mime_type: String,
             r#fd: RawFd,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_string(Some(mime_type))
+                .put_int(fd)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#cancelled(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#cancelled(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#dnd_drop_performed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#dnd_drop_performed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#dnd_finished(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#dnd_finished(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#action(dispatcher: &Dispatcher, client: &mut Client, r#dnd_action: u32) -> Result<()> {
-            todo!()
+        async fn r#action(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#dnd_action: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(dnd_action).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlDataDevice {
@@ -349,15 +441,19 @@ pub mod wayland {
             r#serial: u32,
         ) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#data_offer(
-            dispatcher: &Dispatcher,
+        async fn r#data_offer(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#id: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_object(Some(id)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#enter(
-            dispatcher: &Dispatcher,
+        async fn r#enter(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
@@ -365,29 +461,59 @@ pub mod wayland {
             r#y: Fixed,
             r#id: Option<ObjectId>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(surface))
+                .put_fixed(x)
+                .put_fixed(y)
+                .put_object(id)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#leave(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#leave(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#motion(
-            dispatcher: &Dispatcher,
+        async fn r#motion(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#time: u32,
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(time)
+                .put_fixed(x)
+                .put_fixed(y)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#drop(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#drop(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#selection(
-            dispatcher: &Dispatcher,
+        async fn r#selection(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#id: Option<ObjectId>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_object(id).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlDataDeviceManager {
@@ -533,20 +659,36 @@ pub mod wayland {
         fn r#set_maximized(client: &mut Client, r#output: Option<ObjectId>) -> Result<()>;
         fn r#set_title(client: &mut Client, r#title: String) -> Result<()>;
         fn r#set_class(client: &mut Client, r#class: String) -> Result<()>;
-        fn r#ping(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
-            todo!()
+        async fn r#ping(dispatcher_id: ObjectId, client: &mut Client, r#serial: u32) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(serial).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#configure(
-            dispatcher: &Dispatcher,
+        async fn r#configure(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#edges: u32,
             r#width: i32,
             r#height: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(edges)
+                .put_int(width)
+                .put_int(height)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#popup_done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#popup_done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlSurface {
@@ -617,25 +759,49 @@ pub mod wayland {
             r#height: i32,
         ) -> Result<()>;
         fn r#offset(client: &mut Client, r#x: i32, r#y: i32) -> Result<()>;
-        fn r#enter(dispatcher: &Dispatcher, client: &mut Client, r#output: ObjectId) -> Result<()> {
-            todo!()
+        async fn r#enter(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#output: ObjectId,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_object(Some(output)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#leave(dispatcher: &Dispatcher, client: &mut Client, r#output: ObjectId) -> Result<()> {
-            todo!()
+        async fn r#leave(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#output: ObjectId,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_object(Some(output)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#preferred_buffer_scale(
-            dispatcher: &Dispatcher,
+        async fn r#preferred_buffer_scale(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#factor: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_int(factor).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#preferred_buffer_transform(
-            dispatcher: &Dispatcher,
+        async fn r#preferred_buffer_transform(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#transform: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(transform).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlSeat {
@@ -669,15 +835,27 @@ pub mod wayland {
         fn r#get_keyboard(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#get_touch(client: &mut Client, r#id: ObjectId) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#capabilities(
-            dispatcher: &Dispatcher,
+        async fn r#capabilities(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#capabilities: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(capabilities).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#name(dispatcher: &Dispatcher, client: &mut Client, r#name: String) -> Result<()> {
-            todo!()
+        async fn r#name(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#name: String,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_string(Some(name)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlPointer {
@@ -710,93 +888,167 @@ pub mod wayland {
             r#hotspot_y: i32,
         ) -> Result<()>;
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#enter(
-            dispatcher: &Dispatcher,
+        async fn r#enter(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
             r#surface_x: Fixed,
             r#surface_y: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(surface))
+                .put_fixed(surface_x)
+                .put_fixed(surface_y)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#leave(
-            dispatcher: &Dispatcher,
+        async fn r#leave(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(surface))
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#motion(
-            dispatcher: &Dispatcher,
+        async fn r#motion(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#time: u32,
             r#surface_x: Fixed,
             r#surface_y: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(time)
+                .put_fixed(surface_x)
+                .put_fixed(surface_y)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#button(
-            dispatcher: &Dispatcher,
+        async fn r#button(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#time: u32,
             r#button: u32,
             r#state: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_uint(time)
+                .put_uint(button)
+                .put_uint(state)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#axis(
-            dispatcher: &Dispatcher,
+        async fn r#axis(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#time: u32,
             r#axis: u32,
             r#value: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(time)
+                .put_uint(axis)
+                .put_fixed(value)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#frame(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#frame(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#axis_source(
-            dispatcher: &Dispatcher,
+        async fn r#axis_source(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#axis_source: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(axis_source).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#axis_stop(
-            dispatcher: &Dispatcher,
+        async fn r#axis_stop(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#time: u32,
             r#axis: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(time).put_uint(axis).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#axis_discrete(
-            dispatcher: &Dispatcher,
+        async fn r#axis_discrete(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#axis: u32,
             r#discrete: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(axis)
+                .put_int(discrete)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#axis_value120(
-            dispatcher: &Dispatcher,
+        async fn r#axis_value120(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#axis: u32,
             r#value120: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(axis)
+                .put_int(value120)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#axis_relative_direction(
-            dispatcher: &Dispatcher,
+        async fn r#axis_relative_direction(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#axis: u32,
             r#direction: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(axis)
+                .put_uint(direction)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlKeyboard {
@@ -815,44 +1067,76 @@ pub mod wayland {
             }
         }
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#keymap(
-            dispatcher: &Dispatcher,
+        async fn r#keymap(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#format: u32,
             r#fd: RawFd,
             r#size: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(format)
+                .put_int(fd)
+                .put_uint(size)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#enter(
-            dispatcher: &Dispatcher,
+        async fn r#enter(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
             r#keys: Vec<u8>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(surface))
+                .put_array(keys)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#leave(
-            dispatcher: &Dispatcher,
+        async fn r#leave(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(surface))
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#key(
-            dispatcher: &Dispatcher,
+        async fn r#key(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#time: u32,
             r#key: u32,
             r#state: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_uint(time)
+                .put_uint(key)
+                .put_uint(state)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#modifiers(
-            dispatcher: &Dispatcher,
+        async fn r#modifiers(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#mods_depressed: u32,
@@ -860,15 +1144,29 @@ pub mod wayland {
             r#mods_locked: u32,
             r#group: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_uint(mods_depressed)
+                .put_uint(mods_latched)
+                .put_uint(mods_locked)
+                .put_uint(group)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#repeat_info(
-            dispatcher: &Dispatcher,
+        async fn r#repeat_info(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#rate: i32,
             r#delay: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_int(rate).put_int(delay).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlTouch {
@@ -887,8 +1185,8 @@ pub mod wayland {
             }
         }
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#down(
-            dispatcher: &Dispatcher,
+        async fn r#down(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#time: u32,
@@ -897,49 +1195,100 @@ pub mod wayland {
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_uint(time)
+                .put_object(Some(surface))
+                .put_int(id)
+                .put_fixed(x)
+                .put_fixed(y)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#up(
-            dispatcher: &Dispatcher,
+        async fn r#up(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#time: u32,
             r#id: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_uint(time)
+                .put_int(id)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#motion(
-            dispatcher: &Dispatcher,
+        async fn r#motion(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#time: u32,
             r#id: i32,
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(time)
+                .put_int(id)
+                .put_fixed(x)
+                .put_fixed(y)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#frame(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#frame(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#cancel(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#cancel(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#shape(
-            dispatcher: &Dispatcher,
+        async fn r#shape(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#id: i32,
             r#major: Fixed,
             r#minor: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_int(id)
+                .put_fixed(major)
+                .put_fixed(minor)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#orientation(
-            dispatcher: &Dispatcher,
+        async fn r#orientation(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#id: i32,
             r#orientation: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_int(id)
+                .put_fixed(orientation)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlOutput {
@@ -958,8 +1307,8 @@ pub mod wayland {
             }
         }
         fn r#release(client: &mut Client) -> Result<()>;
-        fn r#geometry(
-            dispatcher: &Dispatcher,
+        async fn r#geometry(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#x: i32,
             r#y: i32,
@@ -970,33 +1319,79 @@ pub mod wayland {
             r#model: String,
             r#transform: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_int(x)
+                .put_int(y)
+                .put_int(physical_width)
+                .put_int(physical_height)
+                .put_int(subpixel)
+                .put_string(Some(make))
+                .put_string(Some(model))
+                .put_int(transform)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#mode(
-            dispatcher: &Dispatcher,
+        async fn r#mode(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#flags: u32,
             r#width: i32,
             r#height: i32,
             r#refresh: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(flags)
+                .put_int(width)
+                .put_int(height)
+                .put_int(refresh)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#scale(dispatcher: &Dispatcher, client: &mut Client, r#factor: i32) -> Result<()> {
-            todo!()
+        async fn r#scale(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#factor: i32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_int(factor).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#name(dispatcher: &Dispatcher, client: &mut Client, r#name: String) -> Result<()> {
-            todo!()
+        async fn r#name(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#name: String,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_string(Some(name)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#description(
-            dispatcher: &Dispatcher,
+        async fn r#description(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#description: String,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_string(Some(description)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WlRegion {
@@ -1110,7 +1505,7 @@ pub mod wayland {
 pub mod linux_dmabuf_v1 {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
@@ -1150,17 +1545,33 @@ pub mod linux_dmabuf_v1 {
             r#id: ObjectId,
             r#surface: ObjectId,
         ) -> Result<()>;
-        fn r#format(dispatcher: &Dispatcher, client: &mut Client, r#format: u32) -> Result<()> {
-            todo!()
+        async fn r#format(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#format: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(format).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#modifier(
-            dispatcher: &Dispatcher,
+        async fn r#modifier(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#format: u32,
             r#modifier_hi: u32,
             r#modifier_lo: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(format)
+                .put_uint(modifier_hi)
+                .put_uint(modifier_lo)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpLinuxBufferParamsV1 {
@@ -1227,15 +1638,23 @@ pub mod linux_dmabuf_v1 {
             r#format: u32,
             r#flags: u32,
         ) -> Result<()>;
-        fn r#created(
-            dispatcher: &Dispatcher,
+        async fn r#created(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#buffer: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_object(Some(buffer)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#failed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#failed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpLinuxDmabufFeedbackV1 {
@@ -1254,54 +1673,82 @@ pub mod linux_dmabuf_v1 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#format_table(
-            dispatcher: &Dispatcher,
+        async fn r#format_table(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#fd: RawFd,
             r#size: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_int(fd).put_uint(size).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#main_device(
-            dispatcher: &Dispatcher,
+        async fn r#main_device(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#device: Vec<u8>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_array(device).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#tranche_done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#tranche_done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#tranche_target_device(
-            dispatcher: &Dispatcher,
+        async fn r#tranche_target_device(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#device: Vec<u8>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_array(device).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#tranche_formats(
-            dispatcher: &Dispatcher,
+        async fn r#tranche_formats(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#indices: Vec<u8>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_array(indices).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#tranche_flags(
-            dispatcher: &Dispatcher,
+        async fn r#tranche_flags(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#flags: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(flags).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
 }
 pub mod presentation_time {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
@@ -1328,8 +1775,16 @@ pub mod presentation_time {
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#feedback(client: &mut Client, r#surface: ObjectId, r#callback: ObjectId)
             -> Result<()>;
-        fn r#clock_id(dispatcher: &Dispatcher, client: &mut Client, r#clk_id: u32) -> Result<()> {
-            todo!()
+        async fn r#clock_id(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#clk_id: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(clk_id).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#WpPresentationFeedback {
@@ -1346,15 +1801,19 @@ pub mod presentation_time {
                 id,
             }
         }
-        fn r#sync_output(
-            dispatcher: &Dispatcher,
+        async fn r#sync_output(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#output: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_object(Some(output)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#presented(
-            dispatcher: &Dispatcher,
+        async fn r#presented(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#tv_sec_hi: u32,
             r#tv_sec_lo: u32,
@@ -1364,17 +1823,33 @@ pub mod presentation_time {
             r#seq_lo: u32,
             r#flags: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(tv_sec_hi)
+                .put_uint(tv_sec_lo)
+                .put_uint(tv_nsec)
+                .put_uint(refresh)
+                .put_uint(seq_hi)
+                .put_uint(seq_lo)
+                .put_uint(flags)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#discarded(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#discarded(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
 }
 pub mod tablet_v2 {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
@@ -1421,22 +1896,38 @@ pub mod tablet_v2 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#tablet_added(
-            dispatcher: &Dispatcher,
+        async fn r#tablet_added(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#id: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_object(Some(id)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#tool_added(
-            dispatcher: &Dispatcher,
+        async fn r#tool_added(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#id: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_object(Some(id)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#pad_added(dispatcher: &Dispatcher, client: &mut Client, r#id: ObjectId) -> Result<()> {
-            todo!()
+        async fn r#pad_added(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#id: ObjectId,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_object(Some(id)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpTabletToolV2 {
@@ -1469,107 +1960,219 @@ pub mod tablet_v2 {
             r#hotspot_y: i32,
         ) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#type(dispatcher: &Dispatcher, client: &mut Client, r#tool_type: u32) -> Result<()> {
-            todo!()
+        async fn r#type(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#tool_type: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(tool_type).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#hardware_serial(
-            dispatcher: &Dispatcher,
+        async fn r#hardware_serial(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#hardware_serial_hi: u32,
             r#hardware_serial_lo: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(hardware_serial_hi)
+                .put_uint(hardware_serial_lo)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#hardware_id_wacom(
-            dispatcher: &Dispatcher,
+        async fn r#hardware_id_wacom(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#hardware_id_hi: u32,
             r#hardware_id_lo: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(hardware_id_hi)
+                .put_uint(hardware_id_lo)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#capability(
-            dispatcher: &Dispatcher,
+        async fn r#capability(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#capability: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(capability).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#removed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#removed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#proximity_in(
-            dispatcher: &Dispatcher,
+        async fn r#proximity_in(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#tablet: ObjectId,
             r#surface: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(tablet))
+                .put_object(Some(surface))
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#proximity_out(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#proximity_out(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#down(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
-            todo!()
+        async fn r#down(dispatcher_id: ObjectId, client: &mut Client, r#serial: u32) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(serial).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#up(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#up(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#motion(
-            dispatcher: &Dispatcher,
+        async fn r#motion(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#x: Fixed,
             r#y: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_fixed(x).put_fixed(y).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#pressure(dispatcher: &Dispatcher, client: &mut Client, r#pressure: u32) -> Result<()> {
-            todo!()
+        async fn r#pressure(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#pressure: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(pressure).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#distance(dispatcher: &Dispatcher, client: &mut Client, r#distance: u32) -> Result<()> {
-            todo!()
+        async fn r#distance(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#distance: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(distance).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#tilt(
-            dispatcher: &Dispatcher,
+        async fn r#tilt(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#tilt_x: Fixed,
             r#tilt_y: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_fixed(tilt_x)
+                .put_fixed(tilt_y)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#rotation(
-            dispatcher: &Dispatcher,
+        async fn r#rotation(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#degrees: Fixed,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_fixed(degrees).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#slider(dispatcher: &Dispatcher, client: &mut Client, r#position: i32) -> Result<()> {
-            todo!()
+        async fn r#slider(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#position: i32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_int(position).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#wheel(
-            dispatcher: &Dispatcher,
+        async fn r#wheel(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#degrees: Fixed,
             r#clicks: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_fixed(degrees)
+                .put_int(clicks)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#button(
-            dispatcher: &Dispatcher,
+        async fn r#button(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#button: u32,
             r#state: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_uint(button)
+                .put_uint(state)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#frame(dispatcher: &Dispatcher, client: &mut Client, r#time: u32) -> Result<()> {
-            todo!()
+        async fn r#frame(dispatcher_id: ObjectId, client: &mut Client, r#time: u32) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(time).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpTabletV2 {
@@ -1588,25 +2191,53 @@ pub mod tablet_v2 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#name(dispatcher: &Dispatcher, client: &mut Client, r#name: String) -> Result<()> {
-            todo!()
+        async fn r#name(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#name: String,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_string(Some(name)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#id(
-            dispatcher: &Dispatcher,
+        async fn r#id(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#vid: u32,
             r#pid: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(vid).put_uint(pid).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#path(dispatcher: &Dispatcher, client: &mut Client, r#path: String) -> Result<()> {
-            todo!()
+        async fn r#path(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#path: String,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_string(Some(path)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#removed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#removed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpTabletPadRingV2 {
@@ -1631,17 +2262,41 @@ pub mod tablet_v2 {
         }
         fn r#set_feedback(client: &mut Client, r#description: String, r#serial: u32) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#source(dispatcher: &Dispatcher, client: &mut Client, r#source: u32) -> Result<()> {
-            todo!()
+        async fn r#source(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#source: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(source).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#angle(dispatcher: &Dispatcher, client: &mut Client, r#degrees: Fixed) -> Result<()> {
-            todo!()
+        async fn r#angle(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#degrees: Fixed,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_fixed(degrees).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#stop(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#stop(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#frame(dispatcher: &Dispatcher, client: &mut Client, r#time: u32) -> Result<()> {
-            todo!()
+        async fn r#frame(dispatcher_id: ObjectId, client: &mut Client, r#time: u32) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(time).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpTabletPadStripV2 {
@@ -1666,17 +2321,41 @@ pub mod tablet_v2 {
         }
         fn r#set_feedback(client: &mut Client, r#description: String, r#serial: u32) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#source(dispatcher: &Dispatcher, client: &mut Client, r#source: u32) -> Result<()> {
-            todo!()
+        async fn r#source(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#source: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(source).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#position(dispatcher: &Dispatcher, client: &mut Client, r#position: u32) -> Result<()> {
-            todo!()
+        async fn r#position(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#position: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(position).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#stop(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#stop(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#frame(dispatcher: &Dispatcher, client: &mut Client, r#time: u32) -> Result<()> {
-            todo!()
+        async fn r#frame(dispatcher_id: ObjectId, client: &mut Client, r#time: u32) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(time).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpTabletPadGroupV2 {
@@ -1695,33 +2374,69 @@ pub mod tablet_v2 {
             }
         }
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#buttons(
-            dispatcher: &Dispatcher,
+        async fn r#buttons(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#buttons: Vec<u8>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_array(buttons).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#ring(dispatcher: &Dispatcher, client: &mut Client, r#ring: ObjectId) -> Result<()> {
-            todo!()
+        async fn r#ring(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#ring: ObjectId,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_object(Some(ring)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#strip(dispatcher: &Dispatcher, client: &mut Client, r#strip: ObjectId) -> Result<()> {
-            todo!()
+        async fn r#strip(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#strip: ObjectId,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_object(Some(strip)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#modes(dispatcher: &Dispatcher, client: &mut Client, r#modes: u32) -> Result<()> {
-            todo!()
+        async fn r#modes(dispatcher_id: ObjectId, client: &mut Client, r#modes: u32) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(modes).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#mode_switch(
-            dispatcher: &Dispatcher,
+        async fn r#mode_switch(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#time: u32,
             r#serial: u32,
             r#mode: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(time)
+                .put_uint(serial)
+                .put_uint(mode)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#ZwpTabletPadV2 {
@@ -1752,57 +2467,108 @@ pub mod tablet_v2 {
             r#serial: u32,
         ) -> Result<()>;
         fn r#destroy(client: &mut Client) -> Result<()>;
-        fn r#group(
-            dispatcher: &Dispatcher,
+        async fn r#group(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#pad_group: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_object(Some(pad_group)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#path(dispatcher: &Dispatcher, client: &mut Client, r#path: String) -> Result<()> {
-            todo!()
+        async fn r#path(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#path: String,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_string(Some(path)).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#buttons(dispatcher: &Dispatcher, client: &mut Client, r#buttons: u32) -> Result<()> {
-            todo!()
+        async fn r#buttons(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#buttons: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(buttons).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#button(
-            dispatcher: &Dispatcher,
+        async fn r#button(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#time: u32,
             r#button: u32,
             r#state: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(time)
+                .put_uint(button)
+                .put_uint(state)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#enter(
-            dispatcher: &Dispatcher,
+        async fn r#enter(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#tablet: ObjectId,
             r#surface: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(tablet))
+                .put_object(Some(surface))
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#leave(
-            dispatcher: &Dispatcher,
+        async fn r#leave(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#serial: u32,
             r#surface: ObjectId,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_uint(serial)
+                .put_object(Some(surface))
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#removed(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#removed(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
 }
 pub mod viewporter {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
@@ -1866,7 +2632,7 @@ pub mod viewporter {
 pub mod xdg_shell {
     use crate::{
         error::Error,
-        message::{DecodeError, Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId, PayloadBuilder},
         Client, Dispatcher, Result,
     };
     use std::os::fd::RawFd;
@@ -1903,8 +2669,12 @@ pub mod xdg_shell {
             r#surface: ObjectId,
         ) -> Result<()>;
         fn r#pong(client: &mut Client, r#serial: u32) -> Result<()>;
-        fn r#ping(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
-            todo!()
+        async fn r#ping(dispatcher_id: ObjectId, client: &mut Client, r#serial: u32) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(serial).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#XdgPositioner {
@@ -2010,8 +2780,16 @@ pub mod xdg_shell {
             r#height: i32,
         ) -> Result<()>;
         fn r#ack_configure(client: &mut Client, r#serial: u32) -> Result<()>;
-        fn r#configure(dispatcher: &Dispatcher, client: &mut Client, r#serial: u32) -> Result<()> {
-            todo!()
+        async fn r#configure(
+            dispatcher_id: ObjectId,
+            client: &mut Client,
+            r#serial: u32,
+        ) -> Result<()> {
+            let payload = PayloadBuilder::new().put_uint(serial).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#XdgToplevel {
@@ -2088,32 +2866,52 @@ pub mod xdg_shell {
         fn r#set_fullscreen(client: &mut Client, r#output: Option<ObjectId>) -> Result<()>;
         fn r#unset_fullscreen(client: &mut Client) -> Result<()>;
         fn r#set_minimized(client: &mut Client) -> Result<()>;
-        fn r#configure(
-            dispatcher: &Dispatcher,
+        async fn r#configure(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#width: i32,
             r#height: i32,
             r#states: Vec<u8>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_int(width)
+                .put_int(height)
+                .put_array(states)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#close(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#close(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#configure_bounds(
-            dispatcher: &Dispatcher,
+        async fn r#configure_bounds(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#width: i32,
             r#height: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_int(width).put_int(height).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#wm_capabilities(
-            dispatcher: &Dispatcher,
+        async fn r#wm_capabilities(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#capabilities: Vec<u8>,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_array(capabilities).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
     pub trait r#XdgPopup {
@@ -2144,25 +2942,42 @@ pub mod xdg_shell {
         fn r#destroy(client: &mut Client) -> Result<()>;
         fn r#grab(client: &mut Client, r#seat: ObjectId, r#serial: u32) -> Result<()>;
         fn r#reposition(client: &mut Client, r#positioner: ObjectId, r#token: u32) -> Result<()>;
-        fn r#configure(
-            dispatcher: &Dispatcher,
+        async fn r#configure(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#x: i32,
             r#y: i32,
             r#width: i32,
             r#height: i32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new()
+                .put_int(x)
+                .put_int(y)
+                .put_int(width)
+                .put_int(height)
+                .build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#popup_done(dispatcher: &Dispatcher, client: &mut Client) -> Result<()> {
-            todo!()
+        async fn r#popup_done(dispatcher_id: ObjectId, client: &mut Client) -> Result<()> {
+            let payload = PayloadBuilder::new().build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
-        fn r#repositioned(
-            dispatcher: &Dispatcher,
+        async fn r#repositioned(
+            dispatcher_id: ObjectId,
             client: &mut Client,
             r#token: u32,
         ) -> Result<()> {
-            todo!()
+            let payload = PayloadBuilder::new().put_uint(token).build();
+            client
+                .send_message(Message::new(dispatcher_id, 0, payload))
+                .await
+                .map_err(Error::IoError)
         }
     }
 }
