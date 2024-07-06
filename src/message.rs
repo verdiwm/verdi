@@ -64,7 +64,7 @@ impl PayloadBuilder {
     pub fn put_string<T: AsRef<str>>(mut self, string: Option<T>) -> Self {
         if let Some(string) = string {
             let string = string.as_ref();
-            let total_len = 4 + string.len();
+            let total_len = 5 + string.len();
             let mut padding = 0;
 
             if total_len % 4 != 0 {
