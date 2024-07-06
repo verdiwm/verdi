@@ -125,42 +125,48 @@ struct Entry {
     description: Option<String>,
 }
 
-impl ArgType {
+impl Arg {
     fn to_rust_type(&self) -> &str {
-        match self {
+        match self.ty {
             ArgType::Int => "i32",
             ArgType::Uint => "u32",
             ArgType::Fixed => "Fixed",
             ArgType::String => "String",
             ArgType::Object => "ObjectId",
-            ArgType::NewId => "NewId",
+            ArgType::NewId => {
+                if self.interface.is_some() {
+                    "ObjectId"
+                } else {
+                    "NewId"
+                }
+            }
             ArgType::Array => "Vec<u8>",
             ArgType::Fd => "RawFd",
         }
     }
 
-    fn needs_borrow(&self) -> bool {
-        match self {
-            ArgType::String | ArgType::Array => true,
-            _ => false,
-        }
-    }
-
     fn is_return_option(&self) -> bool {
-        match self {
+        match self.ty {
             ArgType::String | ArgType::Object => true,
+            ArgType::NewId => self.interface.is_some(),
             _ => false,
         }
     }
 
     fn to_caller(&self) -> &str {
-        match self {
+        match self.ty {
             ArgType::Int => "int",
             ArgType::Uint => "uint",
             ArgType::Fixed => "fixed",
             ArgType::String => "string",
             ArgType::Object => "object",
-            ArgType::NewId => "new_id",
+            ArgType::NewId => {
+                if self.interface.is_some() {
+                    "object"
+                } else {
+                    "new_id"
+                }
+            }
             ArgType::Array => "array",
             ArgType::Fd => "int",
         }
@@ -219,21 +225,15 @@ fn main() -> Result<()> {
                 let mut args = String::new();
 
                 for arg in &request.args {
-                    // let mut borrowed = "";
-
-                    // if arg.ty.needs_borrow() {
-                    //     borrowed = "&";
-                    // }
-
                     let mut optional = "".to_string();
 
-                    if !arg.allow_null && arg.ty.is_return_option() {
+                    if !arg.allow_null && arg.is_return_option() {
                         optional = format!(".unwrap()");
                     }
 
                     args.push_str(&format!(
                         "message.{caller}()?{optional},",
-                        caller = arg.ty.to_caller()
+                        caller = arg.to_caller()
                     ))
                 }
 
@@ -253,7 +253,7 @@ fn main() -> Result<()> {
                 let mut args = String::new();
 
                 for arg in &request.args {
-                    let mut ty = arg.ty.to_rust_type().to_string();
+                    let mut ty = arg.to_rust_type().to_string();
 
                     if arg.allow_null {
                         ty = format!("Option<{ty}>");
