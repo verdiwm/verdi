@@ -11,7 +11,7 @@ pub mod error;
 pub mod message;
 pub mod proto;
 
-use message::{DecodeError, Message, MessageCodec, NewId};
+use message::{DecodeError, Message, MessageCodec, NewId, ObjectId};
 use proto::wayland::WlDisplay;
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
@@ -107,12 +107,12 @@ impl Interface for DisplayInterface {
 }
 
 impl WlDisplay for DisplayInterface {
-    fn r#sync(r#callback: NewId) -> Result<()> {
+    fn sync(r#callback: ObjectId) -> Result<()> {
         debug!("Handling sync");
         todo!()
     }
 
-    fn r#get_registry(r#registry: NewId) -> Result<()> {
+    fn get_registry(r#registry: ObjectId) -> Result<()> {
         debug!("Handling get_registry");
         todo!()
     }
