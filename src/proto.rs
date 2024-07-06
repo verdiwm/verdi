@@ -9,13 +9,13 @@ pub mod wayland {
     pub trait r#WlDisplay {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#sync(message.new_id()?),
-                1 => Self::r#get_registry(message.new_id()?),
+                0 => Self::r#sync(message.object()?.unwrap()),
+                1 => Self::r#get_registry(message.object()?.unwrap()),
                 _ => Err(Error::UnknownOpcode),
             }
         }
-        fn r#sync(r#callback: NewId) -> Result<()>;
-        fn r#get_registry(r#registry: NewId) -> Result<()>;
+        fn r#sync(r#callback: ObjectId) -> Result<()>;
+        fn r#get_registry(r#registry: ObjectId) -> Result<()>;
     }
     pub trait r#WlRegistry {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
@@ -36,19 +36,19 @@ pub mod wayland {
     pub trait r#WlCompositor {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#create_surface(message.new_id()?),
-                1 => Self::r#create_region(message.new_id()?),
+                0 => Self::r#create_surface(message.object()?.unwrap()),
+                1 => Self::r#create_region(message.object()?.unwrap()),
                 _ => Err(Error::UnknownOpcode),
             }
         }
-        fn r#create_surface(r#id: NewId) -> Result<()>;
-        fn r#create_region(r#id: NewId) -> Result<()>;
+        fn r#create_surface(r#id: ObjectId) -> Result<()>;
+        fn r#create_region(r#id: ObjectId) -> Result<()>;
     }
     pub trait r#WlShmPool {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#create_buffer(
-                    message.new_id()?,
+                    message.object()?.unwrap(),
                     message.int()?,
                     message.int()?,
                     message.int()?,
@@ -61,7 +61,7 @@ pub mod wayland {
             }
         }
         fn r#create_buffer(
-            r#id: NewId,
+            r#id: ObjectId,
             r#offset: i32,
             r#width: i32,
             r#height: i32,
@@ -74,12 +74,14 @@ pub mod wayland {
     pub trait r#WlShm {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#create_pool(message.new_id()?, message.int()?, message.int()?),
+                0 => {
+                    Self::r#create_pool(message.object()?.unwrap(), message.int()?, message.int()?)
+                }
                 1 => Self::r#release(),
                 _ => Err(Error::UnknownOpcode),
             }
         }
-        fn r#create_pool(r#id: NewId, r#fd: RawFd, r#size: i32) -> Result<()>;
+        fn r#create_pool(r#id: ObjectId, r#fd: RawFd, r#size: i32) -> Result<()>;
         fn r#release() -> Result<()>;
     }
     pub trait r#WlBuffer {
@@ -147,22 +149,27 @@ pub mod wayland {
     pub trait r#WlDataDeviceManager {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#create_data_source(message.new_id()?),
-                1 => Self::r#get_data_device(message.new_id()?, message.object()?.unwrap()),
+                0 => Self::r#create_data_source(message.object()?.unwrap()),
+                1 => {
+                    Self::r#get_data_device(message.object()?.unwrap(), message.object()?.unwrap())
+                }
                 _ => Err(Error::UnknownOpcode),
             }
         }
-        fn r#create_data_source(r#id: NewId) -> Result<()>;
-        fn r#get_data_device(r#id: NewId, r#seat: ObjectId) -> Result<()>;
+        fn r#create_data_source(r#id: ObjectId) -> Result<()>;
+        fn r#get_data_device(r#id: ObjectId, r#seat: ObjectId) -> Result<()>;
     }
     pub trait r#WlShell {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#get_shell_surface(message.new_id()?, message.object()?.unwrap()),
+                0 => Self::r#get_shell_surface(
+                    message.object()?.unwrap(),
+                    message.object()?.unwrap(),
+                ),
                 _ => Err(Error::UnknownOpcode),
             }
         }
-        fn r#get_shell_surface(r#id: NewId, r#surface: ObjectId) -> Result<()>;
+        fn r#get_shell_surface(r#id: ObjectId, r#surface: ObjectId) -> Result<()>;
     }
     pub trait r#WlShellSurface {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
@@ -225,7 +232,7 @@ pub mod wayland {
                     message.int()?,
                     message.int()?,
                 ),
-                3 => Self::r#frame(message.new_id()?),
+                3 => Self::r#frame(message.object()?.unwrap()),
                 4 => Self::r#set_opaque_region(message.object()?),
                 5 => Self::r#set_input_region(message.object()?),
                 6 => Self::r#commit(),
@@ -244,7 +251,7 @@ pub mod wayland {
         fn r#destroy() -> Result<()>;
         fn r#attach(r#buffer: Option<ObjectId>, r#x: i32, r#y: i32) -> Result<()>;
         fn r#damage(r#x: i32, r#y: i32, r#width: i32, r#height: i32) -> Result<()>;
-        fn r#frame(r#callback: NewId) -> Result<()>;
+        fn r#frame(r#callback: ObjectId) -> Result<()>;
         fn r#set_opaque_region(r#region: Option<ObjectId>) -> Result<()>;
         fn r#set_input_region(r#region: Option<ObjectId>) -> Result<()>;
         fn r#commit() -> Result<()>;
@@ -256,16 +263,16 @@ pub mod wayland {
     pub trait r#WlSeat {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#get_pointer(message.new_id()?),
-                1 => Self::r#get_keyboard(message.new_id()?),
-                2 => Self::r#get_touch(message.new_id()?),
+                0 => Self::r#get_pointer(message.object()?.unwrap()),
+                1 => Self::r#get_keyboard(message.object()?.unwrap()),
+                2 => Self::r#get_touch(message.object()?.unwrap()),
                 3 => Self::r#release(),
                 _ => Err(Error::UnknownOpcode),
             }
         }
-        fn r#get_pointer(r#id: NewId) -> Result<()>;
-        fn r#get_keyboard(r#id: NewId) -> Result<()>;
-        fn r#get_touch(r#id: NewId) -> Result<()>;
+        fn r#get_pointer(r#id: ObjectId) -> Result<()>;
+        fn r#get_keyboard(r#id: ObjectId) -> Result<()>;
+        fn r#get_touch(r#id: ObjectId) -> Result<()>;
         fn r#release() -> Result<()>;
     }
     pub trait r#WlPointer {
@@ -344,7 +351,7 @@ pub mod wayland {
             match message.opcode {
                 0 => Self::r#destroy(),
                 1 => Self::r#get_subsurface(
-                    message.new_id()?,
+                    message.object()?.unwrap(),
                     message.object()?.unwrap(),
                     message.object()?.unwrap(),
                 ),
@@ -352,7 +359,7 @@ pub mod wayland {
             }
         }
         fn r#destroy() -> Result<()>;
-        fn r#get_subsurface(r#id: NewId, r#surface: ObjectId, r#parent: ObjectId) -> Result<()>;
+        fn r#get_subsurface(r#id: ObjectId, r#surface: ObjectId, r#parent: ObjectId) -> Result<()>;
     }
     pub trait r#WlSubsurface {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
@@ -385,16 +392,19 @@ pub mod linux_dmabuf_v1 {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#create_params(message.new_id()?),
-                2 => Self::r#get_default_feedback(message.new_id()?),
-                3 => Self::r#get_surface_feedback(message.new_id()?, message.object()?.unwrap()),
+                1 => Self::r#create_params(message.object()?.unwrap()),
+                2 => Self::r#get_default_feedback(message.object()?.unwrap()),
+                3 => Self::r#get_surface_feedback(
+                    message.object()?.unwrap(),
+                    message.object()?.unwrap(),
+                ),
                 _ => Err(Error::UnknownOpcode),
             }
         }
         fn r#destroy() -> Result<()>;
-        fn r#create_params(r#params_id: NewId) -> Result<()>;
-        fn r#get_default_feedback(r#id: NewId) -> Result<()>;
-        fn r#get_surface_feedback(r#id: NewId, r#surface: ObjectId) -> Result<()>;
+        fn r#create_params(r#params_id: ObjectId) -> Result<()>;
+        fn r#get_default_feedback(r#id: ObjectId) -> Result<()>;
+        fn r#get_surface_feedback(r#id: ObjectId, r#surface: ObjectId) -> Result<()>;
     }
     pub trait r#ZwpLinuxBufferParamsV1 {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
@@ -415,7 +425,7 @@ pub mod linux_dmabuf_v1 {
                     message.uint()?,
                 ),
                 3 => Self::r#create_immed(
-                    message.new_id()?,
+                    message.object()?.unwrap(),
                     message.int()?,
                     message.int()?,
                     message.uint()?,
@@ -435,7 +445,7 @@ pub mod linux_dmabuf_v1 {
         ) -> Result<()>;
         fn r#create(r#width: i32, r#height: i32, r#format: u32, r#flags: u32) -> Result<()>;
         fn r#create_immed(
-            r#buffer_id: NewId,
+            r#buffer_id: ObjectId,
             r#width: i32,
             r#height: i32,
             r#format: u32,
@@ -463,12 +473,12 @@ pub mod presentation_time {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#feedback(message.object()?.unwrap(), message.new_id()?),
+                1 => Self::r#feedback(message.object()?.unwrap(), message.object()?.unwrap()),
                 _ => Err(Error::UnknownOpcode),
             }
         }
         fn r#destroy() -> Result<()>;
-        fn r#feedback(r#surface: ObjectId, r#callback: NewId) -> Result<()>;
+        fn r#feedback(r#surface: ObjectId, r#callback: ObjectId) -> Result<()>;
     }
     pub trait r#WpPresentationFeedback {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
@@ -488,12 +498,14 @@ pub mod tablet_v2 {
     pub trait r#ZwpTabletManagerV2 {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#get_tablet_seat(message.new_id()?, message.object()?.unwrap()),
+                0 => {
+                    Self::r#get_tablet_seat(message.object()?.unwrap(), message.object()?.unwrap())
+                }
                 1 => Self::r#destroy(),
                 _ => Err(Error::UnknownOpcode),
             }
         }
-        fn r#get_tablet_seat(r#tablet_seat: NewId, r#seat: ObjectId) -> Result<()>;
+        fn r#get_tablet_seat(r#tablet_seat: ObjectId, r#seat: ObjectId) -> Result<()>;
         fn r#destroy() -> Result<()>;
     }
     pub trait r#ZwpTabletSeatV2 {
@@ -593,12 +605,12 @@ pub mod viewporter {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#get_viewport(message.new_id()?, message.object()?.unwrap()),
+                1 => Self::r#get_viewport(message.object()?.unwrap(), message.object()?.unwrap()),
                 _ => Err(Error::UnknownOpcode),
             }
         }
         fn r#destroy() -> Result<()>;
-        fn r#get_viewport(r#id: NewId, r#surface: ObjectId) -> Result<()>;
+        fn r#get_viewport(r#id: ObjectId, r#surface: ObjectId) -> Result<()>;
     }
     pub trait r#WpViewport {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
@@ -630,15 +642,17 @@ pub mod xdg_shell {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#create_positioner(message.new_id()?),
-                2 => Self::r#get_xdg_surface(message.new_id()?, message.object()?.unwrap()),
+                1 => Self::r#create_positioner(message.object()?.unwrap()),
+                2 => {
+                    Self::r#get_xdg_surface(message.object()?.unwrap(), message.object()?.unwrap())
+                }
                 3 => Self::r#pong(message.uint()?),
                 _ => Err(Error::UnknownOpcode),
             }
         }
         fn r#destroy() -> Result<()>;
-        fn r#create_positioner(r#id: NewId) -> Result<()>;
-        fn r#get_xdg_surface(r#id: NewId, r#surface: ObjectId) -> Result<()>;
+        fn r#create_positioner(r#id: ObjectId) -> Result<()>;
+        fn r#get_xdg_surface(r#id: ObjectId, r#surface: ObjectId) -> Result<()>;
         fn r#pong(r#serial: u32) -> Result<()>;
     }
     pub trait r#XdgPositioner {
@@ -677,9 +691,9 @@ pub mod xdg_shell {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#get_toplevel(message.new_id()?),
+                1 => Self::r#get_toplevel(message.object()?.unwrap()),
                 2 => Self::r#get_popup(
-                    message.new_id()?,
+                    message.object()?.unwrap(),
                     message.object()?,
                     message.object()?.unwrap(),
                 ),
@@ -694,9 +708,9 @@ pub mod xdg_shell {
             }
         }
         fn r#destroy() -> Result<()>;
-        fn r#get_toplevel(r#id: NewId) -> Result<()>;
+        fn r#get_toplevel(r#id: ObjectId) -> Result<()>;
         fn r#get_popup(
-            r#id: NewId,
+            r#id: ObjectId,
             r#parent: Option<ObjectId>,
             r#positioner: ObjectId,
         ) -> Result<()>;
