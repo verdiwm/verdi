@@ -4,8 +4,21 @@ use std::num::NonZeroU32;
 use tokio_util::codec::{Decoder, Encoder};
 
 pub struct Fixed(u32);
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
 #[repr(transparent)]
 pub struct ObjectId(NonZeroU32);
+
+impl ObjectId {
+    pub const fn as_raw(&self) -> u32 {
+        self.0.get()
+    }
+
+    pub const unsafe fn from_raw(id: u32) -> Self {
+        Self(NonZeroU32::new_unchecked(id))
+    }
+}
+
 pub struct NewId {
     pub interface: String,
     pub version: u32,
@@ -14,7 +27,7 @@ pub struct NewId {
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
 pub struct Message {
-    pub object_id: u32,
+    pub object_id: ObjectId,
     pub opcode: u16,
     pub payload: Bytes,
 }
@@ -34,7 +47,7 @@ pub enum DecodeError {
 impl Message {
     pub fn to_bytes(&self, buf: &mut BytesMut) {
         buf.reserve(8 + self.payload.len());
-        buf.put_u32_ne(self.object_id);
+        buf.put_u32_ne(self.object_id.0.get());
         buf.put_u32_ne((((self.payload.len() + 8) as u32) << 16) | self.opcode as u32);
         buf.put_slice(&self.payload);
     }
@@ -45,6 +58,13 @@ impl Message {
         }
 
         let object_id = bytes.get_u32_ne();
+
+        if object_id == 0 {
+            return Err(DecodeError::MalformedHeader);
+        }
+
+        let object_id = unsafe { ObjectId::from_raw(object_id) };
+
         let second = bytes.get_u32_ne();
         let len = (second >> 16) as usize;
         let opcode = (second & 65535) as u16;
@@ -185,12 +205,14 @@ impl Encoder<Message> for MessageCodec {
 mod tests {
     use bytes::{Bytes, BytesMut};
 
+    use crate::message::ObjectId;
+
     use super::Message;
 
     #[test]
     fn encode_decode_roundtrip() {
         let msg = Message {
-            object_id: 10,
+            object_id: unsafe { ObjectId::from_raw(10) },
             opcode: 0,
             payload: Bytes::copy_from_slice(b"\x03\0\0\0"),
         };
