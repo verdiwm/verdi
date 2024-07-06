@@ -13,7 +13,10 @@ pub mod error;
 pub mod protocol;
 pub mod wire;
 
-use protocol::interfaces::wayland::{WlCallback, WlCompositor, WlDisplay, WlRegistry, WlShm};
+use protocol::interfaces::wayland::{
+    wl_callback::WlCallback, wl_compositor::WlCompositor, wl_display::WlDisplay,
+    wl_registry::WlRegistry, wl_shm::WlShm,
+};
 use wire::{DecodeError, Message, MessageCodec, NewId, ObjectId};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
@@ -90,7 +93,6 @@ impl Client {
     }
 
     pub async fn send_message(&mut self, message: Message) -> Result<(), io::Error> {
-        dbg!(&message);
         self.stream.send(message).await
     }
 }
