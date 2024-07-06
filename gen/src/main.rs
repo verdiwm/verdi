@@ -187,7 +187,7 @@ fn main() -> Result<()> {
         .truncate(true)
         .write(true)
         .create(true)
-        .open("src/proto.rs")?;
+        .open("src/protocol/interfaces.rs")?;
 
     writeln!(&mut generated_path, "#![allow(unused)]")?;
     writeln!(&mut generated_path, "#![allow(async_fn_in_trait)]")?;
@@ -199,7 +199,7 @@ fn main() -> Result<()> {
         writeln!(
             &mut generated_path,
             r#"pub mod {name} {{
-                use crate::{{Result, Dispatcher, message::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
+                use crate::{{Result, Dispatcher, wire::{{Message,Fixed,ObjectId,NewId,DecodeError,PayloadBuilder}}, error::Error, Client}};
                 use std::{{os::fd::RawFd,sync::Arc}};
                 use tracing::debug;"#,
             name = &protocol.name
@@ -327,7 +327,9 @@ fn main() -> Result<()> {
         writeln!(&mut generated_path, "}}")?;
     }
 
-    Command::new("rustfmt").arg("src/proto.rs").output()?;
+    Command::new("rustfmt")
+        .arg("src/protocol/interfaces.rs")
+        .output()?;
 
     Ok(())
 }
