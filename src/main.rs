@@ -54,7 +54,10 @@ fn main() -> Result<()> {
                 Ok(mut client) => {
                     set.spawn(async move {
                         while let Some(mut message) = client.next_message().await? {
-                            client.handle_message(&mut message).await?;
+                            match client.handle_message(&mut message).await {
+                                Ok(_) => {}
+                                Err(err) => error!("Error while handling message: {err}"),
+                            }
                         }
 
                         Ok(())
