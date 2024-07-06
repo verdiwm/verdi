@@ -138,11 +138,7 @@ impl Message {
     }
 
     pub fn fixed(&mut self) -> Result<Fixed, DecodeError> {
-        if self.payload.remaining() < 4 {
-            return Err(DecodeError::MalformedPayload);
-        }
-
-        Ok(Fixed(self.payload.get_u32_ne()))
+        self.uint().map(Fixed)
     }
 
     pub fn string(&mut self) -> Result<Option<String>, DecodeError> {
