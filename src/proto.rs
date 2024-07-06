@@ -2,15 +2,15 @@
 pub mod wayland {
     use crate::{
         error::Error,
-        message::{Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId},
         Client, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#WlDisplay {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#sync(message.object()?.unwrap()),
-                1 => Self::r#get_registry(message.object()?.unwrap()),
+                0 => Self::r#sync(message.object()?.ok_or(DecodeError::MalformedPayload)?),
+                1 => Self::r#get_registry(message.object()?.ok_or(DecodeError::MalformedPayload)?),
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -36,8 +36,10 @@ pub mod wayland {
     pub trait r#WlCompositor {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#create_surface(message.object()?.unwrap()),
-                1 => Self::r#create_region(message.object()?.unwrap()),
+                0 => {
+                    Self::r#create_surface(message.object()?.ok_or(DecodeError::MalformedPayload)?)
+                }
+                1 => Self::r#create_region(message.object()?.ok_or(DecodeError::MalformedPayload)?),
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -48,7 +50,7 @@ pub mod wayland {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#create_buffer(
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.int()?,
                     message.int()?,
                     message.int()?,
@@ -74,9 +76,11 @@ pub mod wayland {
     pub trait r#WlShm {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => {
-                    Self::r#create_pool(message.object()?.unwrap(), message.int()?, message.int()?)
-                }
+                0 => Self::r#create_pool(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.int()?,
+                    message.int()?,
+                ),
                 1 => Self::r#release(),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -97,7 +101,10 @@ pub mod wayland {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#accept(message.uint()?, message.string()?),
-                1 => Self::r#receive(message.string()?.unwrap(), message.int()?),
+                1 => Self::r#receive(
+                    message.string()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.int()?,
+                ),
                 2 => Self::r#destroy(),
                 3 => Self::r#finish(),
                 4 => Self::r#set_actions(message.uint()?, message.uint()?),
@@ -113,7 +120,7 @@ pub mod wayland {
     pub trait r#WlDataSource {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#offer(message.string()?.unwrap()),
+                0 => Self::r#offer(message.string()?.ok_or(DecodeError::MalformedPayload)?),
                 1 => Self::r#destroy(),
                 2 => Self::r#set_actions(message.uint()?),
                 _ => Err(Error::UnknownOpcode),
@@ -128,7 +135,7 @@ pub mod wayland {
             match message.opcode {
                 0 => Self::r#start_drag(
                     message.object()?,
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.object()?,
                     message.uint()?,
                 ),
@@ -149,10 +156,13 @@ pub mod wayland {
     pub trait r#WlDataDeviceManager {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#create_data_source(message.object()?.unwrap()),
-                1 => {
-                    Self::r#get_data_device(message.object()?.unwrap(), message.object()?.unwrap())
-                }
+                0 => Self::r#create_data_source(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
+                1 => Self::r#get_data_device(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -163,8 +173,8 @@ pub mod wayland {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#get_shell_surface(
-                    message.object()?.unwrap(),
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -175,27 +185,34 @@ pub mod wayland {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#pong(message.uint()?),
-                1 => Self::r#move(message.object()?.unwrap(), message.uint()?),
-                2 => Self::r#resize(message.object()?.unwrap(), message.uint()?, message.uint()?),
+                1 => Self::r#move(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                ),
+                2 => Self::r#resize(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                    message.uint()?,
+                ),
                 3 => Self::r#set_toplevel(),
                 4 => Self::r#set_transient(
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.int()?,
                     message.int()?,
                     message.uint()?,
                 ),
                 5 => Self::r#set_fullscreen(message.uint()?, message.uint()?, message.object()?),
                 6 => Self::r#set_popup(
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.uint()?,
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.int()?,
                     message.int()?,
                     message.uint()?,
                 ),
                 7 => Self::r#set_maximized(message.object()?),
-                8 => Self::r#set_title(message.string()?.unwrap()),
-                9 => Self::r#set_class(message.string()?.unwrap()),
+                8 => Self::r#set_title(message.string()?.ok_or(DecodeError::MalformedPayload)?),
+                9 => Self::r#set_class(message.string()?.ok_or(DecodeError::MalformedPayload)?),
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -232,7 +249,7 @@ pub mod wayland {
                     message.int()?,
                     message.int()?,
                 ),
-                3 => Self::r#frame(message.object()?.unwrap()),
+                3 => Self::r#frame(message.object()?.ok_or(DecodeError::MalformedPayload)?),
                 4 => Self::r#set_opaque_region(message.object()?),
                 5 => Self::r#set_input_region(message.object()?),
                 6 => Self::r#commit(),
@@ -263,9 +280,9 @@ pub mod wayland {
     pub trait r#WlSeat {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#get_pointer(message.object()?.unwrap()),
-                1 => Self::r#get_keyboard(message.object()?.unwrap()),
-                2 => Self::r#get_touch(message.object()?.unwrap()),
+                0 => Self::r#get_pointer(message.object()?.ok_or(DecodeError::MalformedPayload)?),
+                1 => Self::r#get_keyboard(message.object()?.ok_or(DecodeError::MalformedPayload)?),
+                2 => Self::r#get_touch(message.object()?.ok_or(DecodeError::MalformedPayload)?),
                 3 => Self::r#release(),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -351,9 +368,9 @@ pub mod wayland {
             match message.opcode {
                 0 => Self::r#destroy(),
                 1 => Self::r#get_subsurface(
-                    message.object()?.unwrap(),
-                    message.object()?.unwrap(),
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -366,8 +383,8 @@ pub mod wayland {
             match message.opcode {
                 0 => Self::r#destroy(),
                 1 => Self::r#set_position(message.int()?, message.int()?),
-                2 => Self::r#place_above(message.object()?.unwrap()),
-                3 => Self::r#place_below(message.object()?.unwrap()),
+                2 => Self::r#place_above(message.object()?.ok_or(DecodeError::MalformedPayload)?),
+                3 => Self::r#place_below(message.object()?.ok_or(DecodeError::MalformedPayload)?),
                 4 => Self::r#set_sync(),
                 5 => Self::r#set_desync(),
                 _ => Err(Error::UnknownOpcode),
@@ -384,7 +401,7 @@ pub mod wayland {
 pub mod linux_dmabuf_v1 {
     use crate::{
         error::Error,
-        message::{Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId},
         Client, Result,
     };
     use std::os::fd::RawFd;
@@ -392,11 +409,13 @@ pub mod linux_dmabuf_v1 {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#create_params(message.object()?.unwrap()),
-                2 => Self::r#get_default_feedback(message.object()?.unwrap()),
+                1 => Self::r#create_params(message.object()?.ok_or(DecodeError::MalformedPayload)?),
+                2 => Self::r#get_default_feedback(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
                 3 => Self::r#get_surface_feedback(
-                    message.object()?.unwrap(),
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -425,7 +444,7 @@ pub mod linux_dmabuf_v1 {
                     message.uint()?,
                 ),
                 3 => Self::r#create_immed(
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.int()?,
                     message.int()?,
                     message.uint()?,
@@ -465,7 +484,7 @@ pub mod linux_dmabuf_v1 {
 pub mod presentation_time {
     use crate::{
         error::Error,
-        message::{Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId},
         Client, Result,
     };
     use std::os::fd::RawFd;
@@ -473,7 +492,10 @@ pub mod presentation_time {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#feedback(message.object()?.unwrap(), message.object()?.unwrap()),
+                1 => Self::r#feedback(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -491,16 +513,17 @@ pub mod presentation_time {
 pub mod tablet_v2 {
     use crate::{
         error::Error,
-        message::{Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId},
         Client, Result,
     };
     use std::os::fd::RawFd;
     pub trait r#ZwpTabletManagerV2 {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => {
-                    Self::r#get_tablet_seat(message.object()?.unwrap(), message.object()?.unwrap())
-                }
+                0 => Self::r#get_tablet_seat(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
                 1 => Self::r#destroy(),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -550,7 +573,10 @@ pub mod tablet_v2 {
     pub trait r#ZwpTabletPadRingV2 {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#set_feedback(message.string()?.unwrap(), message.uint()?),
+                0 => Self::r#set_feedback(
+                    message.string()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                ),
                 1 => Self::r#destroy(),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -561,7 +587,10 @@ pub mod tablet_v2 {
     pub trait r#ZwpTabletPadStripV2 {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
-                0 => Self::r#set_feedback(message.string()?.unwrap(), message.uint()?),
+                0 => Self::r#set_feedback(
+                    message.string()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                ),
                 1 => Self::r#destroy(),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -583,7 +612,7 @@ pub mod tablet_v2 {
             match message.opcode {
                 0 => Self::r#set_feedback(
                     message.uint()?,
-                    message.string()?.unwrap(),
+                    message.string()?.ok_or(DecodeError::MalformedPayload)?,
                     message.uint()?,
                 ),
                 1 => Self::r#destroy(),
@@ -597,7 +626,7 @@ pub mod tablet_v2 {
 pub mod viewporter {
     use crate::{
         error::Error,
-        message::{Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId},
         Client, Result,
     };
     use std::os::fd::RawFd;
@@ -605,7 +634,10 @@ pub mod viewporter {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#get_viewport(message.object()?.unwrap(), message.object()?.unwrap()),
+                1 => Self::r#get_viewport(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
                 _ => Err(Error::UnknownOpcode),
             }
         }
@@ -634,7 +666,7 @@ pub mod viewporter {
 pub mod xdg_shell {
     use crate::{
         error::Error,
-        message::{Fixed, Message, NewId, ObjectId},
+        message::{DecodeError, Fixed, Message, NewId, ObjectId},
         Client, Result,
     };
     use std::os::fd::RawFd;
@@ -642,10 +674,13 @@ pub mod xdg_shell {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#create_positioner(message.object()?.unwrap()),
-                2 => {
-                    Self::r#get_xdg_surface(message.object()?.unwrap(), message.object()?.unwrap())
-                }
+                1 => Self::r#create_positioner(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
+                2 => Self::r#get_xdg_surface(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                ),
                 3 => Self::r#pong(message.uint()?),
                 _ => Err(Error::UnknownOpcode),
             }
@@ -691,11 +726,11 @@ pub mod xdg_shell {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#get_toplevel(message.object()?.unwrap()),
+                1 => Self::r#get_toplevel(message.object()?.ok_or(DecodeError::MalformedPayload)?),
                 2 => Self::r#get_popup(
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.object()?,
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                 ),
                 3 => Self::r#set_window_geometry(
                     message.int()?,
@@ -722,16 +757,23 @@ pub mod xdg_shell {
             match message.opcode {
                 0 => Self::r#destroy(),
                 1 => Self::r#set_parent(message.object()?),
-                2 => Self::r#set_title(message.string()?.unwrap()),
-                3 => Self::r#set_app_id(message.string()?.unwrap()),
+                2 => Self::r#set_title(message.string()?.ok_or(DecodeError::MalformedPayload)?),
+                3 => Self::r#set_app_id(message.string()?.ok_or(DecodeError::MalformedPayload)?),
                 4 => Self::r#show_window_menu(
-                    message.object()?.unwrap(),
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
                     message.uint()?,
                     message.int()?,
                     message.int()?,
                 ),
-                5 => Self::r#move(message.object()?.unwrap(), message.uint()?),
-                6 => Self::r#resize(message.object()?.unwrap(), message.uint()?, message.uint()?),
+                5 => Self::r#move(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                ),
+                6 => Self::r#resize(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                    message.uint()?,
+                ),
                 7 => Self::r#set_max_size(message.int()?, message.int()?),
                 8 => Self::r#set_min_size(message.int()?, message.int()?),
                 9 => Self::r#set_maximized(),
@@ -761,8 +803,14 @@ pub mod xdg_shell {
         fn handle_request(client: &Client, message: &mut Message) -> Result<()> {
             match message.opcode {
                 0 => Self::r#destroy(),
-                1 => Self::r#grab(message.object()?.unwrap(), message.uint()?),
-                2 => Self::r#reposition(message.object()?.unwrap(), message.uint()?),
+                1 => Self::r#grab(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                ),
+                2 => Self::r#reposition(
+                    message.object()?.ok_or(DecodeError::MalformedPayload)?,
+                    message.uint()?,
+                ),
                 _ => Err(Error::UnknownOpcode),
             }
         }

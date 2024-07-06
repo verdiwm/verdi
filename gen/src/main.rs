@@ -203,7 +203,7 @@ fn main() -> Result<()> {
 
         writeln!(
             &mut generated_path,
-            "use crate::{{Result, message::{{Message,Fixed,ObjectId,NewId}}, error::Error, Client}};"
+            "use crate::{{Result, message::{{Message,Fixed,ObjectId,NewId,DecodeError}}, error::Error, Client}};"
         )?;
         writeln!(&mut generated_path, "use std::os::fd::RawFd;")?;
 
@@ -228,7 +228,7 @@ fn main() -> Result<()> {
                     let mut optional = "".to_string();
 
                     if !arg.allow_null && arg.is_return_option() {
-                        optional = format!(".unwrap()");
+                        optional = format!(".ok_or(DecodeError::MalformedPayload)?");
                     }
 
                     args.push_str(&format!(
