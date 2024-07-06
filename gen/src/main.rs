@@ -196,6 +196,12 @@ fn main() -> Result<()> {
         let protocol: Protocol = quick_xml::de::from_str(&fs::read_to_string(path)?)?;
         dbg!(&protocol.name);
 
+        if let Some(description) = protocol.description {
+            for line in description.lines() {
+                writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+            }
+        }
+
         writeln!(
             &mut generated_path,
             r#"pub mod {name} {{
@@ -206,6 +212,10 @@ fn main() -> Result<()> {
         )?;
 
         for interface in protocol.interfaces {
+            for line in interface.description.lines() {
+                writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+            }
+
             writeln!(
                 &mut generated_path,
                 r#"pub trait r#{trait_name} {{
@@ -262,6 +272,10 @@ fn main() -> Result<()> {
                     args.push_str(&format!("r#{name}: {ty},", name = arg.name.to_snek_case(),))
                 }
 
+                for line in request.description.lines() {
+                    writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
+                }
+
                 writeln!(
                     &mut generated_path,
                     "async fn r#{name}({args}) -> Result<()>;",
@@ -289,6 +303,10 @@ fn main() -> Result<()> {
 
                     args.push_str(&format!("r#{name}: {ty},",));
                     build_args.push_str(&format!(".put_{build_ty}({build_name})",));
+                }
+
+                for line in event.description.lines() {
+                    writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
                 }
 
                 writeln!(
