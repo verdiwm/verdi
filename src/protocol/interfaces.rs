@@ -6,6 +6,7 @@ pub mod wayland {
         #[doc = r#"server request."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidObject,
             r#InvalidMethod,
@@ -388,6 +389,7 @@ pub mod wayland {
         #[doc = r#"These errors can be emitted in response to wl_shm requests."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidFormat,
             r#InvalidStride,
@@ -407,6 +409,7 @@ pub mod wayland {
         #[doc = r#"extension, pre-multiplied alpha is used for pixel values."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Format {
             r#Argb8888,
             r#Xrgb8888,
@@ -671,6 +674,7 @@ pub mod wayland {
     pub mod wl_data_offer {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidFinish,
             r#InvalidActionMask,
@@ -904,6 +908,7 @@ pub mod wayland {
     pub mod wl_data_source {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidActionMask,
             r#InvalidSource,
@@ -1116,6 +1121,7 @@ pub mod wayland {
     pub mod wl_data_device {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#Role,
             r#UsedSource,
@@ -1370,6 +1376,7 @@ pub mod wayland {
         #[doc = r#"actions (e.g. "ask")."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#DndAction {
             r#None,
             r#Copy,
@@ -1439,6 +1446,7 @@ pub mod wayland {
     pub mod wl_shell {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#Role,
         }
@@ -1497,6 +1505,7 @@ pub mod wayland {
         #[doc = r#"an appropriate cursor image."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Resize {
             r#None,
             r#Top,
@@ -1512,6 +1521,7 @@ pub mod wayland {
         #[doc = r#"of transient surfaces. Used in the set_transient request."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Transient {
             r#Inactive,
         }
@@ -1520,6 +1530,7 @@ pub mod wayland {
         #[doc = r#"output. The compositor is free to ignore this parameter."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#FullscreenMethod {
             r#Default,
             r#Scale,
@@ -1861,6 +1872,7 @@ pub mod wayland {
         #[doc = r#"These errors can be emitted in response to wl_surface requests."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidScale,
             r#InvalidTransform,
@@ -2409,6 +2421,7 @@ pub mod wayland {
         #[doc = r#"set, then it is present on the seat."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Capability {
             r#Pointer,
             r#Keyboard,
@@ -2417,6 +2430,7 @@ pub mod wayland {
         #[doc = r#"These errors can be emitted in response to wl_seat requests."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#MissingCapability,
         }
@@ -2584,6 +2598,7 @@ pub mod wayland {
     pub mod wl_pointer {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#Role,
         }
@@ -2591,6 +2606,7 @@ pub mod wayland {
         #[doc = r#"event."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ButtonState {
             r#Released,
             r#Pressed,
@@ -2598,6 +2614,7 @@ pub mod wayland {
         #[doc = r#"Describes the axis types of scroll events."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Axis {
             r#VerticalScroll,
             r#HorizontalScroll,
@@ -2620,6 +2637,7 @@ pub mod wayland {
         #[doc = r#"(usually sideways) tilt of the wheel."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#AxisSource {
             r#Wheel,
             r#Finger,
@@ -2630,6 +2648,7 @@ pub mod wayland {
         #[doc = r#"wl_pointer.axis event, relative to the wl_pointer.axis direction."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#AxisRelativeDirection {
             r#Identical,
             r#Inverted,
@@ -3108,6 +3127,7 @@ pub mod wayland {
         #[doc = r#"client with the wl_keyboard.keymap event."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#KeymapFormat {
             r#NoKeymap,
             r#XkbV1,
@@ -3115,6 +3135,7 @@ pub mod wayland {
         #[doc = r#"Describes the physical state of a key that produced the key event."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#KeyState {
             r#Released,
             r#Pressed,
@@ -3556,6 +3577,7 @@ pub mod wayland {
         #[doc = r#"pixels on an output are laid out."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Subpixel {
             r#Unknown,
             r#None,
@@ -3576,6 +3598,7 @@ pub mod wayland {
         #[doc = r#"surfaces."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Transform {
             r#Normal,
             r#_90,
@@ -3590,6 +3613,7 @@ pub mod wayland {
         #[doc = r#"They are used in the flags bitfield of the mode event."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Mode {
             r#Current,
             r#Preferred,
@@ -3908,6 +3932,7 @@ pub mod wayland {
     pub mod wl_subcompositor {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#BadSurface,
             r#BadParent,
@@ -3999,6 +4024,7 @@ pub mod wayland {
     pub mod wl_subsurface {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#BadSurface,
         }
@@ -4404,6 +4430,7 @@ pub mod linux_dmabuf_v1 {
     pub mod zwp_linux_buffer_params_v1 {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#AlreadyUsed,
             r#PlaneIdx,
@@ -4416,6 +4443,7 @@ pub mod linux_dmabuf_v1 {
         }
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Flags {
             r#YInvert,
             r#Interlaced,
@@ -4660,6 +4688,7 @@ pub mod linux_dmabuf_v1 {
     pub mod zwp_linux_dmabuf_feedback_v1 {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#TrancheFlags {
             r#Scanout,
         }
@@ -4910,6 +4939,7 @@ pub mod presentation_time {
         #[doc = r#"illegal presentation requests."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidTimestamp,
             r#InvalidFlag,
@@ -5049,6 +5079,7 @@ pub mod presentation_time {
         #[doc = r#"quality with respect to possible tearing and timings."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Kind {
             r#Vsync,
             r#HwClock,
@@ -5407,6 +5438,7 @@ pub mod tablet_v2 {
         #[doc = r#"provide precision focus."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Type {
             r#Pen,
             r#Eraser,
@@ -5423,6 +5455,7 @@ pub mod tablet_v2 {
         #[doc = r#"device-specific."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Capability {
             r#Tilt,
             r#Pressure,
@@ -5434,12 +5467,14 @@ pub mod tablet_v2 {
         #[doc = r#"Describes the physical state of a button that produced the button event."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ButtonState {
             r#Released,
             r#Pressed,
         }
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#Role,
         }
@@ -6087,6 +6122,7 @@ pub mod tablet_v2 {
         #[doc = r#"from a "finger" source may trigger kinetic scrolling."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Source {
             r#Finger,
         }
@@ -6247,6 +6283,7 @@ pub mod tablet_v2 {
         #[doc = r#"from a "finger" source may trigger kinetic scrolling."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Source {
             r#Finger,
         }
@@ -6600,6 +6637,7 @@ pub mod tablet_v2 {
         #[doc = r#"event."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ButtonState {
             r#Released,
             r#Pressed,
@@ -6844,6 +6882,7 @@ pub mod viewporter {
     pub mod wp_viewporter {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#ViewportExists,
         }
@@ -6902,6 +6941,7 @@ pub mod viewporter {
     pub mod wp_viewport {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#BadValue,
             r#BadSize,
@@ -7040,6 +7080,7 @@ pub mod xdg_shell {
     pub mod xdg_wm_base {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#Role,
             r#DefunctSurfaces,
@@ -7164,11 +7205,13 @@ pub mod xdg_shell {
     pub mod xdg_positioner {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidInput,
         }
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Anchor {
             r#None,
             r#Top,
@@ -7182,6 +7225,7 @@ pub mod xdg_shell {
         }
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Gravity {
             r#None,
             r#Top,
@@ -7253,6 +7297,7 @@ pub mod xdg_shell {
         #[doc = r#"Flip, 2) Slide, 3) Resize."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ConstraintAdjustment {
             r#None,
             r#SlideX,
@@ -7452,6 +7497,7 @@ pub mod xdg_shell {
     pub mod xdg_surface {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#NotConstructed,
             r#AlreadyConstructed,
@@ -7705,6 +7751,7 @@ pub mod xdg_shell {
     pub mod xdg_toplevel {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidResizeEdge,
             r#InvalidParent,
@@ -7714,6 +7761,7 @@ pub mod xdg_shell {
         #[doc = r#"is being dragged in a resize operation."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#ResizeEdge {
             r#None,
             r#Top,
@@ -7775,6 +7823,7 @@ pub mod xdg_shell {
         #[doc = r#"the next commit."#]
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#State {
             r#Maximized,
             r#Fullscreen,
@@ -7788,6 +7837,7 @@ pub mod xdg_shell {
         }
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#WmCapabilities {
             r#WindowMenu,
             r#Maximize,
@@ -8360,6 +8410,7 @@ pub mod xdg_shell {
     pub mod xdg_popup {
         #[repr(u32)]
         #[non_exhaustive]
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             r#InvalidGrab,
         }
