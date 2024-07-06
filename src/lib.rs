@@ -1,17 +1,22 @@
 use anyhow::Result as AnyResult;
 use futures_util::SinkExt;
-use std::{io, path::Path, sync::Arc};
+use std::{
+    collections::HashMap,
+    io,
+    path::Path,
+    sync::{Arc, Mutex},
+};
 use tokio::net::{UnixListener, UnixStream};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
-use tracing::debug;
+use tracing::{debug, warn};
 // use tracing::{debug, error, info, warn};
 
 pub mod error;
 pub mod message;
 pub mod proto;
 
-use message::{DecodeError, Message, MessageCodec, NewId, ObjectId};
+use message::{DecodeError, Message, MessageCodec, ObjectId};
 use proto::wayland::WlDisplay;
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
@@ -36,15 +41,14 @@ impl Verdi {
     pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
         match self.listener.accept().await {
             Ok((stream, _)) => {
-                let mut store = Store::new();
+                let mut client = Client::new(stream);
 
-                store.insert(Box::new(DisplayInterface {}));
+                client.insert(
+                    unsafe { ObjectId::from_raw(1) },
+                    Box::new(DisplayInterface {}),
+                );
 
-                Some(Ok(Client {
-                    stream: Framed::new(stream, MessageCodec::new()),
-                    _next_id: 0xff000000,
-                    store,
-                }))
+                Some(Ok(client))
             }
             Err(err) => Some(Err(err)),
         }
@@ -54,11 +58,29 @@ impl Verdi {
 #[derive(Debug)]
 pub struct Client {
     stream: Framed<UnixStream, MessageCodec>,
-    pub store: Store,
+    store: Store,
     _next_id: usize,
 }
 
 impl Client {
+    pub fn new(stream: UnixStream) -> Self {
+        Self {
+            stream: Framed::new(stream, MessageCodec::new()),
+            _next_id: 0xff000000,
+            store: Store::new(),
+        }
+    }
+
+    pub fn insert(&mut self, id: ObjectId, object: Box<dyn Interface + Send + Sync>) {
+        self.store.insert(id, object)
+    }
+
+    pub fn handle_message(&mut self, message: &mut Message) {
+        let object = self.store.get(&message.object_id).unwrap();
+
+        object.handle_request(self, message).unwrap();
+    }
+
     pub async fn next_message(&mut self) -> Result<Option<Message>, DecodeError> {
         self.stream.try_next().await
     }
@@ -69,50 +91,46 @@ impl Client {
 }
 
 #[derive(Debug)]
-pub struct Store {
-    objects: Vec<Box<dyn Interface + Send>>,
+struct Store {
+    objects: HashMap<ObjectId, Arc<Box<dyn Interface + Send + Sync>>>,
 }
 
 impl Store {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
-            objects: Vec::new(),
+            objects: HashMap::new(),
         }
     }
-
-    pub fn insert(&mut self, object: Box<dyn Interface + Send>) {
-        self.objects.push(object);
+    // FIXME: handle possible error if id already exists
+    fn insert(&mut self, id: ObjectId, object: Box<dyn Interface + Send + Sync>) {
+        self.objects.insert(id, Arc::new(object));
     }
 
-    pub fn get(&self, id: u32) -> Option<&Box<dyn Interface + Send>> {
-        if id == 0 {
-            return None;
-        }
-
-        self.objects.get((id - 1) as usize)
+    fn get(&self, id: &ObjectId) -> Option<Arc<Box<dyn Interface + Send + Sync>>> {
+        self.objects.get(id).map(|id| id.clone())
     }
 }
 
 pub trait Interface: std::fmt::Debug {
-    fn handle_request(&self, client: &Client, message: &mut Message) -> Result<()>;
+    fn handle_request(&self, client: &mut Client, message: &mut Message) -> Result<()>;
 }
 
 #[derive(Debug)]
 pub struct DisplayInterface {}
 
 impl Interface for DisplayInterface {
-    fn handle_request(&self, client: &Client, message: &mut Message) -> Result<()> {
+    fn handle_request(&self, client: &mut Client, message: &mut Message) -> Result<()> {
         <Self as WlDisplay>::handle_request(client, message)
     }
 }
 
 impl WlDisplay for DisplayInterface {
-    fn sync(r#callback: ObjectId) -> Result<()> {
+    fn sync(_client: &mut Client, _callback: ObjectId) -> Result<()> {
         debug!("Handling sync");
         todo!()
     }
 
-    fn get_registry(r#registry: ObjectId) -> Result<()> {
+    fn get_registry(_client: &mut Client, _registry: ObjectId) -> Result<()> {
         debug!("Handling get_registry");
         todo!()
     }

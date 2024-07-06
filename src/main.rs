@@ -53,12 +53,17 @@ fn main() -> Result<()> {
             match client {
                 Ok(mut client) => {
                     set.spawn(async move {
-                        while let Some(mut msg) = client.next_message().await? {
-                            if let Some(object) = client.store.get(msg.object_id) {
-                                object.handle_request(&client, &mut msg)?;
-                            } else {
-                                warn!("Unknown object requested");
-                            }
+                        while let Some(mut message) = client.next_message().await? {
+                            client.handle_message(&mut message);
+
+                            // if let Some(object) = client.store.get(msg.object_id) {
+                            //     match object.handle_request(&mut client, &mut msg) {
+                            //         Ok(_) => {}
+                            //         Err(err) => error!("Failed to handle request, {:#?}", err),
+                            //     };
+                            // } else {
+                            //     warn!("Unknown object requested");
+                            // }
                         }
 
                         Ok(())
