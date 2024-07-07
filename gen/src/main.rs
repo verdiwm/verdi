@@ -127,8 +127,28 @@ struct Entry {
 }
 
 impl Arg {
-    fn to_rust_type(&self) -> &str {
-        match self.ty {
+    fn to_enum_name(&self) -> Option<String> {
+        if let Some(e) = &self.r#enum {
+            if let Some((_, name)) = e.split_once('.') {
+                return Some(name.to_string());
+            } else {
+                return Some(e.to_string());
+            }
+        }
+
+        None
+    }
+
+    fn to_rust_type(&self) -> String {
+        if let Some(e) = &self.r#enum {
+            if let Some((module, name)) = e.split_once('.') {
+                return format!("super::{module}::{name}", name = name.to_upper_camel_case());
+            } else {
+                return e.to_upper_camel_case();
+            }
+        }
+
+        let ret = match self.ty {
             ArgType::Int => "i32",
             ArgType::Uint => "u32",
             ArgType::Fixed => "crate::wire::Fixed",
@@ -143,7 +163,9 @@ impl Arg {
             }
             ArgType::Array => "Vec<u8>",
             ArgType::Fd => "std::os::fd::RawFd",
-        }
+        };
+
+        ret.to_string()
     }
 
     fn is_return_option(&self) -> bool {
@@ -155,6 +177,10 @@ impl Arg {
     }
 
     fn to_caller(&self) -> &str {
+        if self.r#enum.is_some() {
+            return "uint";
+        }
+
         match self.ty {
             ArgType::Int => "int",
             ArgType::Uint => "uint",
@@ -197,7 +223,7 @@ fn main() -> Result<()> {
         let protocol: Protocol = quick_xml::de::from_str(&fs::read_to_string(path)?)?;
         dbg!(&protocol.name);
 
-        if let Some(description) = protocol.description {
+        if let Some(description) = &protocol.description {
             for line in description.lines() {
                 writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
             }
@@ -209,25 +235,26 @@ fn main() -> Result<()> {
             name = &protocol.name
         )?;
 
-        for interface in protocol.interfaces {
+        for interface in &protocol.interfaces {
             writeln!(
                 &mut generated_path,
                 "pub mod {name} {{",
                 name = interface.name
             )?;
 
-            for enu in interface.enums {
+            for enu in &interface.enums {
                 if !enu.bitfield {
                     let mut variants = String::new();
+                    let mut match_variants = String::new();
 
-                    for entry in enu.entries {
+                    for entry in &enu.entries {
                         let mut prefix = "";
 
                         if entry.name.chars().next().unwrap().is_numeric() {
                             prefix = "_"
                         }
 
-                        if let Some(summary) = entry.summary {
+                        if let Some(summary) = &entry.summary {
                             for line in summary.lines() {
                                 let doc = line.trim();
 
@@ -239,18 +266,21 @@ fn main() -> Result<()> {
                             }
                         }
 
-                        variants.push_str(&format!(
-                            "{prefix}{name} = {value},",
-                            name = entry.name.to_upper_camel_case(),
-                            value = entry.value,
-                        ))
+                        let name = entry.name.to_upper_camel_case();
+                        let value = &entry.value;
+
+                        variants.push_str(&format!("{prefix}{name} = {value},",));
+
+                        match_variants.push_str(&format!("{value} => Ok(Self::{prefix}{name}),"));
                     }
 
-                    if let Some(description) = enu.description {
+                    if let Some(description) = &enu.description {
                         for line in description.lines() {
                             writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
                         }
                     }
+
+                    let name = enu.name.to_upper_camel_case();
 
                     writeln!(
                         &mut generated_path,
@@ -258,19 +288,32 @@ fn main() -> Result<()> {
                         #[non_exhaustive]
                         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
                         pub enum r#{name} {{{variants}}}"#,
-                        name = enu.name.to_upper_camel_case()
+                    )?;
+
+                    writeln!(
+                        &mut generated_path,
+                        r#"impl TryFrom<u32> for r#{name} {{
+                            type Error = crate::wire::DecodeError;
+        
+                            fn try_from(v: u32) -> Result<Self, Self::Error> {{
+                                match v {{
+                                    {match_variants}
+                                    _ => Err(crate::wire::DecodeError::MalformedPayload)
+                                }}
+                            }}
+                        }}"#
                     )?;
                 } else {
                     let mut variants = String::new();
 
-                    for entry in enu.entries {
+                    for entry in &enu.entries {
                         let mut prefix = "";
 
                         if entry.name.chars().next().unwrap().is_numeric() {
                             prefix = "_"
                         }
 
-                        if let Some(summary) = entry.summary {
+                        if let Some(summary) = &entry.summary {
                             for line in summary.lines() {
                                 let doc = line.trim();
 
@@ -289,11 +332,13 @@ fn main() -> Result<()> {
                         ))
                     }
 
-                    if let Some(description) = enu.description {
+                    if let Some(description) = &enu.description {
                         for line in description.lines() {
                             writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
                         }
                     }
+
+                    let name = enu.name.to_upper_camel_case();
 
                     writeln!(
                         &mut generated_path,
@@ -301,7 +346,17 @@ fn main() -> Result<()> {
                             #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
                             pub struct r#{name}: u32 {{{variants}}}
                         }}"#,
-                        name = enu.name.to_upper_camel_case()
+                    )?;
+
+                    writeln!(
+                        &mut generated_path,
+                        r#"impl TryFrom<u32> for r#{name} {{
+                            type Error = crate::wire::DecodeError;
+        
+                            fn try_from(v: u32) -> Result<Self, Self::Error> {{
+                               Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                            }}
+                        }}"#
                     )?;
                 }
             }
@@ -326,14 +381,20 @@ fn main() -> Result<()> {
                 let mut args = "client,".to_string();
 
                 for arg in &request.args {
-                    let mut optional = "".to_string();
+                    let mut optional = String::new();
 
                     if !arg.allow_null && arg.is_return_option() {
                         optional = format!(".ok_or(crate::wire::DecodeError::MalformedPayload)?");
                     }
 
+                    let mut tryinto = String::new();
+
+                    if arg.r#enum.is_some() {
+                        tryinto.push_str(".try_into()?")
+                    }
+
                     args.push_str(&format!(
-                        "message.{caller}()?{optional},",
+                        "message.{caller}()?{optional}{tryinto},",
                         caller = arg.to_caller()
                     ))
                 }
@@ -391,6 +452,16 @@ fn main() -> Result<()> {
                     let name = arg.name.to_snek_case();
                     let mut build_name = arg.name.to_snek_case();
 
+                    if let Some(name) = arg.to_enum_name() {
+                        let e = find_enum(&protocol, &name);
+
+                        if e.bitfield {
+                            build_name.push_str(".bits()");
+                        } else {
+                            build_name.push_str(" as u32");
+                        }
+                    }
+
                     if arg.allow_null {
                         ty = format!("Option<{ty}>");
                     }
@@ -444,4 +515,12 @@ fn main() -> Result<()> {
         .output()?;
 
     Ok(())
+}
+
+fn find_enum<'a>(protocol: &'a Protocol, name: &str) -> &'a Enum {
+    protocol
+        .interfaces
+        .iter()
+        .find_map(|interface| interface.enums.iter().find(|e| e.name == name))
+        .unwrap()
 }
