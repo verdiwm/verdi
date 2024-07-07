@@ -17,6 +17,19 @@ pub mod wayland {
             #[doc = r#"Implementation error in compositor"#]
             Implementation = 3,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidObject),
+                    1 => Ok(Self::InvalidMethod),
+                    2 => Ok(Self::NoMemory),
+                    3 => Ok(Self::Implementation),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"The core global object.  This is a special singleton object.  It"#]
         #[doc = r#"is used for internal Wayland protocol features."#]
         pub trait r#WlDisplay {
@@ -332,7 +345,7 @@ pub mod wayland {
                             message.int()?,
                             message.int()?,
                             message.int()?,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                         )
                         .await
                     }
@@ -368,7 +381,7 @@ pub mod wayland {
                 r#width: i32,
                 r#height: i32,
                 r#stride: i32,
-                r#format: u32,
+                r#format: super::wl_shm::Format,
             ) -> crate::Result<()>;
             #[doc = r#"Destroy the shared memory pool."#]
             #[doc = r#""#]
@@ -401,6 +414,18 @@ pub mod wayland {
             InvalidStride = 1,
             #[doc = r#"Mmapping the file descriptor failed"#]
             InvalidFd = 2,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidFormat),
+                    1 => Ok(Self::InvalidStride),
+                    2 => Ok(Self::InvalidFd),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"This describes the memory layout of an individual pixel."#]
         #[doc = r#""#]
@@ -653,6 +678,138 @@ pub mod wayland {
             #[doc = r#"2x2 subsampled Cr:Cb plane 10 bits per channel packed"#]
             P030 = 0x30333050,
         }
+        impl TryFrom<u32> for r#Format {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Argb8888),
+                    1 => Ok(Self::Xrgb8888),
+                    0x20203843 => Ok(Self::C8),
+                    0x38424752 => Ok(Self::Rgb332),
+                    0x38524742 => Ok(Self::Bgr233),
+                    0x32315258 => Ok(Self::Xrgb4444),
+                    0x32314258 => Ok(Self::Xbgr4444),
+                    0x32315852 => Ok(Self::Rgbx4444),
+                    0x32315842 => Ok(Self::Bgrx4444),
+                    0x32315241 => Ok(Self::Argb4444),
+                    0x32314241 => Ok(Self::Abgr4444),
+                    0x32314152 => Ok(Self::Rgba4444),
+                    0x32314142 => Ok(Self::Bgra4444),
+                    0x35315258 => Ok(Self::Xrgb1555),
+                    0x35314258 => Ok(Self::Xbgr1555),
+                    0x35315852 => Ok(Self::Rgbx5551),
+                    0x35315842 => Ok(Self::Bgrx5551),
+                    0x35315241 => Ok(Self::Argb1555),
+                    0x35314241 => Ok(Self::Abgr1555),
+                    0x35314152 => Ok(Self::Rgba5551),
+                    0x35314142 => Ok(Self::Bgra5551),
+                    0x36314752 => Ok(Self::Rgb565),
+                    0x36314742 => Ok(Self::Bgr565),
+                    0x34324752 => Ok(Self::Rgb888),
+                    0x34324742 => Ok(Self::Bgr888),
+                    0x34324258 => Ok(Self::Xbgr8888),
+                    0x34325852 => Ok(Self::Rgbx8888),
+                    0x34325842 => Ok(Self::Bgrx8888),
+                    0x34324241 => Ok(Self::Abgr8888),
+                    0x34324152 => Ok(Self::Rgba8888),
+                    0x34324142 => Ok(Self::Bgra8888),
+                    0x30335258 => Ok(Self::Xrgb2101010),
+                    0x30334258 => Ok(Self::Xbgr2101010),
+                    0x30335852 => Ok(Self::Rgbx1010102),
+                    0x30335842 => Ok(Self::Bgrx1010102),
+                    0x30335241 => Ok(Self::Argb2101010),
+                    0x30334241 => Ok(Self::Abgr2101010),
+                    0x30334152 => Ok(Self::Rgba1010102),
+                    0x30334142 => Ok(Self::Bgra1010102),
+                    0x56595559 => Ok(Self::Yuyv),
+                    0x55595659 => Ok(Self::Yvyu),
+                    0x59565955 => Ok(Self::Uyvy),
+                    0x59555956 => Ok(Self::Vyuy),
+                    0x56555941 => Ok(Self::Ayuv),
+                    0x3231564e => Ok(Self::Nv12),
+                    0x3132564e => Ok(Self::Nv21),
+                    0x3631564e => Ok(Self::Nv16),
+                    0x3136564e => Ok(Self::Nv61),
+                    0x39565559 => Ok(Self::Yuv410),
+                    0x39555659 => Ok(Self::Yvu410),
+                    0x31315559 => Ok(Self::Yuv411),
+                    0x31315659 => Ok(Self::Yvu411),
+                    0x32315559 => Ok(Self::Yuv420),
+                    0x32315659 => Ok(Self::Yvu420),
+                    0x36315559 => Ok(Self::Yuv422),
+                    0x36315659 => Ok(Self::Yvu422),
+                    0x34325559 => Ok(Self::Yuv444),
+                    0x34325659 => Ok(Self::Yvu444),
+                    0x20203852 => Ok(Self::R8),
+                    0x20363152 => Ok(Self::R16),
+                    0x38384752 => Ok(Self::Rg88),
+                    0x38385247 => Ok(Self::Gr88),
+                    0x32334752 => Ok(Self::Rg1616),
+                    0x32335247 => Ok(Self::Gr1616),
+                    0x48345258 => Ok(Self::Xrgb16161616f),
+                    0x48344258 => Ok(Self::Xbgr16161616f),
+                    0x48345241 => Ok(Self::Argb16161616f),
+                    0x48344241 => Ok(Self::Abgr16161616f),
+                    0x56555958 => Ok(Self::Xyuv8888),
+                    0x34325556 => Ok(Self::Vuy888),
+                    0x30335556 => Ok(Self::Vuy101010),
+                    0x30313259 => Ok(Self::Y210),
+                    0x32313259 => Ok(Self::Y212),
+                    0x36313259 => Ok(Self::Y216),
+                    0x30313459 => Ok(Self::Y410),
+                    0x32313459 => Ok(Self::Y412),
+                    0x36313459 => Ok(Self::Y416),
+                    0x30335658 => Ok(Self::Xvyu2101010),
+                    0x36335658 => Ok(Self::Xvyu1216161616),
+                    0x38345658 => Ok(Self::Xvyu16161616),
+                    0x304c3059 => Ok(Self::Y0l0),
+                    0x304c3058 => Ok(Self::X0l0),
+                    0x324c3059 => Ok(Self::Y0l2),
+                    0x324c3058 => Ok(Self::X0l2),
+                    0x38305559 => Ok(Self::Yuv4208bit),
+                    0x30315559 => Ok(Self::Yuv42010bit),
+                    0x38415258 => Ok(Self::Xrgb8888A8),
+                    0x38414258 => Ok(Self::Xbgr8888A8),
+                    0x38415852 => Ok(Self::Rgbx8888A8),
+                    0x38415842 => Ok(Self::Bgrx8888A8),
+                    0x38413852 => Ok(Self::Rgb888A8),
+                    0x38413842 => Ok(Self::Bgr888A8),
+                    0x38413552 => Ok(Self::Rgb565A8),
+                    0x38413542 => Ok(Self::Bgr565A8),
+                    0x3432564e => Ok(Self::Nv24),
+                    0x3234564e => Ok(Self::Nv42),
+                    0x30313250 => Ok(Self::P210),
+                    0x30313050 => Ok(Self::P010),
+                    0x32313050 => Ok(Self::P012),
+                    0x36313050 => Ok(Self::P016),
+                    0x30314241 => Ok(Self::Axbxgxrx106106106106),
+                    0x3531564e => Ok(Self::Nv15),
+                    0x30313451 => Ok(Self::Q410),
+                    0x31303451 => Ok(Self::Q401),
+                    0x38345258 => Ok(Self::Xrgb16161616),
+                    0x38344258 => Ok(Self::Xbgr16161616),
+                    0x38345241 => Ok(Self::Argb16161616),
+                    0x38344241 => Ok(Self::Abgr16161616),
+                    0x20203143 => Ok(Self::C1),
+                    0x20203243 => Ok(Self::C2),
+                    0x20203443 => Ok(Self::C4),
+                    0x20203144 => Ok(Self::D1),
+                    0x20203244 => Ok(Self::D2),
+                    0x20203444 => Ok(Self::D4),
+                    0x20203844 => Ok(Self::D8),
+                    0x20203152 => Ok(Self::R1),
+                    0x20203252 => Ok(Self::R2),
+                    0x20203452 => Ok(Self::R4),
+                    0x20303152 => Ok(Self::R10),
+                    0x20323152 => Ok(Self::R12),
+                    0x59555641 => Ok(Self::Avuy8888),
+                    0x59555658 => Ok(Self::Xvuy8888),
+                    0x30333050 => Ok(Self::P030),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"A singleton global object that provides support for shared"#]
         #[doc = r#"memory."#]
         #[doc = r#""#]
@@ -714,10 +871,12 @@ pub mod wayland {
             async fn r#format(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#format: u32,
+                r#format: Format,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_shm -> format");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(format).build();
+                let payload = crate::wire::PayloadBuilder::new()
+                    .put_uint(format as u32)
+                    .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
                     .await
@@ -803,6 +962,19 @@ pub mod wayland {
             #[doc = r#"Offer doesn't accept this request"#]
             InvalidOffer = 3,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidFinish),
+                    1 => Ok(Self::InvalidActionMask),
+                    2 => Ok(Self::InvalidAction),
+                    3 => Ok(Self::InvalidOffer),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"A wl_data_offer represents a piece of data offered for transfer"#]
         #[doc = r#"by another client (the source client).  It is used by the"#]
         #[doc = r#"copy-and-paste and drag-and-drop mechanisms.  The offer"#]
@@ -842,7 +1014,12 @@ pub mod wayland {
                     }
                     4 => {
                         tracing::debug!("wl_data_offer -> set_actions");
-                        Self::r#set_actions(client, message.uint()?, message.uint()?).await
+                        Self::r#set_actions(
+                            client,
+                            message.uint()?.try_into()?,
+                            message.uint()?.try_into()?,
+                        )
+                        .await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -939,8 +1116,8 @@ pub mod wayland {
             #[doc = r#"will be raised otherwise."#]
             async fn r#set_actions(
                 client: &mut crate::Client,
-                r#dnd_actions: u32,
-                r#preferred_action: u32,
+                r#dnd_actions: super::wl_data_device_manager::DndAction,
+                r#preferred_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()>;
             #[doc = r#"Sent immediately after creating the wl_data_offer object.  One"#]
             #[doc = r#"event per offered mime type."#]
@@ -965,11 +1142,11 @@ pub mod wayland {
             async fn r#source_actions(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#source_actions: u32,
+                r#source_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_offer -> source_actions");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(source_actions)
+                    .put_uint(source_actions.bits())
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
@@ -1014,11 +1191,11 @@ pub mod wayland {
             async fn r#action(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#dnd_action: u32,
+                r#dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_offer -> action");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(dnd_action)
+                    .put_uint(dnd_action.bits())
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
@@ -1036,6 +1213,17 @@ pub mod wayland {
             InvalidActionMask = 0,
             #[doc = r#"Source doesn't accept this request"#]
             InvalidSource = 1,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidActionMask),
+                    1 => Ok(Self::InvalidSource),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"The wl_data_source object is the source side of a wl_data_offer."#]
         #[doc = r#"It is created by the source client in a data transfer and"#]
@@ -1065,7 +1253,7 @@ pub mod wayland {
                     }
                     2 => {
                         tracing::debug!("wl_data_source -> set_actions");
-                        Self::r#set_actions(client, message.uint()?).await
+                        Self::r#set_actions(client, message.uint()?.try_into()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -1094,7 +1282,7 @@ pub mod wayland {
             #[doc = r#"for drag-and-drop will raise a protocol error."#]
             async fn r#set_actions(
                 client: &mut crate::Client,
-                r#dnd_actions: u32,
+                r#dnd_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()>;
             #[doc = r#"Sent when a target accepts pointer_focus or motion events.  If"#]
             #[doc = r#"a target does not accept any of the offered types, type is NULL."#]
@@ -1229,11 +1417,11 @@ pub mod wayland {
             async fn r#action(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#dnd_action: u32,
+                r#dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_source -> action");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(dnd_action)
+                    .put_uint(dnd_action.bits())
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
@@ -1251,6 +1439,17 @@ pub mod wayland {
             Role = 0,
             #[doc = r#"Source has already been used"#]
             UsedSource = 1,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Role),
+                    1 => Ok(Self::UsedSource),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"There is one wl_data_device per seat which can be obtained"#]
         #[doc = r#"from the global wl_data_device_manager singleton."#]
@@ -1508,6 +1707,13 @@ pub mod wayland {
         const Move = 2;#[doc = r#"Ask action"#]
         const Ask = 4;}
                                 }
+        impl TryFrom<u32> for r#DndAction {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"The wl_data_device_manager is a singleton global object that"#]
         #[doc = r#"provides access to inter-client data transfer mechanisms such as"#]
         #[doc = r#"copy-and-paste and drag-and-drop.  These mechanisms are tied to"#]
@@ -1576,6 +1782,16 @@ pub mod wayland {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Role),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"This interface is implemented by servers that provide"#]
         #[doc = r#"desktop-style user interfaces."#]
         #[doc = r#""#]
@@ -1642,6 +1858,13 @@ pub mod wayland {
         const TopRight = 9;#[doc = r#"Bottom and right edges"#]
         const BottomRight = 10;}
                                 }
+        impl TryFrom<u32> for r#Resize {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"These flags specify details of the expected behaviour"#]
         #[doc = r#"of transient surfaces. Used in the set_transient request."#]
         bitflags::bitflags! {
@@ -1649,6 +1872,13 @@ pub mod wayland {
                                     pub struct r#Transient: u32 {#[doc = r#"Do not set keyboard focus"#]
         const Inactive = 0x1;}
                                 }
+        impl TryFrom<u32> for r#Transient {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"Hints to indicate to the compositor how to deal with a conflict"#]
         #[doc = r#"between the dimensions of the surface and the dimensions of the"#]
         #[doc = r#"output. The compositor is free to ignore this parameter."#]
@@ -1664,6 +1894,19 @@ pub mod wayland {
             Driver = 2,
             #[doc = r#"No upscaling, center on output and add black borders to compensate size mismatch"#]
             Fill = 3,
+        }
+        impl TryFrom<u32> for r#FullscreenMethod {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Default),
+                    1 => Ok(Self::Scale),
+                    2 => Ok(Self::Driver),
+                    3 => Ok(Self::Fill),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"An interface that may be implemented by a wl_surface, for"#]
         #[doc = r#"implementations that provide a desktop-style user interface."#]
@@ -1707,7 +1950,7 @@ pub mod wayland {
                                 .object()?
                                 .ok_or(crate::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                         )
                         .await
                     }
@@ -1724,7 +1967,7 @@ pub mod wayland {
                                 .ok_or(crate::wire::DecodeError::MalformedPayload)?,
                             message.int()?,
                             message.int()?,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                         )
                         .await
                     }
@@ -1732,7 +1975,7 @@ pub mod wayland {
                         tracing::debug!("wl_shell_surface -> set_fullscreen");
                         Self::r#set_fullscreen(
                             client,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                             message.uint()?,
                             message.object()?,
                         )
@@ -1751,7 +1994,7 @@ pub mod wayland {
                                 .ok_or(crate::wire::DecodeError::MalformedPayload)?,
                             message.int()?,
                             message.int()?,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                         )
                         .await
                     }
@@ -1807,7 +2050,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#seat: crate::wire::ObjectId,
                 r#serial: u32,
-                r#edges: u32,
+                r#edges: Resize,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a toplevel surface."#]
             #[doc = r#""#]
@@ -1825,7 +2068,7 @@ pub mod wayland {
                 r#parent: crate::wire::ObjectId,
                 r#x: i32,
                 r#y: i32,
-                r#flags: u32,
+                r#flags: Transient,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a fullscreen surface."#]
             #[doc = r#""#]
@@ -1862,7 +2105,7 @@ pub mod wayland {
             #[doc = r#"be made fullscreen."#]
             async fn r#set_fullscreen(
                 client: &mut crate::Client,
-                r#method: u32,
+                r#method: FullscreenMethod,
                 r#framerate: u32,
                 r#output: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()>;
@@ -1892,7 +2135,7 @@ pub mod wayland {
                 r#parent: crate::wire::ObjectId,
                 r#x: i32,
                 r#y: i32,
-                r#flags: u32,
+                r#flags: Transient,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a maximized surface."#]
             #[doc = r#""#]
@@ -1965,13 +2208,13 @@ pub mod wayland {
             async fn r#configure(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#edges: u32,
+                r#edges: Resize,
                 r#width: i32,
                 r#height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_shell_surface -> configure");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(edges)
+                    .put_uint(edges.bits())
                     .put_int(width)
                     .put_int(height)
                     .build();
@@ -2012,6 +2255,20 @@ pub mod wayland {
             InvalidOffset = 3,
             #[doc = r#"Surface was destroyed before its role object"#]
             DefunctRoleObject = 4,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidScale),
+                    1 => Ok(Self::InvalidTransform),
+                    2 => Ok(Self::InvalidSize),
+                    3 => Ok(Self::InvalidOffset),
+                    4 => Ok(Self::DefunctRoleObject),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"A surface is a rectangular area that may be displayed on zero"#]
         #[doc = r#"or more outputs, and shown any number of times at the compositor's"#]
@@ -2107,7 +2364,7 @@ pub mod wayland {
                     }
                     7 => {
                         tracing::debug!("wl_surface -> set_buffer_transform");
-                        Self::r#set_buffer_transform(client, message.int()?).await
+                        Self::r#set_buffer_transform(client, message.uint()?.try_into()?).await
                     }
                     8 => {
                         tracing::debug!("wl_surface -> set_buffer_scale");
@@ -2377,7 +2634,7 @@ pub mod wayland {
             #[doc = r#"is raised."#]
             async fn r#set_buffer_transform(
                 client: &mut crate::Client,
-                r#transform: i32,
+                r#transform: super::wl_output::Transform,
             ) -> crate::Result<()>;
             #[doc = r#"This request sets an optional scaling factor on how the compositor"#]
             #[doc = r#"interprets the contents of the buffer attached to the window."#]
@@ -2536,11 +2793,11 @@ pub mod wayland {
             async fn r#preferred_buffer_transform(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#transform: u32,
+                r#transform: super::wl_output::Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_surface -> preferred_buffer_transform");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(transform)
+                    .put_uint(transform as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
@@ -2559,6 +2816,13 @@ pub mod wayland {
         const Keyboard = 2;#[doc = r#"The seat has touch devices"#]
         const Touch = 4;}
                                 }
+        impl TryFrom<u32> for r#Capability {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"These errors can be emitted in response to wl_seat requests."#]
         #[repr(u32)]
         #[non_exhaustive]
@@ -2566,6 +2830,16 @@ pub mod wayland {
         pub enum r#Error {
             #[doc = r#"Get_pointer, get_keyboard or get_touch called on seat without the matching capability"#]
             MissingCapability = 0,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::MissingCapability),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"A seat is a group of keyboards, pointer and touch devices. This"#]
         #[doc = r#"object is published as a global during start up, or when such a"#]
@@ -2685,11 +2959,11 @@ pub mod wayland {
             async fn r#capabilities(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#capabilities: u32,
+                r#capabilities: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_seat -> capabilities");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(capabilities)
+                    .put_uint(capabilities.bits())
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
@@ -2736,6 +3010,16 @@ pub mod wayland {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Role),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"Describes the physical state of a button that produced the button"#]
         #[doc = r#"event."#]
         #[repr(u32)]
@@ -2747,6 +3031,17 @@ pub mod wayland {
             #[doc = r#"The button is pressed"#]
             Pressed = 1,
         }
+        impl TryFrom<u32> for r#ButtonState {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Released),
+                    1 => Ok(Self::Pressed),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"Describes the axis types of scroll events."#]
         #[repr(u32)]
         #[non_exhaustive]
@@ -2756,6 +3051,17 @@ pub mod wayland {
             VerticalScroll = 0,
             #[doc = r#"Horizontal axis"#]
             HorizontalScroll = 1,
+        }
+        impl TryFrom<u32> for r#Axis {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::VerticalScroll),
+                    1 => Ok(Self::HorizontalScroll),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"Describes the source types for axis events. This indicates to the"#]
         #[doc = r#"client how an axis event was physically generated; a client may"#]
@@ -2786,6 +3092,19 @@ pub mod wayland {
             #[doc = r#"A physical wheel tilt"#]
             WheelTilt = 3,
         }
+        impl TryFrom<u32> for r#AxisSource {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Wheel),
+                    1 => Ok(Self::Finger),
+                    2 => Ok(Self::Continuous),
+                    3 => Ok(Self::WheelTilt),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"This specifies the direction of the physical motion that caused a"#]
         #[doc = r#"wl_pointer.axis event, relative to the wl_pointer.axis direction."#]
         #[repr(u32)]
@@ -2796,6 +3115,17 @@ pub mod wayland {
             Identical = 0,
             #[doc = r#"Physical motion is the inverse of the axis direction"#]
             Inverted = 1,
+        }
+        impl TryFrom<u32> for r#AxisRelativeDirection {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Identical),
+                    1 => Ok(Self::Inverted),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"The wl_pointer interface represents one or more input devices,"#]
         #[doc = r#"such as mice, which control the pointer location and pointer_focus"#]
@@ -2968,14 +3298,14 @@ pub mod wayland {
                 r#serial: u32,
                 r#time: u32,
                 r#button: u32,
-                r#state: u32,
+                r#state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> button");
                 let payload = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_uint(button)
-                    .put_uint(state)
+                    .put_uint(state as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
@@ -3002,13 +3332,13 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
                 r#time: u32,
-                r#axis: u32,
+                r#axis: Axis,
                 r#value: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis");
                 let payload = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
-                    .put_uint(axis)
+                    .put_uint(axis as u32)
                     .put_fixed(value)
                     .build();
                 client
@@ -3089,11 +3419,11 @@ pub mod wayland {
             async fn r#axis_source(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#axis_source: u32,
+                r#axis_source: AxisSource,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_source");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(axis_source)
+                    .put_uint(axis_source as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 6, payload))
@@ -3118,12 +3448,12 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
                 r#time: u32,
-                r#axis: u32,
+                r#axis: Axis,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_stop");
                 let payload = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
-                    .put_uint(axis)
+                    .put_uint(axis as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 7, payload))
@@ -3163,12 +3493,12 @@ pub mod wayland {
             async fn r#axis_discrete(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#axis: u32,
+                r#axis: Axis,
                 r#discrete: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_discrete");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(axis)
+                    .put_uint(axis as u32)
                     .put_int(discrete)
                     .build();
                 client
@@ -3200,12 +3530,12 @@ pub mod wayland {
             async fn r#axis_value120(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#axis: u32,
+                r#axis: Axis,
                 r#value120: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_value120");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(axis)
+                    .put_uint(axis as u32)
                     .put_int(value120)
                     .build();
                 client
@@ -3251,13 +3581,13 @@ pub mod wayland {
             async fn r#axis_relative_direction(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#axis: u32,
-                r#direction: u32,
+                r#axis: Axis,
+                r#direction: AxisRelativeDirection,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_relative_direction");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(axis)
-                    .put_uint(direction)
+                    .put_uint(axis as u32)
+                    .put_uint(direction as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 10, payload))
@@ -3278,6 +3608,17 @@ pub mod wayland {
             #[doc = r#"Libxkbcommon compatible, null-terminated string; to determine the xkb keycode, clients must add 8 to the key event keycode"#]
             XkbV1 = 1,
         }
+        impl TryFrom<u32> for r#KeymapFormat {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::NoKeymap),
+                    1 => Ok(Self::XkbV1),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"Describes the physical state of a key that produced the key event."#]
         #[repr(u32)]
         #[non_exhaustive]
@@ -3287,6 +3628,17 @@ pub mod wayland {
             Released = 0,
             #[doc = r#"Key is pressed"#]
             Pressed = 1,
+        }
+        impl TryFrom<u32> for r#KeyState {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Released),
+                    1 => Ok(Self::Pressed),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"The wl_keyboard interface represents one or more keyboards"#]
         #[doc = r#"associated with a seat."#]
@@ -3328,13 +3680,13 @@ pub mod wayland {
             async fn r#keymap(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#format: u32,
+                r#format: KeymapFormat,
                 r#fd: std::os::fd::RawFd,
                 r#size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> keymap");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(format)
+                    .put_uint(format as u32)
                     .put_int(fd)
                     .put_uint(size)
                     .build();
@@ -3421,14 +3773,14 @@ pub mod wayland {
                 r#serial: u32,
                 r#time: u32,
                 r#key: u32,
-                r#state: u32,
+                r#state: KeyState,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> key");
                 let payload = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_uint(key)
-                    .put_uint(state)
+                    .put_uint(state as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
@@ -3740,6 +4092,21 @@ pub mod wayland {
             #[doc = r#"Vertical BGR"#]
             VerticalBgr = 5,
         }
+        impl TryFrom<u32> for r#Subpixel {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Unknown),
+                    1 => Ok(Self::None),
+                    2 => Ok(Self::HorizontalRgb),
+                    3 => Ok(Self::HorizontalBgr),
+                    4 => Ok(Self::VerticalRgb),
+                    5 => Ok(Self::VerticalBgr),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"This describes transformations that clients and compositors apply to"#]
         #[doc = r#"buffer contents."#]
         #[doc = r#""#]
@@ -3771,6 +4138,23 @@ pub mod wayland {
             #[doc = r#"Flip and rotate 270 degrees counter-clockwise"#]
             Flipped270 = 7,
         }
+        impl TryFrom<u32> for r#Transform {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Normal),
+                    1 => Ok(Self::_90),
+                    2 => Ok(Self::_180),
+                    3 => Ok(Self::_270),
+                    4 => Ok(Self::Flipped),
+                    5 => Ok(Self::Flipped90),
+                    6 => Ok(Self::Flipped180),
+                    7 => Ok(Self::Flipped270),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"These flags describe properties of an output mode."#]
         #[doc = r#"They are used in the flags bitfield of the mode event."#]
         bitflags::bitflags! {
@@ -3779,6 +4163,13 @@ pub mod wayland {
         const Current = 0x1;#[doc = r#"Indicates this is the preferred mode"#]
         const Preferred = 0x2;}
                                 }
+        impl TryFrom<u32> for r#Mode {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"An output describes part of the compositor geometry.  The"#]
         #[doc = r#"compositor works in the 'compositor coordinate system' and an"#]
         #[doc = r#"output corresponds to a rectangular area in that space that is"#]
@@ -3833,10 +4224,10 @@ pub mod wayland {
                 r#y: i32,
                 r#physical_width: i32,
                 r#physical_height: i32,
-                r#subpixel: i32,
+                r#subpixel: Subpixel,
                 r#make: String,
                 r#model: String,
-                r#transform: i32,
+                r#transform: Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> geometry");
                 let payload = crate::wire::PayloadBuilder::new()
@@ -3844,10 +4235,10 @@ pub mod wayland {
                     .put_int(y)
                     .put_int(physical_width)
                     .put_int(physical_height)
-                    .put_int(subpixel)
+                    .put_uint(subpixel as u32)
                     .put_string(Some(make))
                     .put_string(Some(model))
-                    .put_int(transform)
+                    .put_uint(transform as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
@@ -3890,14 +4281,14 @@ pub mod wayland {
             async fn r#mode(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#flags: u32,
+                r#flags: Mode,
                 r#width: i32,
                 r#height: i32,
                 r#refresh: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> mode");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(flags)
+                    .put_uint(flags.bits())
                     .put_int(width)
                     .put_int(height)
                     .put_int(refresh)
@@ -4100,6 +4491,17 @@ pub mod wayland {
             #[doc = r#"The to-be sub-surface parent is invalid"#]
             BadParent = 1,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::BadSurface),
+                    1 => Ok(Self::BadParent),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"The global interface exposing sub-surface compositing capabilities."#]
         #[doc = r#"A wl_surface, that has sub-surfaces associated, is called the"#]
         #[doc = r#"parent surface. Sub-surfaces can be arbitrarily nested and create"#]
@@ -4191,6 +4593,16 @@ pub mod wayland {
         pub enum r#Error {
             #[doc = r#"Wl_surface is not a sibling or the parent"#]
             BadSurface = 0,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::BadSurface),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"An additional interface to a wl_surface object, which has been"#]
         #[doc = r#"made a sub-surface. A sub-surface has one parent surface. A"#]
@@ -4614,6 +5026,23 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"The create_immed request on given buffer_params"#]
             InvalidWlBuffer = 7,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::AlreadyUsed),
+                    1 => Ok(Self::PlaneIdx),
+                    2 => Ok(Self::PlaneSet),
+                    3 => Ok(Self::Incomplete),
+                    4 => Ok(Self::InvalidFormat),
+                    5 => Ok(Self::InvalidDimensions),
+                    6 => Ok(Self::OutOfBounds),
+                    7 => Ok(Self::InvalidWlBuffer),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
                                     pub struct r#Flags: u32 {#[doc = r#"Contents are y-inverted"#]
@@ -4621,6 +5050,13 @@ pub mod linux_dmabuf_v1 {
         const Interlaced = 2;#[doc = r#"Bottom field first"#]
         const BottomFirst = 4;}
                                 }
+        impl TryFrom<u32> for r#Flags {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"This temporary object is a collection of dmabufs and other"#]
         #[doc = r#"parameters that together form a single logical buffer. The temporary"#]
         #[doc = r#"object may eventually create one wl_buffer unless cancelled by"#]
@@ -4667,7 +5103,7 @@ pub mod linux_dmabuf_v1 {
                             message.int()?,
                             message.int()?,
                             message.uint()?,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                         )
                         .await
                     }
@@ -4681,7 +5117,7 @@ pub mod linux_dmabuf_v1 {
                             message.int()?,
                             message.int()?,
                             message.uint()?,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                         )
                         .await
                     }
@@ -4786,7 +5222,7 @@ pub mod linux_dmabuf_v1 {
                 r#width: i32,
                 r#height: i32,
                 r#format: u32,
-                r#flags: u32,
+                r#flags: Flags,
             ) -> crate::Result<()>;
             #[doc = r#"This asks for immediate creation of a wl_buffer by importing the"#]
             #[doc = r#"added dmabufs."#]
@@ -4817,7 +5253,7 @@ pub mod linux_dmabuf_v1 {
                 r#width: i32,
                 r#height: i32,
                 r#format: u32,
-                r#flags: u32,
+                r#flags: Flags,
             ) -> crate::Result<()>;
             #[doc = r#"This event indicates that the attempted buffer creation was"#]
             #[doc = r#"successful. It provides the new wl_buffer referencing the dmabuf(s)."#]
@@ -4863,6 +5299,13 @@ pub mod linux_dmabuf_v1 {
                                     pub struct r#TrancheFlags: u32 {#[doc = r#"Direct scan-out tranche"#]
         const Scanout = 1;}
                                 }
+        impl TryFrom<u32> for r#TrancheFlags {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"This object advertises dmabuf parameters feedback. This includes the"#]
         #[doc = r#"preferred devices and the supported formats/modifiers."#]
         #[doc = r#""#]
@@ -5092,10 +5535,12 @@ pub mod linux_dmabuf_v1 {
             async fn r#tranche_flags(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#flags: u32,
+                r#flags: TrancheFlags,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_flags");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(flags).build();
+                let payload = crate::wire::PayloadBuilder::new()
+                    .put_uint(flags.bits())
+                    .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 6, payload))
                     .await
@@ -5116,6 +5561,17 @@ pub mod presentation_time {
             InvalidTimestamp = 0,
             #[doc = r#"Invalid flag"#]
             InvalidFlag = 1,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidTimestamp),
+                    1 => Ok(Self::InvalidFlag),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"The main feature of this interface is accurate presentation"#]
         #[doc = r#"timing feedback to ensure smooth video playback while maintaining"#]
@@ -5235,6 +5691,13 @@ pub mod presentation_time {
             #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
             pub struct r#Kind: u32 {const Vsync = 0x1;const HwClock = 0x2;const HwCompletion = 0x4;const ZeroCopy = 0x8;}
         }
+        impl TryFrom<u32> for r#Kind {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
+        }
         #[doc = r#"A presentation_feedback object returns an indication that a"#]
         #[doc = r#"wl_surface content update has become visible to the user."#]
         #[doc = r#"One object corresponds to one content update submission"#]
@@ -5332,7 +5795,7 @@ pub mod presentation_time {
                 r#refresh: u32,
                 r#seq_hi: u32,
                 r#seq_lo: u32,
-                r#flags: u32,
+                r#flags: Kind,
             ) -> crate::Result<()> {
                 tracing::debug!("wp_presentation_feedback -> presented");
                 let payload = crate::wire::PayloadBuilder::new()
@@ -5342,7 +5805,7 @@ pub mod presentation_time {
                     .put_uint(refresh)
                     .put_uint(seq_hi)
                     .put_uint(seq_lo)
-                    .put_uint(flags)
+                    .put_uint(flags.bits())
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
@@ -5606,6 +6069,23 @@ pub mod tablet_v2 {
             #[doc = r#"Lens"#]
             Lens = 0x147,
         }
+        impl TryFrom<u32> for r#Type {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0x140 => Ok(Self::Pen),
+                    0x141 => Ok(Self::Eraser),
+                    0x142 => Ok(Self::Brush),
+                    0x143 => Ok(Self::Pencil),
+                    0x144 => Ok(Self::Airbrush),
+                    0x145 => Ok(Self::Finger),
+                    0x146 => Ok(Self::Mouse),
+                    0x147 => Ok(Self::Lens),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"Describes extra capabilities on a tablet."#]
         #[doc = r#""#]
         #[doc = r#"Any tool must provide x and y values, extra axes are"#]
@@ -5627,6 +6107,21 @@ pub mod tablet_v2 {
             #[doc = r#"Wheel axis"#]
             Wheel = 6,
         }
+        impl TryFrom<u32> for r#Capability {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    1 => Ok(Self::Tilt),
+                    2 => Ok(Self::Pressure),
+                    3 => Ok(Self::Distance),
+                    4 => Ok(Self::Rotation),
+                    5 => Ok(Self::Slider),
+                    6 => Ok(Self::Wheel),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"Describes the physical state of a button that produced the button event."#]
         #[repr(u32)]
         #[non_exhaustive]
@@ -5637,12 +6132,33 @@ pub mod tablet_v2 {
             #[doc = r#"Button is pressed"#]
             Pressed = 1,
         }
+        impl TryFrom<u32> for r#ButtonState {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Released),
+                    1 => Ok(Self::Pressed),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
         pub enum r#Error {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Role),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"An object that represents a physical tool that has been, or is"#]
         #[doc = r#"currently in use with a tablet in this seat. Each wp_tablet_tool"#]
@@ -5740,11 +6256,11 @@ pub mod tablet_v2 {
             async fn r#type(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#tool_type: u32,
+                r#tool_type: Type,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> type");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(tool_type)
+                    .put_uint(tool_type as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
@@ -5818,11 +6334,11 @@ pub mod tablet_v2 {
             async fn r#capability(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#capability: u32,
+                r#capability: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> capability");
                 let payload = crate::wire::PayloadBuilder::new()
-                    .put_uint(capability)
+                    .put_uint(capability as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
@@ -6117,13 +6633,13 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#serial: u32,
                 r#button: u32,
-                r#state: u32,
+                r#state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> button");
                 let payload = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(button)
-                    .put_uint(state)
+                    .put_uint(state as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 17, payload))
@@ -6293,6 +6809,16 @@ pub mod tablet_v2 {
             #[doc = r#"Finger"#]
             Finger = 1,
         }
+        impl TryFrom<u32> for r#Source {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    1 => Ok(Self::Finger),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"A circular interaction area, such as the touch ring on the Wacom Intuos"#]
         #[doc = r#"Pro series tablets."#]
         #[doc = r#""#]
@@ -6368,10 +6894,12 @@ pub mod tablet_v2 {
             async fn r#source(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#source: u32,
+                r#source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_ring_v2 -> source");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(source).build();
+                let payload = crate::wire::PayloadBuilder::new()
+                    .put_uint(source as u32)
+                    .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
                     .await
@@ -6455,6 +6983,16 @@ pub mod tablet_v2 {
             #[doc = r#"Finger"#]
             Finger = 1,
         }
+        impl TryFrom<u32> for r#Source {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    1 => Ok(Self::Finger),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"A linear interaction area, such as the strips found in Wacom Cintiq"#]
         #[doc = r#"models."#]
         #[doc = r#""#]
@@ -6530,10 +7068,12 @@ pub mod tablet_v2 {
             async fn r#source(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#source: u32,
+                r#source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_strip_v2 -> source");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(source).build();
+                let payload = crate::wire::PayloadBuilder::new()
+                    .put_uint(source as u32)
+                    .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
                     .await
@@ -6812,6 +7352,17 @@ pub mod tablet_v2 {
             #[doc = r#"The button is pressed"#]
             Pressed = 1,
         }
+        impl TryFrom<u32> for r#ButtonState {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Released),
+                    1 => Ok(Self::Pressed),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"A pad device is a set of buttons, rings and strips"#]
         #[doc = r#"usually physically present on the tablet device itself. Some"#]
         #[doc = r#"exceptions exist where the pad device is physically detached, e.g. the"#]
@@ -6978,13 +7529,13 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#time: u32,
                 r#button: u32,
-                r#state: u32,
+                r#state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> button");
                 let payload = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(button)
-                    .put_uint(state)
+                    .put_uint(state as u32)
                     .build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
@@ -7057,6 +7608,16 @@ pub mod viewporter {
             #[doc = r#"The surface already has a viewport object associated"#]
             ViewportExists = 0,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::ViewportExists),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"The global interface exposing surface cropping and scaling"#]
         #[doc = r#"capabilities is used to instantiate an interface extension for a"#]
         #[doc = r#"wl_surface object. This extended interface will then allow"#]
@@ -7122,6 +7683,19 @@ pub mod viewporter {
             OutOfBuffer = 2,
             #[doc = r#"The wl_surface was destroyed"#]
             NoSurface = 3,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::BadValue),
+                    1 => Ok(Self::BadSize),
+                    2 => Ok(Self::OutOfBuffer),
+                    3 => Ok(Self::NoSurface),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"An additional interface to a wl_surface object, which allows the"#]
         #[doc = r#"client to specify the cropping and scaling of the surface"#]
@@ -7272,6 +7846,22 @@ pub mod xdg_shell {
             #[doc = r#"The client didn’t respond to a ping event in time"#]
             Unresponsive = 6,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::Role),
+                    1 => Ok(Self::DefunctSurfaces),
+                    2 => Ok(Self::NotTheTopmostPopup),
+                    3 => Ok(Self::InvalidPopupParent),
+                    4 => Ok(Self::InvalidSurfaceState),
+                    5 => Ok(Self::InvalidPositioner),
+                    6 => Ok(Self::Unresponsive),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"The xdg_wm_base interface is exposed as a global object enabling clients"#]
         #[doc = r#"to turn their wl_surfaces into windows in a desktop environment. It"#]
         #[doc = r#"defines the basic functionality needed for clients and the compositor to"#]
@@ -7392,6 +7982,16 @@ pub mod xdg_shell {
             #[doc = r#"Invalid input provided"#]
             InvalidInput = 0,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidInput),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
@@ -7405,6 +8005,24 @@ pub mod xdg_shell {
             BottomLeft = 6,
             TopRight = 7,
             BottomRight = 8,
+        }
+        impl TryFrom<u32> for r#Anchor {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::None),
+                    1 => Ok(Self::Top),
+                    2 => Ok(Self::Bottom),
+                    3 => Ok(Self::Left),
+                    4 => Ok(Self::Right),
+                    5 => Ok(Self::TopLeft),
+                    6 => Ok(Self::BottomLeft),
+                    7 => Ok(Self::TopRight),
+                    8 => Ok(Self::BottomRight),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[repr(u32)]
         #[non_exhaustive]
@@ -7420,6 +8038,24 @@ pub mod xdg_shell {
             TopRight = 7,
             BottomRight = 8,
         }
+        impl TryFrom<u32> for r#Gravity {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::None),
+                    1 => Ok(Self::Top),
+                    2 => Ok(Self::Bottom),
+                    3 => Ok(Self::Left),
+                    4 => Ok(Self::Right),
+                    5 => Ok(Self::TopLeft),
+                    6 => Ok(Self::BottomLeft),
+                    7 => Ok(Self::TopRight),
+                    8 => Ok(Self::BottomRight),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"The constraint adjustment value define ways the compositor will adjust"#]
         #[doc = r#"the position of the surface, if the unadjusted position would result"#]
         #[doc = r#"in the surface being partly constrained."#]
@@ -7434,6 +8070,13 @@ pub mod xdg_shell {
         bitflags::bitflags! {
             #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
             pub struct r#ConstraintAdjustment: u32 {const None = 0;const SlideX = 1;const SlideY = 2;const FlipX = 4;const FlipY = 8;const ResizeX = 16;const ResizeY = 32;}
+        }
+        impl TryFrom<u32> for r#ConstraintAdjustment {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+            }
         }
         #[doc = r#"The xdg_positioner provides a collection of rules for the placement of a"#]
         #[doc = r#"child surface relative to a parent surface. Rules can be defined to ensure"#]
@@ -7483,15 +8126,15 @@ pub mod xdg_shell {
                     }
                     3 => {
                         tracing::debug!("xdg_positioner -> set_anchor");
-                        Self::r#set_anchor(client, message.uint()?).await
+                        Self::r#set_anchor(client, message.uint()?.try_into()?).await
                     }
                     4 => {
                         tracing::debug!("xdg_positioner -> set_gravity");
-                        Self::r#set_gravity(client, message.uint()?).await
+                        Self::r#set_gravity(client, message.uint()?.try_into()?).await
                     }
                     5 => {
                         tracing::debug!("xdg_positioner -> set_constraint_adjustment");
-                        Self::r#set_constraint_adjustment(client, message.uint()?).await
+                        Self::r#set_constraint_adjustment(client, message.uint()?.try_into()?).await
                     }
                     6 => {
                         tracing::debug!("xdg_positioner -> set_offset");
@@ -7550,7 +8193,10 @@ pub mod xdg_shell {
             #[doc = r#"'bottom_right'), the anchor point will be at the specified corner;"#]
             #[doc = r#"otherwise, the derived anchor point will be centered on the specified"#]
             #[doc = r#"edge, or in the center of the anchor rectangle if no edge is specified."#]
-            async fn r#set_anchor(client: &mut crate::Client, r#anchor: u32) -> crate::Result<()>;
+            async fn r#set_anchor(
+                client: &mut crate::Client,
+                r#anchor: Anchor,
+            ) -> crate::Result<()>;
             #[doc = r#"Defines in what direction a surface should be positioned, relative to"#]
             #[doc = r#"the anchor point of the parent surface. If a corner gravity is"#]
             #[doc = r#"specified (e.g. 'bottom_right' or 'top_left'), then the child surface"#]
@@ -7558,8 +8204,10 @@ pub mod xdg_shell {
             #[doc = r#"surface will be centered over the anchor point on any axis that had no"#]
             #[doc = r#"gravity specified. If the gravity is not in the ‘gravity’ enum, an"#]
             #[doc = r#"invalid_input error is raised."#]
-            async fn r#set_gravity(client: &mut crate::Client, r#gravity: u32)
-                -> crate::Result<()>;
+            async fn r#set_gravity(
+                client: &mut crate::Client,
+                r#gravity: Gravity,
+            ) -> crate::Result<()>;
             #[doc = r#"Specify how the window should be positioned if the originally intended"#]
             #[doc = r#"position caused the surface to be constrained, meaning at least"#]
             #[doc = r#"partially outside positioning boundaries set by the compositor. The"#]
@@ -7575,7 +8223,7 @@ pub mod xdg_shell {
             #[doc = r#"The default adjustment is none."#]
             async fn r#set_constraint_adjustment(
                 client: &mut crate::Client,
-                r#constraint_adjustment: u32,
+                r#constraint_adjustment: ConstraintAdjustment,
             ) -> crate::Result<()>;
             #[doc = r#"Specify the surface position offset relative to the position of the"#]
             #[doc = r#"anchor on the anchor rectangle and the anchor on the surface. For"#]
@@ -7639,6 +8287,21 @@ pub mod xdg_shell {
             InvalidSize = 5,
             #[doc = r#"Surface was destroyed before its role object"#]
             DefunctRoleObject = 6,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    1 => Ok(Self::NotConstructed),
+                    2 => Ok(Self::AlreadyConstructed),
+                    3 => Ok(Self::UnconfiguredBuffer),
+                    4 => Ok(Self::InvalidSerial),
+                    5 => Ok(Self::InvalidSize),
+                    6 => Ok(Self::DefunctRoleObject),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"An interface that may be implemented by a wl_surface, for"#]
         #[doc = r#"implementations that provide a desktop-style user interface."#]
@@ -7895,6 +8558,18 @@ pub mod xdg_shell {
             #[doc = r#"Client provided an invalid min or max size"#]
             InvalidSize = 2,
         }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidResizeEdge),
+                    1 => Ok(Self::InvalidParent),
+                    2 => Ok(Self::InvalidSize),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[doc = r#"These values are used to indicate which edge of a surface"#]
         #[doc = r#"is being dragged in a resize operation."#]
         #[repr(u32)]
@@ -7910,6 +8585,24 @@ pub mod xdg_shell {
             Right = 8,
             TopRight = 9,
             BottomRight = 10,
+        }
+        impl TryFrom<u32> for r#ResizeEdge {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::None),
+                    1 => Ok(Self::Top),
+                    2 => Ok(Self::Bottom),
+                    4 => Ok(Self::Left),
+                    5 => Ok(Self::TopLeft),
+                    6 => Ok(Self::BottomLeft),
+                    8 => Ok(Self::Right),
+                    9 => Ok(Self::TopRight),
+                    10 => Ok(Self::BottomRight),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"The different state values used on the surface. This is designed for"#]
         #[doc = r#"state values like maximized, fullscreen. It is paired with the"#]
@@ -7936,6 +8629,24 @@ pub mod xdg_shell {
             TiledBottom = 8,
             Suspended = 9,
         }
+        impl TryFrom<u32> for r#State {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    1 => Ok(Self::Maximized),
+                    2 => Ok(Self::Fullscreen),
+                    3 => Ok(Self::Resizing),
+                    4 => Ok(Self::Activated),
+                    5 => Ok(Self::TiledLeft),
+                    6 => Ok(Self::TiledRight),
+                    7 => Ok(Self::TiledTop),
+                    8 => Ok(Self::TiledBottom),
+                    9 => Ok(Self::Suspended),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
+        }
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
@@ -7948,6 +8659,19 @@ pub mod xdg_shell {
             Fullscreen = 3,
             #[doc = r#"Set_minimized is available"#]
             Minimize = 4,
+        }
+        impl TryFrom<u32> for r#WmCapabilities {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    1 => Ok(Self::WindowMenu),
+                    2 => Ok(Self::Maximize),
+                    3 => Ok(Self::Fullscreen),
+                    4 => Ok(Self::Minimize),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"This interface defines an xdg_surface role which allows a surface to,"#]
         #[doc = r#"among other things, set window-like properties such as maximize,"#]
@@ -8038,7 +8762,7 @@ pub mod xdg_shell {
                                 .object()?
                                 .ok_or(crate::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
-                            message.uint()?,
+                            message.uint()?.try_into()?,
                         )
                         .await
                     }
@@ -8213,7 +8937,7 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
                 r#seat: crate::wire::ObjectId,
                 r#serial: u32,
-                r#edges: u32,
+                r#edges: ResizeEdge,
             ) -> crate::Result<()>;
             #[doc = r#"Set a maximum size for the window."#]
             #[doc = r#""#]
@@ -8519,6 +9243,16 @@ pub mod xdg_shell {
         pub enum r#Error {
             #[doc = r#"Tried to grab after being mapped"#]
             InvalidGrab = 0,
+        }
+        impl TryFrom<u32> for r#Error {
+            type Error = crate::wire::DecodeError;
+
+            fn try_from(v: u32) -> Result<Self, Self::Error> {
+                match v {
+                    0 => Ok(Self::InvalidGrab),
+                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                }
+            }
         }
         #[doc = r#"A popup surface is a short-lived, temporary surface. It can be used to"#]
         #[doc = r#"implement for example menus, popovers, tooltips and other similar user"#]
