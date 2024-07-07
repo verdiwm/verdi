@@ -6,6 +6,7 @@ use crate::{
     protocol::{
         interfaces::wayland::{wl_compositor::WlCompositor, wl_shm::WlShm},
         wayland::{compositor::Compositor, shm::Shm},
+        xdg::wm_base::{WmBase, XdgWmBase},
     },
     wire::{Message, NewId, ObjectId},
     Client, Dispatcher, Error, Result,
@@ -18,6 +19,7 @@ struct RegistryGlobals;
 impl RegistryGlobals {
     pub const COMPOSITOR: u32 = 0;
     pub const SHM: u32 = 1;
+    pub const WM_BASE: u32 = 2;
 }
 
 #[derive(Debug)]
@@ -28,6 +30,7 @@ impl WlRegistry for Registry {
         match name {
             RegistryGlobals::COMPOSITOR => client.insert(id.id, Compositor::create_dispatcher()),
             RegistryGlobals::SHM => client.insert(id.id, Shm::create_dispatcher()),
+            RegistryGlobals::WM_BASE => client.insert(id.id, WmBase::create_dispatcher()),
             _ => return Err(Error::NotFound),
         }
 
@@ -65,6 +68,15 @@ impl Registry {
             RegistryGlobals::SHM,
             Shm::INTERFACE.to_string(),
             Shm::VERSION,
+        )
+        .await?;
+
+        Registry::global(
+            id,
+            client,
+            RegistryGlobals::WM_BASE,
+            WmBase::INTERFACE.to_string(),
+            WmBase::VERSION,
         )
         .await?;
 
