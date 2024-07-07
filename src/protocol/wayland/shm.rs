@@ -26,7 +26,7 @@ impl WlShm for Shm {
         todo!()
     }
 
-    fn create_dispatcher(_id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
         Arc::new(Box::new(Self {}))
     }
 }

@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use crate::{
-    wire::{Message, ObjectId},
-    Client, Dispatcher, Result,
-};
+use crate::{wire::Message, Client, Dispatcher, Result};
 
 pub use crate::protocol::interfaces::wayland::wl_callback::*;
 
@@ -13,7 +10,7 @@ pub use crate::protocol::interfaces::wayland::wl_callback::*;
 pub struct Callback;
 
 impl WlCallback for Callback {
-    fn create_dispatcher(_id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
         Arc::new(Box::new(Self {}))
     }
 }

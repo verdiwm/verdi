@@ -414,7 +414,7 @@ fn main() -> Result<()> {
 
             writeln!(
                 &mut generated_path,
-                "fn create_dispatcher(id: crate::wire::ObjectId) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;"
+                "fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;"
             )?;
 
             for request in &interface.requests {

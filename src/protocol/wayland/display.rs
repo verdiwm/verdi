@@ -28,7 +28,7 @@ impl WlDisplay for Display {
     }
 
     async fn get_registry(client: &mut Client, registry_id: ObjectId) -> Result<()> {
-        let registry = Registry::create_dispatcher(registry_id);
+        let registry = Registry::create_dispatcher();
         client.insert(registry_id, registry);
 
         Registry::global(
@@ -52,7 +52,7 @@ impl WlDisplay for Display {
         Ok(())
     }
 
-    fn create_dispatcher(_id: ObjectId) -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
         Arc::new(Box::new(Self {}))
     }
 }
