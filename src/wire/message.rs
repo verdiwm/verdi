@@ -134,11 +134,7 @@ impl Message {
     }
 
     pub fn object(&mut self) -> Result<Option<ObjectId>, DecodeError> {
-        if self.payload.remaining() < 4 {
-            return Err(DecodeError::MalformedPayload);
-        }
-
-        Ok(ObjectId::new(self.payload.get_u32_ne()))
+        self.uint().map(ObjectId::new)
     }
 
     pub fn new_id(&mut self) -> Result<NewId, DecodeError> {
