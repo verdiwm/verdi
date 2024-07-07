@@ -5,9 +5,7 @@ use async_trait::async_trait;
 use crate::{
     protocol::wayland::{
         callback::{Callback, WlCallback},
-        compositor::{Compositor, WlCompositor},
-        registry::{Registry, WlRegistry},
-        shm::{Shm, WlShm},
+        registry::Registry,
     },
     wire::{Message, ObjectId},
     Client, Dispatcher, Result,
@@ -28,28 +26,7 @@ impl WlDisplay for Display {
     }
 
     async fn get_registry(client: &mut Client, registry_id: ObjectId) -> Result<()> {
-        let registry = Registry::create_dispatcher();
-        client.insert(registry_id, registry);
-
-        Registry::global(
-            registry_id,
-            client,
-            0,
-            Compositor::INTERFACE.to_string(),
-            Compositor::VERSION,
-        )
-        .await?;
-
-        Registry::global(
-            registry_id,
-            client,
-            1,
-            Shm::INTERFACE.to_string(),
-            Shm::VERSION,
-        )
-        .await?;
-
-        Ok(())
+        Registry::new(client, registry_id).await
     }
 
     fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
