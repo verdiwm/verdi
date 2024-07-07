@@ -6,14 +6,12 @@ use std::{collections::HashMap, io, path::Path, sync::Arc};
 use tokio::net::{UnixListener, UnixStream};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
-use tracing::{debug, warn};
-// use tracing::{debug, error, info, warn};
 
 pub mod error;
 pub mod protocol;
 pub mod wire;
 
-use protocol::{interfaces::wayland::wl_display::WlDisplay, wayland::Display};
+use protocol::wayland::display::{Display, WlDisplay};
 use wire::{DecodeError, Message, MessageCodec, ObjectId};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
