@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use std::{fs, process::exit};
 use tokio::task::JoinSet;
 use tracing::{error, info};
-use verdi::Verdi;
+use verdi::{error::Error, Verdi};
 
 const SOCKET_PATH: &str = "verdi.sock";
 
@@ -40,7 +40,7 @@ fn main() -> Result<()> {
 
         let verdi = Verdi::new(SOCKET_PATH)?;
 
-        let mut set: JoinSet<Result<(), anyhow::Error>> = JoinSet::new();
+        let mut set: JoinSet<Result<(), Error>> = JoinSet::new();
 
         while let Some(client) = verdi.new_client().await {
             info!("Got client");
@@ -53,7 +53,7 @@ fn main() -> Result<()> {
                                 Ok(_) => {}
                                 Err(err) => {
                                     error!("Error while handling message: {err}");
-                                    Err(err)?;
+                                    return Err(err);
                                 }
                             }
                         }
