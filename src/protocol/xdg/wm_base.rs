@@ -16,7 +16,7 @@ impl WmBase {
 }
 
 impl XdgWmBase for WmBase {
-    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
+    fn new(_id: crate::wire::ObjectId) -> crate::Result<Self>
     where
         Self: Sized,
     {
@@ -27,28 +27,28 @@ impl XdgWmBase for WmBase {
         todo!()
     }
 
-    async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#create_positioner(
+    async fn create_positioner(
         &self,
-        client: &mut crate::Client,
-        r#id: crate::wire::ObjectId,
+        _client: &mut crate::Client,
+        _id: crate::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#get_xdg_surface(
+    async fn get_xdg_surface(
         &self,
-        client: &mut crate::Client,
-        r#id: crate::wire::ObjectId,
-        r#surface: crate::wire::ObjectId,
+        _client: &mut crate::Client,
+        _id: crate::wire::ObjectId,
+        _surface: crate::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#pong(&self, client: &mut crate::Client, r#serial: u32) -> crate::Result<()> {
+    async fn pong(&self, _client: &mut crate::Client, _serial: u32) -> crate::Result<()> {
         todo!()
     }
 }

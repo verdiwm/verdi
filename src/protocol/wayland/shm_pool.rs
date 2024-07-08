@@ -1,12 +1,12 @@
-use std::{io, os::fd::RawFd, ptr::null_mut, sync::Arc};
+// use std::{io, ptr::null_mut};
 
 use async_trait::async_trait;
-use rustix::{
-    fd::OwnedFd,
-    mm::{mmap, MapFlags, ProtFlags},
-};
+// use rustix::{
+//     mm::{mmap, MapFlags, ProtFlags},
+// };
 
 use crate::{
+    protocol::wayland::shm::Format,
     wire::{Message, ObjectId},
     Client, Dispatcher, Result,
 };
@@ -17,7 +17,7 @@ pub use crate::protocol::interfaces::wayland::wl_shm_pool::*;
 pub struct ShmPool;
 
 impl WlShmPool for ShmPool {
-    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
+    fn new(_id: ObjectId) -> Result<Self>
     where
         Self: Sized,
     {
@@ -36,28 +36,28 @@ impl WlShmPool for ShmPool {
         todo!();
     }
 
-    fn get_id(&self) -> crate::wire::ObjectId {
+    fn get_id(&self) -> ObjectId {
         todo!()
     }
 
     async fn r#create_buffer(
         &self,
-        client: &mut crate::Client,
-        r#id: crate::wire::ObjectId,
-        r#offset: i32,
-        r#width: i32,
-        r#height: i32,
-        r#stride: i32,
-        r#format: crate::protocol::interfaces::wayland::wl_shm::Format,
+        _client: &mut crate::Client,
+        _id: crate::wire::ObjectId,
+        _offset: i32,
+        _width: i32,
+        _height: i32,
+        _stride: i32,
+        _format: Format,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn r#destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#resize(&self, client: &mut crate::Client, r#size: i32) -> crate::Result<()> {
+    async fn r#resize(&self, _client: &mut crate::Client, _size: i32) -> crate::Result<()> {
         todo!()
     }
 }
