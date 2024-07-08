@@ -65,18 +65,37 @@ impl PayloadBuilder {
         self.put_uint(0)
     }
 
-    pub fn put_object(mut self, object: Option<ObjectId>) -> Self {
-        todo!();
-        self
+    pub fn put_object(self, object: Option<ObjectId>) -> Self {
+        if let Some(id) = object {
+            return self.put_uint(id.as_raw());
+        }
+
+        self.put_uint(0)
     }
 
-    pub fn put_new_id(mut self, new_id: NewId) -> Self {
-        todo!();
-        self
+    pub fn put_new_id(self, new_id: NewId) -> Self {
+        self.put_string(Some(new_id.interface))
+            .put_uint(new_id.version)
+            .put_object(Some(new_id.id))
     }
 
     pub fn put_array<T: AsRef<[u8]>>(mut self, array: T) -> Self {
-        todo!();
+        let array = array.as_ref();
+        let total_len = 4 + array.len();
+        let mut padding = 0;
+
+        if total_len % 4 != 0 {
+            padding = 4 - (total_len % 4);
+        }
+
+        self.payload.reserve(total_len + padding);
+        self.payload.put_u32_ne(array.len() as u32);
+        self.payload.put_slice(array);
+
+        for _ in 0..padding {
+            self.payload.put_u8(0);
+        }
+
         self
     }
 
