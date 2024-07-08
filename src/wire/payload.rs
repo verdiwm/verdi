@@ -1,33 +1,41 @@
+use std::os::fd::RawFd;
+
 use arbitrary::Arbitrary;
 use bytes::{BufMut, Bytes, BytesMut};
 
 use super::{Fixed, NewId, ObjectId};
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
-pub struct PayloadBuilder(BytesMut);
+pub struct PayloadBuilder {
+    payload: BytesMut,
+    fds: Vec<RawFd>,
+}
 
 impl PayloadBuilder {
     pub fn new() -> Self {
-        Self(BytesMut::new())
+        Self {
+            payload: BytesMut::new(),
+            fds: Vec::new(),
+        }
     }
 
     pub fn put_int(mut self, int: i32) -> Self {
-        self.0.reserve(4);
-        self.0.put_i32_ne(int);
+        self.payload.reserve(4);
+        self.payload.put_i32_ne(int);
 
         self
     }
 
     pub fn put_uint(mut self, uint: u32) -> Self {
-        self.0.reserve(4);
-        self.0.put_u32_ne(uint);
+        self.payload.reserve(4);
+        self.payload.put_u32_ne(uint);
 
         self
     }
 
     pub fn put_fixed(mut self, fixed: Fixed) -> Self {
-        self.0.reserve(4);
-        self.0.put_u32_ne(fixed.into_raw());
+        self.payload.reserve(4);
+        self.payload.put_u32_ne(fixed.into_raw());
 
         self
     }
@@ -42,13 +50,13 @@ impl PayloadBuilder {
                 padding = 4 - (total_len % 4);
             }
 
-            self.0.reserve(total_len + padding);
-            self.0.put_u32_ne((string.len() + 1) as u32);
-            self.0.put_slice(string.as_bytes());
-            self.0.put_u8(b'\0');
+            self.payload.reserve(total_len + padding);
+            self.payload.put_u32_ne((string.len() + 1) as u32);
+            self.payload.put_slice(string.as_bytes());
+            self.payload.put_u8(b'\0');
 
             for _ in 0..padding {
-                self.0.put_u8(0);
+                self.payload.put_u8(0);
             }
 
             return self;
@@ -72,7 +80,13 @@ impl PayloadBuilder {
         self
     }
 
-    pub fn build(self) -> Bytes {
-        self.0.freeze()
+    pub fn put_fd(mut self, fd: RawFd) -> Self {
+        self.fds.push(fd);
+
+        self
+    }
+
+    pub fn build(self) -> (Bytes, Vec<RawFd>) {
+        (self.payload.freeze(), self.fds)
     }
 }

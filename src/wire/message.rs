@@ -2,72 +2,37 @@ use std::os::fd::RawFd;
 
 use arbitrary::Arbitrary;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
-use tokio_util::codec::{Decoder, Encoder};
 
 use super::{DecodeError, Fixed, NewId, ObjectId};
-
-#[derive(Debug)]
-pub struct MessageCodec {
-    stream: RawFd,
-}
-
-impl MessageCodec {
-    pub const fn new(fd: RawFd) -> Self {
-        Self { stream: fd }
-    }
-}
-
-impl Decoder for MessageCodec {
-    type Item = Message;
-
-    type Error = DecodeError;
-
-    fn decode(
-        &mut self,
-        src: &mut BytesMut,
-    ) -> std::result::Result<Option<Self::Item>, Self::Error> {
-        if src.is_empty() {
-            return Ok(None);
-        }
-
-        Message::from_bytes(src).map(Option::Some)
-    }
-}
-
-impl Encoder<Message> for MessageCodec {
-    type Error = std::io::Error;
-
-    fn encode(&mut self, item: Message, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        item.to_bytes(dst);
-
-        Ok(())
-    }
-}
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
 pub struct Message {
     pub object_id: ObjectId,
     pub opcode: u16,
-    pub payload: Bytes,
+    payload: Bytes,
+    fds: Vec<RawFd>,
 }
 
 impl Message {
-    pub fn new(object_id: ObjectId, opcode: u16, payload: Bytes) -> Self {
+    pub fn new(object_id: ObjectId, opcode: u16, payload: Bytes, fds: Vec<RawFd>) -> Self {
         Self {
             object_id,
             opcode,
             payload,
+            fds,
         }
     }
 
-    pub fn to_bytes(&self, buf: &mut BytesMut) {
+    pub fn to_bytes(&self, buf: &mut BytesMut, fds: &mut Vec<RawFd>) {
         buf.reserve(8 + self.payload.len());
         buf.put_u32_ne(self.object_id.as_raw());
         buf.put_u32_ne((((self.payload.len() + 8) as u32) << 16) | self.opcode as u32);
         buf.put_slice(&self.payload);
+
+        fds.copy_from_slice(&self.fds);
     }
 
-    pub fn from_bytes(bytes: &mut BytesMut) -> Result<Self, DecodeError> {
+    pub fn from_bytes(bytes: &mut BytesMut, fds: &mut Vec<RawFd>) -> Result<Self, DecodeError> {
         if bytes.remaining() < 8 {
             return Err(DecodeError::MalformedHeader);
         }
@@ -98,6 +63,7 @@ impl Message {
             object_id,
             opcode,
             payload,
+            fds: fds.clone(),
         })
     }
 
@@ -170,6 +136,10 @@ impl Message {
 
         Ok(array)
     }
+
+    pub fn fd(&mut self) -> Result<RawFd, DecodeError> {
+        self.fds.pop().ok_or(DecodeError::MalformedPayload)
+    }
 }
 
 #[cfg(test)]
@@ -184,14 +154,16 @@ mod tests {
             object_id: unsafe { ObjectId::from_raw(10) },
             opcode: 0,
             payload: Bytes::copy_from_slice(b"\x03\0\0\0"),
+            fds: Vec::new(),
         };
 
         let mut bytes = BytesMut::new();
-        msg.to_bytes(&mut bytes);
+        let mut fds = Vec::new();
+        msg.to_bytes(&mut bytes, &mut fds);
 
         assert_eq!(
             msg,
-            Message::from_bytes(&mut bytes).expect("Failed to parse bytes")
+            Message::from_bytes(&mut bytes, &mut fds).expect("Failed to parse bytes")
         );
     }
 }
