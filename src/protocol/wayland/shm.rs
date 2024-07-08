@@ -18,6 +18,13 @@ impl Shm {
     pub fn new(id: ObjectId) -> Self {
         Self { id }
     }
+
+    pub async fn advertise_formats(&self, client: &mut Client) -> Result<()> {
+        self.format(client, Format::Argb8888).await?;
+        self.format(client, Format::Xrgb8888).await?;
+
+        Ok(())
+    }
 }
 
 impl WlShm for Shm {
