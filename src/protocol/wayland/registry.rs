@@ -4,8 +4,10 @@ use async_trait::async_trait;
 
 use crate::{
     protocol::{
-        interfaces::wayland::{wl_compositor::WlCompositor, wl_shm::WlShm},
-        wayland::{compositor::Compositor, shm::Shm},
+        wayland::{
+            compositor::{Compositor, WlCompositor},
+            shm::{Shm, WlShm},
+        },
         xdg::wm_base::{WmBase, XdgWmBase},
     },
     wire::{Message, NewId, ObjectId},
@@ -51,7 +53,7 @@ impl Dispatcher for Registry {
 
 impl Registry {
     pub async fn new(client: &mut Client, id: ObjectId) -> Result<()> {
-        client.insert(id, Registry::create_dispatcher());
+        client.insert(id, Self::create_dispatcher());
 
         Registry::global(
             id,
