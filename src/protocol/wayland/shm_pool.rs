@@ -2,7 +2,8 @@ use std::{io, ptr::null_mut};
 
 use async_trait::async_trait;
 use rustix::fd::OwnedFd;
-use rustix::mm::{mmap, MapFlags, ProtFlags};
+use rustix::mm::{mmap, mremap, MapFlags, MremapFlags, ProtFlags};
+use tokio::sync::RwLock;
 
 use crate::{
     protocol::wayland::shm::Format,
@@ -15,6 +16,18 @@ pub use crate::protocol::interfaces::wayland::wl_shm_pool::*;
 #[derive(Debug)]
 pub struct ShmPool {
     id: ObjectId,
+    _fd: OwnedFd,
+    map: RwLock<Map>,
+}
+
+// SAFETY: this is guaranteeed by the use of RwLock above
+unsafe impl Send for Map {}
+unsafe impl Sync for Map {}
+
+#[derive(Debug)]
+struct Map {
+    size: usize,
+    mem: *mut u8,
 }
 
 impl ShmPool {
@@ -22,19 +35,26 @@ impl ShmPool {
     where
         Self: Sized,
     {
-        let map = unsafe {
+        // FIXME: error handling when converting size
+        let size = size as usize;
+        let mem = unsafe {
             mmap(
                 null_mut(),
-                size as usize,
+                size,
                 ProtFlags::READ | ProtFlags::WRITE,
                 MapFlags::SHARED,
-                fd,
+                &fd,
                 0,
             )
             .map_err(io::Error::from)?
-        };
+        }
+        .cast();
 
-        Ok(Self { id })
+        Ok(Self {
+            id,
+            _fd: fd,
+            map: RwLock::new(Map { size, mem }),
+        })
     }
 }
 
@@ -52,16 +72,36 @@ impl WlShmPool for ShmPool {
         _height: i32,
         _stride: i32,
         _format: Format,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 
-    async fn r#destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn r#destroy(&self, _client: &mut crate::Client) -> Result<()> {
         todo!()
     }
 
-    async fn r#resize(&self, _client: &mut crate::Client, _size: i32) -> crate::Result<()> {
-        todo!()
+    async fn r#resize(&self, _client: &mut crate::Client, size: i32) -> Result<()> {
+        let mut write_guard = self.map.write().await;
+        let old_size = write_guard.size;
+        let new_size = size as usize;
+
+        // FIXME: handle error when resize tries to reduce size
+
+        // FIXME: better error handling
+        let mem = unsafe {
+            mremap(
+                write_guard.mem.cast(),
+                old_size,
+                new_size,
+                MremapFlags::MAYMOVE,
+            )
+            .unwrap()
+        };
+
+        write_guard.size = new_size;
+        write_guard.mem = mem.cast();
+
+        Ok(())
     }
 }
 
