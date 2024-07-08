@@ -8,13 +8,41 @@ use crate::{
 pub use crate::protocol::interfaces::wayland::wl_surface::*;
 
 #[derive(Debug)]
+struct State {}
+
+impl State {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+#[derive(Debug)]
+struct DoubleBuffer {
+    current: State,
+    pending: State,
+}
+
+impl DoubleBuffer {
+    pub fn new() -> Self {
+        Self {
+            current: State::new(),
+            pending: State::new(),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Surface {
     id: ObjectId,
+    state: DoubleBuffer,
 }
 
 impl Surface {
     pub fn new(id: ObjectId) -> Self {
-        Self { id }
+        Self {
+            id,
+            state: DoubleBuffer::new(),
+        }
     }
 }
 
@@ -73,7 +101,9 @@ impl WlSurface for Surface {
     }
 
     async fn r#commit(&self, _client: &mut crate::Client) -> crate::Result<()> {
-        todo!()
+        // FIXME: commit state
+
+        Ok(())
     }
 
     async fn r#set_buffer_transform(

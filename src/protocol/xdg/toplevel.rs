@@ -36,7 +36,9 @@ impl XdgToplevel for Toplevel {
     }
 
     async fn r#set_title(&self, client: &mut crate::Client, r#title: String) -> crate::Result<()> {
-        todo!()
+        // FIXME: change  state
+
+        Ok(())
     }
 
     async fn r#set_app_id(
@@ -44,7 +46,9 @@ impl XdgToplevel for Toplevel {
         client: &mut crate::Client,
         r#app_id: String,
     ) -> crate::Result<()> {
-        todo!()
+        // FIXME: change  state
+
+        Ok(())
     }
 
     async fn r#show_window_menu(
