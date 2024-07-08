@@ -14,10 +14,12 @@ use crate::{
 pub use crate::protocol::interfaces::wayland::wl_shm_pool::*;
 
 #[derive(Debug)]
-pub struct ShmPool;
+pub struct ShmPool {
+    id: ObjectId,
+}
 
-impl WlShmPool for ShmPool {
-    fn new(_id: ObjectId) -> Result<Self>
+impl ShmPool {
+    pub fn new(id: ObjectId) -> Result<Self>
     where
         Self: Sized,
     {
@@ -33,11 +35,13 @@ impl WlShmPool for ShmPool {
         //     .map_err(io::Error::from)?
         // };
 
-        todo!();
+        Ok(Self { id })
     }
+}
 
+impl WlShmPool for ShmPool {
     fn get_id(&self) -> ObjectId {
-        todo!()
+        self.id
     }
 
     async fn r#create_buffer(

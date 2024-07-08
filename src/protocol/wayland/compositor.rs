@@ -12,15 +12,14 @@ pub struct Compositor {
     id: ObjectId,
 }
 
-impl WlCompositor for Compositor {
-    fn new(id: ObjectId) -> crate::Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Self { id })
+impl Compositor {
+    pub fn new(id: ObjectId) -> Self {
+        Self { id }
     }
+}
 
-    fn get_id(&self) -> crate::wire::ObjectId {
+impl WlCompositor for Compositor {
+    fn get_id(&self) -> ObjectId {
         self.id
     }
 

@@ -1,30 +1,26 @@
-use std::sync::Arc;
-
 use async_trait::async_trait;
 
-use crate::{wire::Message, Client, Dispatcher, Result};
+use crate::{
+    wire::{Message, ObjectId},
+    Client, Dispatcher, Result,
+};
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_wm_base::*;
 
 #[derive(Debug)]
-pub struct WmBase;
+pub struct WmBase {
+    id: ObjectId,
+}
 
 impl WmBase {
-    pub fn new() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        Arc::new(Box::new(Self {}))
+    pub fn new(id: ObjectId) -> Self {
+        Self { id }
     }
 }
 
 impl XdgWmBase for WmBase {
-    fn new(_id: crate::wire::ObjectId) -> crate::Result<Self>
-    where
-        Self: Sized,
-    {
-        todo!()
-    }
-
-    fn get_id(&self) -> crate::wire::ObjectId {
-        todo!()
+    fn get_id(&self) -> ObjectId {
+        self.id
     }
 
     async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
@@ -34,7 +30,7 @@ impl XdgWmBase for WmBase {
     async fn create_positioner(
         &self,
         _client: &mut crate::Client,
-        _id: crate::wire::ObjectId,
+        _id: ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
@@ -42,8 +38,8 @@ impl XdgWmBase for WmBase {
     async fn get_xdg_surface(
         &self,
         _client: &mut crate::Client,
-        _id: crate::wire::ObjectId,
-        _surface: crate::wire::ObjectId,
+        _id: ObjectId,
+        _surface: ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
