@@ -5,3 +5,4 @@ pub mod registry;
 pub mod shm;
 pub mod shm_pool;
 pub mod surface;
+pub mod seat;
