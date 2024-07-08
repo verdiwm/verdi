@@ -845,7 +845,7 @@ pub mod wayland {
             async fn r#create_pool(
                 client: &mut crate::Client,
                 r#id: crate::wire::ObjectId,
-                r#fd: std::os::fd::RawFd,
+                r#fd: rustix::fd::OwnedFd,
                 r#size: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
@@ -1048,7 +1048,7 @@ pub mod wayland {
             async fn r#receive(
                 client: &mut crate::Client,
                 r#mime_type: String,
-                r#fd: std::os::fd::RawFd,
+                r#fd: rustix::fd::OwnedFd,
             ) -> crate::Result<()>;
             #[doc = r#"Destroy the data offer."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -1291,7 +1291,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
                 r#mime_type: String,
-                r#fd: std::os::fd::RawFd,
+                r#fd: rustix::fd::OwnedFd,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source.send");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3647,7 +3647,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
                 r#format: KeymapFormat,
-                r#fd: std::os::fd::RawFd,
+                r#fd: rustix::fd::OwnedFd,
                 r#size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard.keymap");
@@ -5103,7 +5103,7 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"was already set."#]
             async fn r#add(
                 client: &mut crate::Client,
-                r#fd: std::os::fd::RawFd,
+                r#fd: rustix::fd::OwnedFd,
                 r#plane_idx: u32,
                 r#offset: u32,
                 r#stride: u32,
@@ -5335,7 +5335,7 @@ pub mod linux_dmabuf_v1 {
             async fn r#format_table(
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
-                r#fd: std::os::fd::RawFd,
+                r#fd: rustix::fd::OwnedFd,
                 r#size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.format_table");
