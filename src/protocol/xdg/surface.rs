@@ -25,7 +25,7 @@ impl XdgSurface for Surface {
         self.id
     }
 
-    async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
@@ -41,26 +41,26 @@ impl XdgSurface for Surface {
 
     async fn get_popup(
         &self,
-        client: &mut crate::Client,
-        id: crate::wire::ObjectId,
-        parent: Option<crate::wire::ObjectId>,
-        positioner: crate::wire::ObjectId,
+        _client: &mut crate::Client,
+        _id: crate::wire::ObjectId,
+        _parent: Option<crate::wire::ObjectId>,
+        _positioner: crate::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
 
     async fn set_window_geometry(
         &self,
-        client: &mut crate::Client,
-        x: i32,
-        y: i32,
-        width: i32,
-        height: i32,
+        _client: &mut crate::Client,
+        _x: i32,
+        _y: i32,
+        _width: i32,
+        _height: i32,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn ack_configure(&self, client: &mut crate::Client, serial: u32) -> crate::Result<()> {
+    async fn ack_configure(&self, _client: &mut crate::Client, _serial: u32) -> crate::Result<()> {
         todo!()
     }
 }

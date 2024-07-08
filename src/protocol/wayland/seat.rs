@@ -25,29 +25,29 @@ impl WlSeat for Seat {
 
     async fn get_pointer(
         &self,
-        client: &mut crate::Client,
-        id: crate::wire::ObjectId,
+        _client: &mut crate::Client,
+        _id: crate::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
 
     async fn get_keyboard(
         &self,
-        client: &mut crate::Client,
-        id: crate::wire::ObjectId,
+        _client: &mut crate::Client,
+        _id: crate::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
 
     async fn get_touch(
         &self,
-        client: &mut crate::Client,
-        id: crate::wire::ObjectId,
+        _client: &mut crate::Client,
+        _id: crate::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn release(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn release(&self, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 }
