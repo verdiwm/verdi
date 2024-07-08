@@ -2,6 +2,7 @@ use std::os::fd::RawFd;
 
 use arbitrary::Arbitrary;
 use bytes::{BufMut, Bytes, BytesMut};
+use rustix::fd::AsRawFd;
 
 use super::{Fixed, NewId, ObjectId};
 
@@ -99,8 +100,8 @@ impl PayloadBuilder {
         self
     }
 
-    pub fn put_fd(mut self, fd: RawFd) -> Self {
-        self.fds.push(fd);
+    pub fn put_fd<Fd: AsRawFd>(mut self, fd: Fd) -> Self {
+        self.fds.push(fd.as_raw_fd());
 
         self
     }

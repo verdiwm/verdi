@@ -2,6 +2,7 @@ use std::os::fd::RawFd;
 
 use arbitrary::Arbitrary;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
+use rustix::fd::{FromRawFd, OwnedFd};
 
 use super::{DecodeError, Fixed, NewId, ObjectId};
 
@@ -137,8 +138,11 @@ impl Message {
         Ok(array)
     }
 
-    pub fn fd(&mut self) -> Result<RawFd, DecodeError> {
-        self.fds.pop().ok_or(DecodeError::MalformedPayload)
+    pub fn fd(&mut self) -> Result<OwnedFd, DecodeError> {
+        self.fds
+            .pop()
+            .map(|fd| unsafe { OwnedFd::from_raw_fd(fd) })
+            .ok_or(DecodeError::MalformedPayload)
     }
 }
 

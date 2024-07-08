@@ -162,7 +162,7 @@ impl Arg {
                 }
             }
             ArgType::Array => "Vec<u8>",
-            ArgType::Fd => "std::os::fd::RawFd",
+            ArgType::Fd => "rustix::fd::OwnedFd",
         };
 
         ret.to_string()
