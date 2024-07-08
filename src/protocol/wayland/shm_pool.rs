@@ -63,7 +63,7 @@ impl WlShmPool for ShmPool {
         self.id
     }
 
-    async fn r#create_buffer(
+    async fn create_buffer(
         &self,
         _client: &mut crate::Client,
         _id: crate::wire::ObjectId,
@@ -76,11 +76,11 @@ impl WlShmPool for ShmPool {
         todo!()
     }
 
-    async fn r#destroy(&self, _client: &mut crate::Client) -> Result<()> {
+    async fn destroy(&self, _client: &mut crate::Client) -> Result<()> {
         todo!()
     }
 
-    async fn r#resize(&self, _client: &mut crate::Client, size: i32) -> Result<()> {
+    async fn resize(&self, _client: &mut crate::Client, size: i32) -> Result<()> {
         let mut write_guard = self.map.write().await;
         let old_size = write_guard.size;
         let new_size = size as usize;

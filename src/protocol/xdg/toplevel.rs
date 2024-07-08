@@ -23,41 +23,37 @@ impl XdgToplevel for Toplevel {
         self.id
     }
 
-    async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_parent(
+    async fn set_parent(
         &self,
         client: &mut crate::Client,
-        r#parent: Option<crate::wire::ObjectId>,
+        parent: Option<crate::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_title(&self, client: &mut crate::Client, r#title: String) -> crate::Result<()> {
+    async fn set_title(&self, client: &mut crate::Client, title: String) -> crate::Result<()> {
         // FIXME: change  state
 
         Ok(())
     }
 
-    async fn r#set_app_id(
-        &self,
-        client: &mut crate::Client,
-        r#app_id: String,
-    ) -> crate::Result<()> {
+    async fn set_app_id(&self, client: &mut crate::Client, app_id: String) -> crate::Result<()> {
         // FIXME: change  state
 
         Ok(())
     }
 
-    async fn r#show_window_menu(
+    async fn show_window_menu(
         &self,
         client: &mut crate::Client,
-        r#seat: crate::wire::ObjectId,
-        r#serial: u32,
-        r#x: i32,
-        r#y: i32,
+        seat: crate::wire::ObjectId,
+        serial: u32,
+        x: i32,
+        y: i32,
     ) -> crate::Result<()> {
         todo!()
     }
@@ -65,61 +61,61 @@ impl XdgToplevel for Toplevel {
     async fn r#move(
         &self,
         client: &mut crate::Client,
-        r#seat: crate::wire::ObjectId,
-        r#serial: u32,
+        seat: crate::wire::ObjectId,
+        serial: u32,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#resize(
+    async fn resize(
         &self,
         client: &mut crate::Client,
-        r#seat: crate::wire::ObjectId,
-        r#serial: u32,
-        r#edges: ResizeEdge,
+        seat: crate::wire::ObjectId,
+        serial: u32,
+        edges: ResizeEdge,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_max_size(
+    async fn set_max_size(
         &self,
         client: &mut crate::Client,
-        r#width: i32,
-        r#height: i32,
+        width: i32,
+        height: i32,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_min_size(
+    async fn set_min_size(
         &self,
         client: &mut crate::Client,
-        r#width: i32,
-        r#height: i32,
+        width: i32,
+        height: i32,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_maximized(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn set_maximized(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#unset_maximized(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn unset_maximized(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_fullscreen(
+    async fn set_fullscreen(
         &self,
         client: &mut crate::Client,
-        r#output: Option<crate::wire::ObjectId>,
+        output: Option<crate::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#unset_fullscreen(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn unset_fullscreen(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_minimized(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn set_minimized(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 }

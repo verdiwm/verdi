@@ -7,7 +7,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Server couldn't find object"#]
             InvalidObject = 0,
             #[doc = r#"Method doesn't exist on the specified interface or malformed request"#]
@@ -17,7 +17,7 @@ pub mod wayland {
             #[doc = r#"Implementation error in compositor"#]
             Implementation = 3,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -32,7 +32,7 @@ pub mod wayland {
         }
         #[doc = r#"The core global object.  This is a special singleton object.  It"#]
         #[doc = r#"is used for internal Wayland protocol features."#]
-        pub trait r#WlDisplay: crate::Dispatcher {
+        pub trait WlDisplay: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_display";
             const VERSION: u32 = 1;
 
@@ -53,7 +53,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_display.sync");
-                        self.r#sync(
+                        self.sync(
                             client,
                             message
                                 .object()?
@@ -63,7 +63,7 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_display.get_registry");
-                        self.r#get_registry(
+                        self.get_registry(
                             client,
                             message
                                 .object()?
@@ -85,10 +85,10 @@ pub mod wayland {
             #[doc = r#"attempt to use it after that point."#]
             #[doc = r#""#]
             #[doc = r#"The callback_data passed in the callback is undefined and should be ignored."#]
-            async fn r#sync(
+            async fn sync(
                 &self,
                 client: &mut crate::Client,
-                r#callback: crate::wire::ObjectId,
+                sync: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request creates a registry object that allows the client"#]
             #[doc = r#"to list and bind the global objects available from the"#]
@@ -99,10 +99,10 @@ pub mod wayland {
             #[doc = r#"client disconnects, not when the client side proxy is destroyed."#]
             #[doc = r#"Therefore, clients should invoke get_registry as infrequently as"#]
             #[doc = r#"possible to avoid wasting memory."#]
-            async fn r#get_registry(
+            async fn get_registry(
                 &self,
                 client: &mut crate::Client,
-                r#registry: crate::wire::ObjectId,
+                get_registry: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The error event is sent out when a fatal (non-recoverable)"#]
             #[doc = r#"error has occurred.  The object_id argument is the object"#]
@@ -111,12 +111,12 @@ pub mod wayland {
             #[doc = r#"by the object interface.  As such, each interface defines its"#]
             #[doc = r#"own set of error codes.  The message is a brief description"#]
             #[doc = r#"of the error, for (debugging) convenience."#]
-            async fn r#error(
+            async fn error(
                 &self,
                 client: &mut crate::Client,
-                r#object_id: crate::wire::ObjectId,
-                r#code: u32,
-                r#message: String,
+                object_id: crate::wire::ObjectId,
+                code: u32,
+                message: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_display.error");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -134,11 +134,7 @@ pub mod wayland {
             #[doc = r#"the server will send this event to acknowledge that it has"#]
             #[doc = r#"seen the delete request. When the client receives this event,"#]
             #[doc = r#"it will know that it can safely reuse the object ID."#]
-            async fn r#delete_id(
-                &self,
-                client: &mut crate::Client,
-                r#id: u32,
-            ) -> crate::Result<()> {
+            async fn delete_id(&self, client: &mut crate::Client, id: u32) -> crate::Result<()> {
                 tracing::debug!("-> wl_display.delete_id");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(id).build();
                 client
@@ -169,7 +165,7 @@ pub mod wayland {
         #[doc = r#"request.  This creates a client-side handle that lets the object"#]
         #[doc = r#"emit events to the client and lets the client invoke requests on"#]
         #[doc = r#"the object."#]
-        pub trait r#WlRegistry: crate::Dispatcher {
+        pub trait WlRegistry: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_registry";
             const VERSION: u32 = 1;
 
@@ -190,31 +186,30 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_registry.bind");
-                        self.r#bind(client, message.uint()?, message.new_id()?)
-                            .await
+                        self.bind(client, message.uint()?, message.new_id()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Binds a new, client-created object to the server using the"#]
             #[doc = r#"specified name as the identifier."#]
-            async fn r#bind(
+            async fn bind(
                 &self,
                 client: &mut crate::Client,
-                r#name: u32,
-                r#id: crate::wire::NewId,
+                bind: u32,
+                bind: crate::wire::NewId,
             ) -> crate::Result<()>;
             #[doc = r#"Notify the client of global objects."#]
             #[doc = r#""#]
             #[doc = r#"The event notifies the client that a global object with"#]
             #[doc = r#"the given name is now available, and it implements the"#]
             #[doc = r#"given version of the given interface."#]
-            async fn r#global(
+            async fn global(
                 &self,
                 client: &mut crate::Client,
-                r#name: u32,
-                r#interface: String,
-                r#version: u32,
+                name: u32,
+                interface: String,
+                version: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_registry.global");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -237,10 +232,10 @@ pub mod wayland {
             #[doc = r#"The object remains valid and requests to the object will be"#]
             #[doc = r#"ignored until the client destroys it, to avoid races between"#]
             #[doc = r#"the global going away and a client sending a request to it."#]
-            async fn r#global_remove(
+            async fn global_remove(
                 &self,
                 client: &mut crate::Client,
-                r#name: u32,
+                name: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_registry.global_remove");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(name).build();
@@ -257,7 +252,7 @@ pub mod wayland {
         #[doc = r#""#]
         #[doc = r#"Note, because wl_callback objects are created from multiple independent"#]
         #[doc = r#"factory interfaces, the wl_callback interface is frozen at version 1."#]
-        pub trait r#WlCallback: crate::Dispatcher {
+        pub trait WlCallback: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_callback";
             const VERSION: u32 = 1;
 
@@ -280,10 +275,10 @@ pub mod wayland {
                 }
             }
             #[doc = r#"Notify the client when the related request is done."#]
-            async fn r#done(
+            async fn done(
                 &self,
                 client: &mut crate::Client,
-                r#callback_data: u32,
+                callback_data: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_callback.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -300,7 +295,7 @@ pub mod wayland {
         #[doc = r#"A compositor.  This object is a singleton global.  The"#]
         #[doc = r#"compositor is in charge of combining the contents of multiple"#]
         #[doc = r#"surfaces into one displayable output."#]
-        pub trait r#WlCompositor: crate::Dispatcher {
+        pub trait WlCompositor: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_compositor";
             const VERSION: u32 = 6;
 
@@ -321,7 +316,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_compositor.create_surface");
-                        self.r#create_surface(
+                        self.create_surface(
                             client,
                             message
                                 .object()?
@@ -331,7 +326,7 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_compositor.create_region");
-                        self.r#create_region(
+                        self.create_region(
                             client,
                             message
                                 .object()?
@@ -343,16 +338,16 @@ pub mod wayland {
                 }
             }
             #[doc = r#"Ask the compositor to create a new surface."#]
-            async fn r#create_surface(
+            async fn create_surface(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                create_surface: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Ask the compositor to create a new region."#]
-            async fn r#create_region(
+            async fn create_region(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                create_region: crate::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -364,7 +359,7 @@ pub mod wayland {
         #[doc = r#"underlying mapped memory. Reusing the mapped memory avoids the"#]
         #[doc = r#"setup/teardown overhead and is useful when interactively resizing"#]
         #[doc = r#"a surface or for many small buffers."#]
-        pub trait r#WlShmPool: crate::Dispatcher {
+        pub trait WlShmPool: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_shm_pool";
             const VERSION: u32 = 2;
 
@@ -385,7 +380,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_shm_pool.create_buffer");
-                        self.r#create_buffer(
+                        self.create_buffer(
                             client,
                             message
                                 .object()?
@@ -400,11 +395,11 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_shm_pool.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     2 => {
                         tracing::debug!("wl_shm_pool.resize");
-                        self.r#resize(client, message.int()?).await
+                        self.resize(client, message.int()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -420,22 +415,22 @@ pub mod wayland {
             #[doc = r#"A buffer will keep a reference to the pool it was created from"#]
             #[doc = r#"so it is valid to destroy the pool immediately after creating"#]
             #[doc = r#"a buffer from it."#]
-            async fn r#create_buffer(
+            async fn create_buffer(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#offset: i32,
-                r#width: i32,
-                r#height: i32,
-                r#stride: i32,
-                r#format: super::wl_shm::Format,
+                create_buffer: crate::wire::ObjectId,
+                create_buffer: i32,
+                create_buffer: i32,
+                create_buffer: i32,
+                create_buffer: i32,
+                create_buffer: super::wl_shm::Format,
             ) -> crate::Result<()>;
             #[doc = r#"Destroy the shared memory pool."#]
             #[doc = r#""#]
             #[doc = r#"The mmapped memory will be released when all"#]
             #[doc = r#"buffers that have been created from this pool"#]
             #[doc = r#"are gone."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This request will cause the server to remap the backing memory"#]
             #[doc = r#"for the pool from the file descriptor passed when the pool was"#]
             #[doc = r#"created, but using the new size.  This request can only be"#]
@@ -446,7 +441,7 @@ pub mod wayland {
             #[doc = r#"file descriptor passed at creation time. It is the client's"#]
             #[doc = r#"responsibility to ensure that the file is at least as big as"#]
             #[doc = r#"the new pool size."#]
-            async fn r#resize(&self, client: &mut crate::Client, r#size: i32) -> crate::Result<()>;
+            async fn resize(&self, client: &mut crate::Client, resize: i32) -> crate::Result<()>;
         }
     }
     pub mod wl_shm {
@@ -454,7 +449,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Buffer format is not known"#]
             InvalidFormat = 0,
             #[doc = r#"Invalid size or stride during pool or buffer creation"#]
@@ -462,7 +457,7 @@ pub mod wayland {
             #[doc = r#"Mmapping the file descriptor failed"#]
             InvalidFd = 2,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -489,7 +484,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Format {
+        pub enum Format {
             #[doc = r#"32-bit ARGB format, [31:0] A:R:G:B 8:8:8:8 little endian"#]
             Argb8888 = 0,
             #[doc = r#"32-bit RGB format, [31:0] x:R:G:B 8:8:8:8 little endian"#]
@@ -725,7 +720,7 @@ pub mod wayland {
             #[doc = r#"2x2 subsampled Cr:Cb plane 10 bits per channel packed"#]
             P030 = 0x30333050,
         }
-        impl TryFrom<u32> for r#Format {
+        impl TryFrom<u32> for Format {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -866,7 +861,7 @@ pub mod wayland {
         #[doc = r#"On binding the wl_shm object one or more format events"#]
         #[doc = r#"are emitted to inform clients about the valid pixel formats"#]
         #[doc = r#"that can be used for buffers."#]
-        pub trait r#WlShm: crate::Dispatcher {
+        pub trait WlShm: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_shm";
             const VERSION: u32 = 2;
 
@@ -887,7 +882,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_shm.create_pool");
-                        self.r#create_pool(
+                        self.create_pool(
                             client,
                             message
                                 .object()?
@@ -899,7 +894,7 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_shm.release");
-                        self.r#release(client).await
+                        self.release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -909,25 +904,25 @@ pub mod wayland {
             #[doc = r#"The pool can be used to create shared memory based buffer"#]
             #[doc = r#"objects.  The server will mmap size bytes of the passed file"#]
             #[doc = r#"descriptor, to use as backing memory for the pool."#]
-            async fn r#create_pool(
+            async fn create_pool(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#fd: rustix::fd::OwnedFd,
-                r#size: i32,
+                create_pool: crate::wire::ObjectId,
+                create_pool: rustix::fd::OwnedFd,
+                create_pool: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the shm object anymore."#]
             #[doc = r#""#]
             #[doc = r#"Objects created via this interface remain unaffected."#]
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Informs the client about a valid pixel format that"#]
             #[doc = r#"can be used for buffers. Known formats include"#]
             #[doc = r#"argb8888 and xrgb8888."#]
-            async fn r#format(
+            async fn format(
                 &self,
                 client: &mut crate::Client,
-                r#format: Format,
+                format: Format,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_shm.format");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -956,7 +951,7 @@ pub mod wayland {
         #[doc = r#""#]
         #[doc = r#"Note, because wl_buffer objects are created from multiple independent"#]
         #[doc = r#"factory interfaces, the wl_buffer interface is frozen at version 1."#]
-        pub trait r#WlBuffer: crate::Dispatcher {
+        pub trait WlBuffer: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_buffer";
             const VERSION: u32 = 1;
 
@@ -977,7 +972,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_buffer.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -986,7 +981,7 @@ pub mod wayland {
             #[doc = r#"storage is defined by the buffer factory interface."#]
             #[doc = r#""#]
             #[doc = r#"For possible side-effects to a surface, see wl_surface.attach."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Sent when this wl_buffer is no longer used by the compositor."#]
             #[doc = r#"The client is now free to reuse or destroy this buffer and its"#]
             #[doc = r#"backing storage."#]
@@ -999,7 +994,7 @@ pub mod wayland {
             #[doc = r#"this is possible, when the compositor maintains a copy of the"#]
             #[doc = r#"wl_surface contents, e.g. as a GL texture. This is an important"#]
             #[doc = r#"optimization for GL(ES) compositors with wl_shm clients."#]
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_buffer.release");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -1013,7 +1008,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Finish request was called untimely"#]
             InvalidFinish = 0,
             #[doc = r#"Action mask contains invalid values"#]
@@ -1023,7 +1018,7 @@ pub mod wayland {
             #[doc = r#"Offer doesn't accept this request"#]
             InvalidOffer = 3,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -1042,7 +1037,7 @@ pub mod wayland {
         #[doc = r#"describes the different mime types that the data can be"#]
         #[doc = r#"converted to and provides the mechanism for transferring the"#]
         #[doc = r#"data directly from the source client."#]
-        pub trait r#WlDataOffer: crate::Dispatcher {
+        pub trait WlDataOffer: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_data_offer";
             const VERSION: u32 = 3;
 
@@ -1063,12 +1058,12 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_data_offer.accept");
-                        self.r#accept(client, message.uint()?, message.string()?)
+                        self.accept(client, message.uint()?, message.string()?)
                             .await
                     }
                     1 => {
                         tracing::debug!("wl_data_offer.receive");
-                        self.r#receive(
+                        self.receive(
                             client,
                             message
                                 .string()?
@@ -1079,15 +1074,15 @@ pub mod wayland {
                     }
                     2 => {
                         tracing::debug!("wl_data_offer.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     3 => {
                         tracing::debug!("wl_data_offer.finish");
-                        self.r#finish(client).await
+                        self.finish(client).await
                     }
                     4 => {
                         tracing::debug!("wl_data_offer.set_actions");
-                        self.r#set_actions(
+                        self.set_actions(
                             client,
                             message.uint()?.try_into()?,
                             message.uint()?.try_into()?,
@@ -1111,11 +1106,11 @@ pub mod wayland {
             #[doc = r#"will be cancelled and the corresponding drag source will receive"#]
             #[doc = r#"wl_data_source.cancelled. Clients may still use this event in"#]
             #[doc = r#"conjunction with wl_data_source.action for feedback."#]
-            async fn r#accept(
+            async fn accept(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#mime_type: Option<String>,
+                accept: u32,
+                accept: Option<String>,
             ) -> crate::Result<()>;
             #[doc = r#"To transfer the offered data, the client issues this request"#]
             #[doc = r#"and indicates the mime type it wants to receive.  The transfer"#]
@@ -1132,14 +1127,14 @@ pub mod wayland {
             #[doc = r#"both before and after wl_data_device.drop. Drag-and-drop destination"#]
             #[doc = r#"clients may preemptively fetch data or examine it more closely to"#]
             #[doc = r#"determine acceptance."#]
-            async fn r#receive(
+            async fn receive(
                 &self,
                 client: &mut crate::Client,
-                r#mime_type: String,
-                r#fd: rustix::fd::OwnedFd,
+                receive: String,
+                receive: rustix::fd::OwnedFd,
             ) -> crate::Result<()>;
             #[doc = r#"Destroy the data offer."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Notifies the compositor that the drag destination successfully"#]
             #[doc = r#"finished the drag-and-drop operation."#]
             #[doc = r#""#]
@@ -1154,7 +1149,7 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"If wl_data_offer.finish request is received for a non drag and drop"#]
             #[doc = r#"operation, the invalid_finish protocol error is raised."#]
-            async fn r#finish(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn finish(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Sets the actions that the destination side client supports for"#]
             #[doc = r#"this operation. This request may trigger the emission of"#]
             #[doc = r#"wl_data_source.action and wl_data_offer.action events if the compositor"#]
@@ -1186,18 +1181,18 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"This request can only be made on drag-and-drop offers, a protocol error"#]
             #[doc = r#"will be raised otherwise."#]
-            async fn r#set_actions(
+            async fn set_actions(
                 &self,
                 client: &mut crate::Client,
-                r#dnd_actions: super::wl_data_device_manager::DndAction,
-                r#preferred_action: super::wl_data_device_manager::DndAction,
+                set_actions: super::wl_data_device_manager::DndAction,
+                set_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()>;
             #[doc = r#"Sent immediately after creating the wl_data_offer object.  One"#]
             #[doc = r#"event per offered mime type."#]
-            async fn r#offer(
+            async fn offer(
                 &self,
                 client: &mut crate::Client,
-                r#mime_type: String,
+                mime_type: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_offer.offer");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1212,10 +1207,10 @@ pub mod wayland {
             #[doc = r#"will be sent immediately after creating the wl_data_offer object,"#]
             #[doc = r#"or anytime the source side changes its offered actions through"#]
             #[doc = r#"wl_data_source.set_actions."#]
-            async fn r#source_actions(
+            async fn source_actions(
                 &self,
                 client: &mut crate::Client,
-                r#source_actions: super::wl_data_device_manager::DndAction,
+                source_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_offer.source_actions");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1261,10 +1256,10 @@ pub mod wayland {
             #[doc = r#"user (e.g. popping up a menu with the available options). The"#]
             #[doc = r#"final wl_data_offer.set_actions and wl_data_offer.accept requests"#]
             #[doc = r#"must happen before the call to wl_data_offer.finish."#]
-            async fn r#action(
+            async fn action(
                 &self,
                 client: &mut crate::Client,
-                r#dnd_action: super::wl_data_device_manager::DndAction,
+                dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_offer.action");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1281,13 +1276,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Action mask contains invalid values"#]
             InvalidActionMask = 0,
             #[doc = r#"Source doesn't accept this request"#]
             InvalidSource = 1,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -1302,7 +1297,7 @@ pub mod wayland {
         #[doc = r#"It is created by the source client in a data transfer and"#]
         #[doc = r#"provides a way to describe the offered data and a way to respond"#]
         #[doc = r#"to requests to transfer the data."#]
-        pub trait r#WlDataSource: crate::Dispatcher {
+        pub trait WlDataSource: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_data_source";
             const VERSION: u32 = 3;
 
@@ -1323,7 +1318,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_data_source.offer");
-                        self.r#offer(
+                        self.offer(
                             client,
                             message
                                 .string()?
@@ -1333,12 +1328,11 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_data_source.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     2 => {
                         tracing::debug!("wl_data_source.set_actions");
-                        self.r#set_actions(client, message.uint()?.try_into()?)
-                            .await
+                        self.set_actions(client, message.uint()?.try_into()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -1346,13 +1340,9 @@ pub mod wayland {
             #[doc = r#"This request adds a mime type to the set of mime types"#]
             #[doc = r#"advertised to targets.  Can be called several times to offer"#]
             #[doc = r#"multiple types."#]
-            async fn r#offer(
-                &self,
-                client: &mut crate::Client,
-                r#mime_type: String,
-            ) -> crate::Result<()>;
+            async fn offer(&self, client: &mut crate::Client, offer: String) -> crate::Result<()>;
             #[doc = r#"Destroy the data source."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Sets the actions that the source side client supports for this"#]
             #[doc = r#"operation. This request may trigger wl_data_source.action and"#]
             #[doc = r#"wl_data_offer.action events if the compositor needs to change the"#]
@@ -1366,19 +1356,19 @@ pub mod wayland {
             #[doc = r#"used in drag-and-drop, so it must be performed before"#]
             #[doc = r#"wl_data_device.start_drag. Attempting to use the source other than"#]
             #[doc = r#"for drag-and-drop will raise a protocol error."#]
-            async fn r#set_actions(
+            async fn set_actions(
                 &self,
                 client: &mut crate::Client,
-                r#dnd_actions: super::wl_data_device_manager::DndAction,
+                set_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()>;
             #[doc = r#"Sent when a target accepts pointer_focus or motion events.  If"#]
             #[doc = r#"a target does not accept any of the offered types, type is NULL."#]
             #[doc = r#""#]
             #[doc = r#"Used for feedback during drag-and-drop."#]
-            async fn r#target(
+            async fn target(
                 &self,
                 client: &mut crate::Client,
-                r#mime_type: Option<String>,
+                mime_type: Option<String>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source.target");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1392,11 +1382,11 @@ pub mod wayland {
             #[doc = r#"Request for data from the client.  Send the data as the"#]
             #[doc = r#"specified mime type over the passed file descriptor, then"#]
             #[doc = r#"close it."#]
-            async fn r#send(
+            async fn send(
                 &self,
                 client: &mut crate::Client,
-                r#mime_type: String,
-                r#fd: rustix::fd::OwnedFd,
+                mime_type: String,
+                fd: rustix::fd::OwnedFd,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source.send");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1428,7 +1418,7 @@ pub mod wayland {
             #[doc = r#"For objects of version 2 or older, wl_data_source.cancelled will"#]
             #[doc = r#"only be emitted if the data source was replaced by another data"#]
             #[doc = r#"source."#]
-            async fn r#cancelled(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn cancelled(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source.cancelled");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -1445,7 +1435,7 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"Note that the data_source may still be used in the future and should"#]
             #[doc = r#"not be destroyed here."#]
-            async fn r#dnd_drop_performed(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn dnd_drop_performed(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source.dnd_drop_performed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -1459,7 +1449,7 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"If the action used to perform the operation was "move", the"#]
             #[doc = r#"source can now delete the transferred data."#]
-            async fn r#dnd_finished(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn dnd_finished(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source.dnd_finished");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -1492,10 +1482,10 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"Clients can trigger cursor surface changes from this point, so"#]
             #[doc = r#"they reflect the current action."#]
-            async fn r#action(
+            async fn action(
                 &self,
                 client: &mut crate::Client,
-                r#dnd_action: super::wl_data_device_manager::DndAction,
+                dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source.action");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1512,13 +1502,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
             #[doc = r#"Source has already been used"#]
             UsedSource = 1,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -1534,7 +1524,7 @@ pub mod wayland {
         #[doc = r#""#]
         #[doc = r#"A wl_data_device provides access to inter-client data transfer"#]
         #[doc = r#"mechanisms such as copy-and-paste and drag-and-drop."#]
-        pub trait r#WlDataDevice: crate::Dispatcher {
+        pub trait WlDataDevice: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_data_device";
             const VERSION: u32 = 3;
 
@@ -1555,7 +1545,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_data_device.start_drag");
-                        self.r#start_drag(
+                        self.start_drag(
                             client,
                             message.object()?,
                             message
@@ -1568,12 +1558,12 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_data_device.set_selection");
-                        self.r#set_selection(client, message.object()?, message.uint()?)
+                        self.set_selection(client, message.object()?, message.uint()?)
                             .await
                     }
                     2 => {
                         tracing::debug!("wl_data_device.release");
-                        self.r#release(client).await
+                        self.release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -1607,13 +1597,13 @@ pub mod wayland {
             #[doc = r#"The given source may not be used in any further set_selection or"#]
             #[doc = r#"start_drag requests. Attempting to reuse a previously-used source"#]
             #[doc = r#"may send a used_source error."#]
-            async fn r#start_drag(
+            async fn start_drag(
                 &self,
                 client: &mut crate::Client,
-                r#source: Option<crate::wire::ObjectId>,
-                r#origin: crate::wire::ObjectId,
-                r#icon: Option<crate::wire::ObjectId>,
-                r#serial: u32,
+                start_drag: Option<crate::wire::ObjectId>,
+                start_drag: crate::wire::ObjectId,
+                start_drag: Option<crate::wire::ObjectId>,
+                start_drag: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This request asks the compositor to set the selection"#]
             #[doc = r#"to the data from the source on behalf of the client."#]
@@ -1623,14 +1613,14 @@ pub mod wayland {
             #[doc = r#"The given source may not be used in any further set_selection or"#]
             #[doc = r#"start_drag requests. Attempting to reuse a previously-used source"#]
             #[doc = r#"may send a used_source error."#]
-            async fn r#set_selection(
+            async fn set_selection(
                 &self,
                 client: &mut crate::Client,
-                r#source: Option<crate::wire::ObjectId>,
-                r#serial: u32,
+                set_selection: Option<crate::wire::ObjectId>,
+                set_selection: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This request destroys the data device."#]
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"The data_offer event introduces a new wl_data_offer object,"#]
             #[doc = r#"which will subsequently be used in either the"#]
             #[doc = r#"data_device.enter event (for drag-and-drop) or the"#]
@@ -1638,10 +1628,10 @@ pub mod wayland {
             #[doc = r#"following the data_device.data_offer event, the new data_offer"#]
             #[doc = r#"object will send out data_offer.offer events to describe the"#]
             #[doc = r#"mime types it offers."#]
-            async fn r#data_offer(
+            async fn data_offer(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device.data_offer");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1656,14 +1646,14 @@ pub mod wayland {
             #[doc = r#"a surface owned by the client.  The position of the pointer at"#]
             #[doc = r#"enter time is provided by the x and y arguments, in surface-local"#]
             #[doc = r#"coordinates."#]
-            async fn r#enter(
+            async fn enter(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: crate::wire::ObjectId,
-                r#x: crate::wire::Fixed,
-                r#y: crate::wire::Fixed,
-                r#id: Option<crate::wire::ObjectId>,
+                serial: u32,
+                surface: crate::wire::ObjectId,
+                x: crate::wire::Fixed,
+                y: crate::wire::Fixed,
+                id: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1681,7 +1671,7 @@ pub mod wayland {
             #[doc = r#"This event is sent when the drag-and-drop pointer leaves the"#]
             #[doc = r#"surface and the session ends.  The client must destroy the"#]
             #[doc = r#"wl_data_offer introduced at enter time at this point."#]
-            async fn r#leave(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn leave(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -1693,12 +1683,12 @@ pub mod wayland {
             #[doc = r#"the currently focused surface. The new position of the pointer"#]
             #[doc = r#"is provided by the x and y arguments, in surface-local"#]
             #[doc = r#"coordinates."#]
-            async fn r#motion(
+            async fn motion(
                 &self,
                 client: &mut crate::Client,
-                r#time: u32,
-                r#x: crate::wire::Fixed,
-                r#y: crate::wire::Fixed,
+                time: u32,
+                x: crate::wire::Fixed,
+                y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -1724,7 +1714,7 @@ pub mod wayland {
             #[doc = r#"final. The drag-and-drop destination is expected to perform one last"#]
             #[doc = r#"wl_data_offer.set_actions request, or wl_data_offer.destroy in order"#]
             #[doc = r#"to cancel the operation."#]
-            async fn r#drop(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn drop(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device.drop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -1744,10 +1734,10 @@ pub mod wayland {
             #[doc = r#"keyboard focus within the same client doesn't mean a new selection"#]
             #[doc = r#"will be sent.  The client must destroy the previous selection"#]
             #[doc = r#"data_offer, if any, upon receiving this event."#]
-            async fn r#selection(
+            async fn selection(
                 &self,
                 client: &mut crate::Client,
-                r#id: Option<crate::wire::ObjectId>,
+                id: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device.selection");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_object(id).build();
@@ -1784,13 +1774,13 @@ pub mod wayland {
         #[doc = r#"actions (e.g. "ask")."#]
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                                    pub struct r#DndAction: u32 {#[doc = r#"No action"#]
+                                    pub struct DndAction: u32 {#[doc = r#"No action"#]
         const None = 0;#[doc = r#"Copy action"#]
         const Copy = 1;#[doc = r#"Move action"#]
         const Move = 2;#[doc = r#"Ask action"#]
         const Ask = 4;}
                                 }
-        impl TryFrom<u32> for r#DndAction {
+        impl TryFrom<u32> for DndAction {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -1807,7 +1797,7 @@ pub mod wayland {
         #[doc = r#"wl_data_device_manager object will have different requirements for"#]
         #[doc = r#"functioning properly. See wl_data_source.set_actions,"#]
         #[doc = r#"wl_data_offer.accept and wl_data_offer.finish for details."#]
-        pub trait r#WlDataDeviceManager: crate::Dispatcher {
+        pub trait WlDataDeviceManager: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_data_device_manager";
             const VERSION: u32 = 3;
 
@@ -1828,7 +1818,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_data_device_manager.create_data_source");
-                        self.r#create_data_source(
+                        self.create_data_source(
                             client,
                             message
                                 .object()?
@@ -1838,7 +1828,7 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_data_device_manager.get_data_device");
-                        self.r#get_data_device(
+                        self.get_data_device(
                             client,
                             message
                                 .object()?
@@ -1853,17 +1843,17 @@ pub mod wayland {
                 }
             }
             #[doc = r#"Create a new data source."#]
-            async fn r#create_data_source(
+            async fn create_data_source(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                create_data_source: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Create a new data device for a given seat."#]
-            async fn r#get_data_device(
+            async fn get_data_device(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#seat: crate::wire::ObjectId,
+                get_data_device: crate::wire::ObjectId,
+                get_data_device: crate::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -1871,11 +1861,11 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -1894,7 +1884,7 @@ pub mod wayland {
         #[doc = r#"Note! This protocol is deprecated and not intended for production use."#]
         #[doc = r#"For desktop-style user interfaces, use xdg_shell. Compositors and clients"#]
         #[doc = r#"should not implement this interface."#]
-        pub trait r#WlShell: crate::Dispatcher {
+        pub trait WlShell: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_shell";
             const VERSION: u32 = 1;
 
@@ -1915,7 +1905,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_shell.get_shell_surface");
-                        self.r#get_shell_surface(
+                        self.get_shell_surface(
                             client,
                             message
                                 .object()?
@@ -1934,11 +1924,11 @@ pub mod wayland {
             #[doc = r#"already has another role, it raises a protocol error."#]
             #[doc = r#""#]
             #[doc = r#"Only one shell surface can be associated with a given surface."#]
-            async fn r#get_shell_surface(
+            async fn get_shell_surface(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#surface: crate::wire::ObjectId,
+                get_shell_surface: crate::wire::ObjectId,
+                get_shell_surface: crate::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -1949,7 +1939,7 @@ pub mod wayland {
         #[doc = r#"an appropriate cursor image."#]
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                                    pub struct r#Resize: u32 {#[doc = r#"No edge"#]
+                                    pub struct Resize: u32 {#[doc = r#"No edge"#]
         const None = 0;#[doc = r#"Top edge"#]
         const Top = 1;#[doc = r#"Bottom edge"#]
         const Bottom = 2;#[doc = r#"Left edge"#]
@@ -1960,7 +1950,7 @@ pub mod wayland {
         const TopRight = 9;#[doc = r#"Bottom and right edges"#]
         const BottomRight = 10;}
                                 }
-        impl TryFrom<u32> for r#Resize {
+        impl TryFrom<u32> for Resize {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -1971,10 +1961,10 @@ pub mod wayland {
         #[doc = r#"of transient surfaces. Used in the set_transient request."#]
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                                    pub struct r#Transient: u32 {#[doc = r#"Do not set keyboard focus"#]
+                                    pub struct Transient: u32 {#[doc = r#"Do not set keyboard focus"#]
         const Inactive = 0x1;}
                                 }
-        impl TryFrom<u32> for r#Transient {
+        impl TryFrom<u32> for Transient {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -1987,7 +1977,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#FullscreenMethod {
+        pub enum FullscreenMethod {
             #[doc = r#"No preference, apply default policy"#]
             Default = 0,
             #[doc = r#"Scale, preserve the surface's aspect ratio and center on output"#]
@@ -1997,7 +1987,7 @@ pub mod wayland {
             #[doc = r#"No upscaling, center on output and add black borders to compensate size mismatch"#]
             Fill = 3,
         }
-        impl TryFrom<u32> for r#FullscreenMethod {
+        impl TryFrom<u32> for FullscreenMethod {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -2021,7 +2011,7 @@ pub mod wayland {
         #[doc = r#"the related wl_surface is destroyed. On the client side,"#]
         #[doc = r#"wl_shell_surface_destroy() must be called before destroying"#]
         #[doc = r#"the wl_surface object."#]
-        pub trait r#WlShellSurface: crate::Dispatcher {
+        pub trait WlShellSurface: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_shell_surface";
             const VERSION: u32 = 1;
 
@@ -2042,7 +2032,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_shell_surface.pong");
-                        self.r#pong(client, message.uint()?).await
+                        self.pong(client, message.uint()?).await
                     }
                     1 => {
                         tracing::debug!("wl_shell_surface.move");
@@ -2057,7 +2047,7 @@ pub mod wayland {
                     }
                     2 => {
                         tracing::debug!("wl_shell_surface.resize");
-                        self.r#resize(
+                        self.resize(
                             client,
                             message
                                 .object()?
@@ -2069,11 +2059,11 @@ pub mod wayland {
                     }
                     3 => {
                         tracing::debug!("wl_shell_surface.set_toplevel");
-                        self.r#set_toplevel(client).await
+                        self.set_toplevel(client).await
                     }
                     4 => {
                         tracing::debug!("wl_shell_surface.set_transient");
-                        self.r#set_transient(
+                        self.set_transient(
                             client,
                             message
                                 .object()?
@@ -2086,7 +2076,7 @@ pub mod wayland {
                     }
                     5 => {
                         tracing::debug!("wl_shell_surface.set_fullscreen");
-                        self.r#set_fullscreen(
+                        self.set_fullscreen(
                             client,
                             message.uint()?.try_into()?,
                             message.uint()?,
@@ -2096,7 +2086,7 @@ pub mod wayland {
                     }
                     6 => {
                         tracing::debug!("wl_shell_surface.set_popup");
-                        self.r#set_popup(
+                        self.set_popup(
                             client,
                             message
                                 .object()?
@@ -2113,11 +2103,11 @@ pub mod wayland {
                     }
                     7 => {
                         tracing::debug!("wl_shell_surface.set_maximized");
-                        self.r#set_maximized(client, message.object()?).await
+                        self.set_maximized(client, message.object()?).await
                     }
                     8 => {
                         tracing::debug!("wl_shell_surface.set_title");
-                        self.r#set_title(
+                        self.set_title(
                             client,
                             message
                                 .string()?
@@ -2127,7 +2117,7 @@ pub mod wayland {
                     }
                     9 => {
                         tracing::debug!("wl_shell_surface.set_class");
-                        self.r#set_class(
+                        self.set_class(
                             client,
                             message
                                 .string()?
@@ -2140,7 +2130,7 @@ pub mod wayland {
             }
             #[doc = r#"A client must respond to a ping event with a pong request or"#]
             #[doc = r#"the client may be deemed unresponsive."#]
-            async fn r#pong(&self, client: &mut crate::Client, r#serial: u32) -> crate::Result<()>;
+            async fn pong(&self, client: &mut crate::Client, pong: u32) -> crate::Result<()>;
             #[doc = r#"Start a pointer-driven move of the surface."#]
             #[doc = r#""#]
             #[doc = r#"This request must be used in response to a button press event."#]
@@ -2149,25 +2139,25 @@ pub mod wayland {
             async fn r#move(
                 &self,
                 client: &mut crate::Client,
-                r#seat: crate::wire::ObjectId,
-                r#serial: u32,
+                r#move: crate::wire::ObjectId,
+                r#move: u32,
             ) -> crate::Result<()>;
             #[doc = r#"Start a pointer-driven resizing of the surface."#]
             #[doc = r#""#]
             #[doc = r#"This request must be used in response to a button press event."#]
             #[doc = r#"The server may ignore resize requests depending on the state of"#]
             #[doc = r#"the surface (e.g. fullscreen or maximized)."#]
-            async fn r#resize(
+            async fn resize(
                 &self,
                 client: &mut crate::Client,
-                r#seat: crate::wire::ObjectId,
-                r#serial: u32,
-                r#edges: Resize,
+                resize: crate::wire::ObjectId,
+                resize: u32,
+                resize: Resize,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a toplevel surface."#]
             #[doc = r#""#]
             #[doc = r#"A toplevel surface is not fullscreen, maximized or transient."#]
-            async fn r#set_toplevel(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn set_toplevel(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Map the surface relative to an existing surface."#]
             #[doc = r#""#]
             #[doc = r#"The x and y arguments specify the location of the upper left"#]
@@ -2175,13 +2165,13 @@ pub mod wayland {
             #[doc = r#"parent surface, in surface-local coordinates."#]
             #[doc = r#""#]
             #[doc = r#"The flags argument controls details of the transient behaviour."#]
-            async fn r#set_transient(
+            async fn set_transient(
                 &self,
                 client: &mut crate::Client,
-                r#parent: crate::wire::ObjectId,
-                r#x: i32,
-                r#y: i32,
-                r#flags: Transient,
+                set_transient: crate::wire::ObjectId,
+                set_transient: i32,
+                set_transient: i32,
+                set_transient: Transient,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a fullscreen surface."#]
             #[doc = r#""#]
@@ -2216,12 +2206,12 @@ pub mod wayland {
             #[doc = r#"The compositor must reply to this request with a configure event"#]
             #[doc = r#"with the dimensions for the output on which the surface will"#]
             #[doc = r#"be made fullscreen."#]
-            async fn r#set_fullscreen(
+            async fn set_fullscreen(
                 &self,
                 client: &mut crate::Client,
-                r#method: FullscreenMethod,
-                r#framerate: u32,
-                r#output: Option<crate::wire::ObjectId>,
+                set_fullscreen: FullscreenMethod,
+                set_fullscreen: u32,
+                set_fullscreen: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a popup."#]
             #[doc = r#""#]
@@ -2242,15 +2232,15 @@ pub mod wayland {
             #[doc = r#"The x and y arguments specify the location of the upper left"#]
             #[doc = r#"corner of the surface relative to the upper left corner of the"#]
             #[doc = r#"parent surface, in surface-local coordinates."#]
-            async fn r#set_popup(
+            async fn set_popup(
                 &self,
                 client: &mut crate::Client,
-                r#seat: crate::wire::ObjectId,
-                r#serial: u32,
-                r#parent: crate::wire::ObjectId,
-                r#x: i32,
-                r#y: i32,
-                r#flags: Transient,
+                set_popup: crate::wire::ObjectId,
+                set_popup: u32,
+                set_popup: crate::wire::ObjectId,
+                set_popup: i32,
+                set_popup: i32,
+                set_popup: Transient,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a maximized surface."#]
             #[doc = r#""#]
@@ -2270,10 +2260,10 @@ pub mod wayland {
             #[doc = r#"fullscreen shell surface."#]
             #[doc = r#""#]
             #[doc = r#"The details depend on the compositor implementation."#]
-            async fn r#set_maximized(
+            async fn set_maximized(
                 &self,
                 client: &mut crate::Client,
-                r#output: Option<crate::wire::ObjectId>,
+                set_maximized: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Set a short title for the surface."#]
             #[doc = r#""#]
@@ -2282,10 +2272,10 @@ pub mod wayland {
             #[doc = r#"compositor."#]
             #[doc = r#""#]
             #[doc = r#"The string must be encoded in UTF-8."#]
-            async fn r#set_title(
+            async fn set_title(
                 &self,
                 client: &mut crate::Client,
-                r#title: String,
+                set_title: String,
             ) -> crate::Result<()>;
             #[doc = r#"Set a class for the surface."#]
             #[doc = r#""#]
@@ -2293,14 +2283,14 @@ pub mod wayland {
             #[doc = r#"to which the surface belongs. A common convention is to use the"#]
             #[doc = r#"file name (or the full path if it is a non-standard location) of"#]
             #[doc = r#"the application's .desktop file as the class."#]
-            async fn r#set_class(
+            async fn set_class(
                 &self,
                 client: &mut crate::Client,
-                r#class: String,
+                set_class: String,
             ) -> crate::Result<()>;
             #[doc = r#"Ping a client to check if it is receiving events and sending"#]
             #[doc = r#"requests. A client is expected to reply with a pong request."#]
-            async fn r#ping(&self, client: &mut crate::Client, r#serial: u32) -> crate::Result<()> {
+            async fn ping(&self, client: &mut crate::Client, serial: u32) -> crate::Result<()> {
                 tracing::debug!("-> wl_shell_surface.ping");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
@@ -2325,12 +2315,12 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"The width and height arguments specify the size of the window"#]
             #[doc = r#"in surface-local coordinates."#]
-            async fn r#configure(
+            async fn configure(
                 &self,
                 client: &mut crate::Client,
-                r#edges: Resize,
-                r#width: i32,
-                r#height: i32,
+                edges: Resize,
+                width: i32,
+                height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_shell_surface.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -2346,7 +2336,7 @@ pub mod wayland {
             #[doc = r#"The popup_done event is sent out when a popup grab is broken,"#]
             #[doc = r#"that is, when the user clicks a surface that doesn't belong"#]
             #[doc = r#"to the client owning the popup surface."#]
-            async fn r#popup_done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn popup_done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_shell_surface.popup_done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -2361,7 +2351,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Buffer scale value is invalid"#]
             InvalidScale = 0,
             #[doc = r#"Buffer transform value is invalid"#]
@@ -2373,7 +2363,7 @@ pub mod wayland {
             #[doc = r#"Surface was destroyed before its role object"#]
             DefunctRoleObject = 4,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -2429,7 +2419,7 @@ pub mod wayland {
         #[doc = r#"wl_surface again, but it is not allowed to use the wl_surface as"#]
         #[doc = r#"a cursor (cursor is a different role than sub-surface, and role"#]
         #[doc = r#"switching is not allowed)."#]
-        pub trait r#WlSurface: crate::Dispatcher {
+        pub trait WlSurface: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_surface";
             const VERSION: u32 = 6;
 
@@ -2450,16 +2440,16 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_surface.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("wl_surface.attach");
-                        self.r#attach(client, message.object()?, message.int()?, message.int()?)
+                        self.attach(client, message.object()?, message.int()?, message.int()?)
                             .await
                     }
                     2 => {
                         tracing::debug!("wl_surface.damage");
-                        self.r#damage(
+                        self.damage(
                             client,
                             message.int()?,
                             message.int()?,
@@ -2470,7 +2460,7 @@ pub mod wayland {
                     }
                     3 => {
                         tracing::debug!("wl_surface.frame");
-                        self.r#frame(
+                        self.frame(
                             client,
                             message
                                 .object()?
@@ -2480,28 +2470,28 @@ pub mod wayland {
                     }
                     4 => {
                         tracing::debug!("wl_surface.set_opaque_region");
-                        self.r#set_opaque_region(client, message.object()?).await
+                        self.set_opaque_region(client, message.object()?).await
                     }
                     5 => {
                         tracing::debug!("wl_surface.set_input_region");
-                        self.r#set_input_region(client, message.object()?).await
+                        self.set_input_region(client, message.object()?).await
                     }
                     6 => {
                         tracing::debug!("wl_surface.commit");
-                        self.r#commit(client).await
+                        self.commit(client).await
                     }
                     7 => {
                         tracing::debug!("wl_surface.set_buffer_transform");
-                        self.r#set_buffer_transform(client, message.uint()?.try_into()?)
+                        self.set_buffer_transform(client, message.uint()?.try_into()?)
                             .await
                     }
                     8 => {
                         tracing::debug!("wl_surface.set_buffer_scale");
-                        self.r#set_buffer_scale(client, message.int()?).await
+                        self.set_buffer_scale(client, message.int()?).await
                     }
                     9 => {
                         tracing::debug!("wl_surface.damage_buffer");
-                        self.r#damage_buffer(
+                        self.damage_buffer(
                             client,
                             message.int()?,
                             message.int()?,
@@ -2512,13 +2502,13 @@ pub mod wayland {
                     }
                     10 => {
                         tracing::debug!("wl_surface.offset");
-                        self.r#offset(client, message.int()?, message.int()?).await
+                        self.offset(client, message.int()?, message.int()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Deletes the surface and invalidates its object ID."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Set a buffer as the content of this surface."#]
             #[doc = r#""#]
             #[doc = r#"The new size of the surface is calculated based on the buffer"#]
@@ -2583,12 +2573,12 @@ pub mod wayland {
             #[doc = r#"maximise compatibility should not destroy pending buffers and should"#]
             #[doc = r#"ensure that they explicitly remove content from surfaces, even after"#]
             #[doc = r#"destroying buffers."#]
-            async fn r#attach(
+            async fn attach(
                 &self,
                 client: &mut crate::Client,
-                r#buffer: Option<crate::wire::ObjectId>,
-                r#x: i32,
-                r#y: i32,
+                attach: Option<crate::wire::ObjectId>,
+                attach: i32,
+                attach: i32,
             ) -> crate::Result<()>;
             #[doc = r#"This request is used to describe the regions where the pending"#]
             #[doc = r#"buffer is different from the current surface contents, and where"#]
@@ -2611,13 +2601,13 @@ pub mod wayland {
             #[doc = r#"Note! New clients should not use this request. Instead damage can be"#]
             #[doc = r#"posted with wl_surface.damage_buffer which uses buffer coordinates"#]
             #[doc = r#"instead of surface coordinates."#]
-            async fn r#damage(
+            async fn damage(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#width: i32,
-                r#height: i32,
+                damage: i32,
+                damage: i32,
+                damage: i32,
+                damage: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Request a notification when it is a good time to start drawing a new"#]
             #[doc = r#"frame, by creating a frame callback. This is useful for throttling"#]
@@ -2651,10 +2641,10 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"The callback_data passed in the callback is the current time, in"#]
             #[doc = r#"milliseconds, with an undefined base."#]
-            async fn r#frame(
+            async fn frame(
                 &self,
                 client: &mut crate::Client,
-                r#callback: crate::wire::ObjectId,
+                frame: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request sets the region of the surface that contains"#]
             #[doc = r#"opaque content."#]
@@ -2680,10 +2670,10 @@ pub mod wayland {
             #[doc = r#"opaque region has copy semantics, and the wl_region object can be"#]
             #[doc = r#"destroyed immediately. A NULL wl_region causes the pending opaque"#]
             #[doc = r#"region to be set to empty."#]
-            async fn r#set_opaque_region(
+            async fn set_opaque_region(
                 &self,
                 client: &mut crate::Client,
-                r#region: Option<crate::wire::ObjectId>,
+                set_opaque_region: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"This request sets the region of the surface that can receive"#]
             #[doc = r#"pointer and touch events."#]
@@ -2707,10 +2697,10 @@ pub mod wayland {
             #[doc = r#"has copy semantics, and the wl_region object can be destroyed"#]
             #[doc = r#"immediately. A NULL wl_region causes the input region to be set"#]
             #[doc = r#"to infinite."#]
-            async fn r#set_input_region(
+            async fn set_input_region(
                 &self,
                 client: &mut crate::Client,
-                r#region: Option<crate::wire::ObjectId>,
+                set_input_region: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Surface state (input, opaque, and damage regions, attached buffers,"#]
             #[doc = r#"etc.) is double-buffered. Protocol requests modify the pending state,"#]
@@ -2731,7 +2721,7 @@ pub mod wayland {
             #[doc = r#"to affect double-buffered state."#]
             #[doc = r#""#]
             #[doc = r#"Other interfaces may add further double-buffered surface state."#]
-            async fn r#commit(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn commit(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This request sets the transformation that the client has already applied"#]
             #[doc = r#"to the content of the buffer. The accepted values for the transform"#]
             #[doc = r#"parameter are the values for wl_output.transform."#]
@@ -2763,10 +2753,10 @@ pub mod wayland {
             #[doc = r#"If transform is not one of the values from the"#]
             #[doc = r#"wl_output.transform enum the invalid_transform protocol error"#]
             #[doc = r#"is raised."#]
-            async fn r#set_buffer_transform(
+            async fn set_buffer_transform(
                 &self,
                 client: &mut crate::Client,
-                r#transform: super::wl_output::Transform,
+                set_buffer_transform: super::wl_output::Transform,
             ) -> crate::Result<()>;
             #[doc = r#"This request sets an optional scaling factor on how the compositor"#]
             #[doc = r#"interprets the contents of the buffer attached to the window."#]
@@ -2791,10 +2781,10 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"If scale is not greater than 0 the invalid_scale protocol error is"#]
             #[doc = r#"raised."#]
-            async fn r#set_buffer_scale(
+            async fn set_buffer_scale(
                 &self,
                 client: &mut crate::Client,
-                r#scale: i32,
+                set_buffer_scale: i32,
             ) -> crate::Result<()>;
             #[doc = r#"This request is used to describe the regions where the pending"#]
             #[doc = r#"buffer is different from the current surface contents, and where"#]
@@ -2828,13 +2818,13 @@ pub mod wayland {
             #[doc = r#"kinds of damage into account will have to accumulate damage from the"#]
             #[doc = r#"two requests separately and only transform from one to the other"#]
             #[doc = r#"after receiving the wl_surface.commit."#]
-            async fn r#damage_buffer(
+            async fn damage_buffer(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#width: i32,
-                r#height: i32,
+                damage_buffer: i32,
+                damage_buffer: i32,
+                damage_buffer: i32,
+                damage_buffer: i32,
             ) -> crate::Result<()>;
             #[doc = r#"The x and y arguments specify the location of the new pending"#]
             #[doc = r#"buffer's upper left corner, relative to the current buffer's upper"#]
@@ -2848,21 +2838,21 @@ pub mod wayland {
             #[doc = r#"This request is semantically equivalent to and the replaces the x and y"#]
             #[doc = r#"arguments in the wl_surface.attach request in wl_surface versions prior"#]
             #[doc = r#"to 5. See wl_surface.attach for details."#]
-            async fn r#offset(
+            async fn offset(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
+                offset: i32,
+                offset: i32,
             ) -> crate::Result<()>;
             #[doc = r#"This is emitted whenever a surface's creation, movement, or resizing"#]
             #[doc = r#"results in some part of it being within the scanout region of an"#]
             #[doc = r#"output."#]
             #[doc = r#""#]
             #[doc = r#"Note that a surface may be overlapping with zero or more outputs."#]
-            async fn r#enter(
+            async fn enter(
                 &self,
                 client: &mut crate::Client,
-                r#output: crate::wire::ObjectId,
+                output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -2882,10 +2872,10 @@ pub mod wayland {
             #[doc = r#"has been sent, and the compositor might expect new surface content"#]
             #[doc = r#"updates even if no enter event has been sent. The frame event should be"#]
             #[doc = r#"used instead."#]
-            async fn r#leave(
+            async fn leave(
                 &self,
                 client: &mut crate::Client,
-                r#output: crate::wire::ObjectId,
+                output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -2908,10 +2898,10 @@ pub mod wayland {
             #[doc = r#"buffer."#]
             #[doc = r#""#]
             #[doc = r#"The compositor shall emit a scale value greater than 0."#]
-            async fn r#preferred_buffer_scale(
+            async fn preferred_buffer_scale(
                 &self,
                 client: &mut crate::Client,
-                r#factor: i32,
+                factor: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface.preferred_buffer_scale");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
@@ -2929,10 +2919,10 @@ pub mod wayland {
             #[doc = r#"Applying this transformation to the surface buffer contents and using"#]
             #[doc = r#"wl_surface.set_buffer_transform might allow the compositor to use the"#]
             #[doc = r#"surface buffer more efficiently."#]
-            async fn r#preferred_buffer_transform(
+            async fn preferred_buffer_transform(
                 &self,
                 client: &mut crate::Client,
-                r#transform: super::wl_output::Transform,
+                transform: super::wl_output::Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface.preferred_buffer_transform");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -2950,12 +2940,12 @@ pub mod wayland {
         #[doc = r#"set, then it is present on the seat."#]
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                                    pub struct r#Capability: u32 {#[doc = r#"The seat has pointer devices"#]
+                                    pub struct Capability: u32 {#[doc = r#"The seat has pointer devices"#]
         const Pointer = 1;#[doc = r#"The seat has one or more keyboards"#]
         const Keyboard = 2;#[doc = r#"The seat has touch devices"#]
         const Touch = 4;}
                                 }
-        impl TryFrom<u32> for r#Capability {
+        impl TryFrom<u32> for Capability {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -2966,11 +2956,11 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Get_pointer, get_keyboard or get_touch called on seat without the matching capability"#]
             MissingCapability = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -2984,7 +2974,7 @@ pub mod wayland {
         #[doc = r#"object is published as a global during start up, or when such a"#]
         #[doc = r#"device is hot plugged.  A seat typically has a pointer and"#]
         #[doc = r#"maintains a keyboard focus and a pointer focus."#]
-        pub trait r#WlSeat: crate::Dispatcher {
+        pub trait WlSeat: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_seat";
             const VERSION: u32 = 9;
 
@@ -3005,7 +2995,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_seat.get_pointer");
-                        self.r#get_pointer(
+                        self.get_pointer(
                             client,
                             message
                                 .object()?
@@ -3015,7 +3005,7 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_seat.get_keyboard");
-                        self.r#get_keyboard(
+                        self.get_keyboard(
                             client,
                             message
                                 .object()?
@@ -3025,7 +3015,7 @@ pub mod wayland {
                     }
                     2 => {
                         tracing::debug!("wl_seat.get_touch");
-                        self.r#get_touch(
+                        self.get_touch(
                             client,
                             message
                                 .object()?
@@ -3035,7 +3025,7 @@ pub mod wayland {
                     }
                     3 => {
                         tracing::debug!("wl_seat.release");
-                        self.r#release(client).await
+                        self.release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -3048,10 +3038,10 @@ pub mod wayland {
             #[doc = r#"It is a protocol violation to issue this request on a seat that has"#]
             #[doc = r#"never had the pointer capability. The missing_capability error will"#]
             #[doc = r#"be sent in this case."#]
-            async fn r#get_pointer(
+            async fn get_pointer(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                get_pointer: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The ID provided will be initialized to the wl_keyboard interface"#]
             #[doc = r#"for this seat."#]
@@ -3061,10 +3051,10 @@ pub mod wayland {
             #[doc = r#"It is a protocol violation to issue this request on a seat that has"#]
             #[doc = r#"never had the keyboard capability. The missing_capability error will"#]
             #[doc = r#"be sent in this case."#]
-            async fn r#get_keyboard(
+            async fn get_keyboard(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                get_keyboard: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The ID provided will be initialized to the wl_touch interface"#]
             #[doc = r#"for this seat."#]
@@ -3074,14 +3064,14 @@ pub mod wayland {
             #[doc = r#"It is a protocol violation to issue this request on a seat that has"#]
             #[doc = r#"never had the touch capability. The missing_capability error will"#]
             #[doc = r#"be sent in this case."#]
-            async fn r#get_touch(
+            async fn get_touch(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                get_touch: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the seat object anymore."#]
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This is emitted whenever a seat gains or loses the pointer,"#]
             #[doc = r#"keyboard or touch capabilities.  The argument is a capability"#]
             #[doc = r#"enum containing the complete set of capabilities this seat has."#]
@@ -3106,10 +3096,10 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"The above behavior also applies to wl_keyboard and wl_touch with the"#]
             #[doc = r#"keyboard and touch capabilities, respectively."#]
-            async fn r#capabilities(
+            async fn capabilities(
                 &self,
                 client: &mut crate::Client,
-                r#capabilities: Capability,
+                capabilities: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_seat.capabilities");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3136,11 +3126,7 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"Compositors may re-use the same seat name if the wl_seat global is"#]
             #[doc = r#"destroyed and re-created later."#]
-            async fn r#name(
-                &self,
-                client: &mut crate::Client,
-                r#name: String,
-            ) -> crate::Result<()> {
+            async fn name(&self, client: &mut crate::Client, name: String) -> crate::Result<()> {
                 tracing::debug!("-> wl_seat.name");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
@@ -3156,11 +3142,11 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -3175,13 +3161,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#ButtonState {
+        pub enum ButtonState {
             #[doc = r#"The button is not pressed"#]
             Released = 0,
             #[doc = r#"The button is pressed"#]
             Pressed = 1,
         }
-        impl TryFrom<u32> for r#ButtonState {
+        impl TryFrom<u32> for ButtonState {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -3196,13 +3182,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Axis {
+        pub enum Axis {
             #[doc = r#"Vertical axis"#]
             VerticalScroll = 0,
             #[doc = r#"Horizontal axis"#]
             HorizontalScroll = 1,
         }
-        impl TryFrom<u32> for r#Axis {
+        impl TryFrom<u32> for Axis {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -3232,7 +3218,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#AxisSource {
+        pub enum AxisSource {
             #[doc = r#"A physical wheel rotation"#]
             Wheel = 0,
             #[doc = r#"Finger on a touch surface"#]
@@ -3242,7 +3228,7 @@ pub mod wayland {
             #[doc = r#"A physical wheel tilt"#]
             WheelTilt = 3,
         }
-        impl TryFrom<u32> for r#AxisSource {
+        impl TryFrom<u32> for AxisSource {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -3260,13 +3246,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#AxisRelativeDirection {
+        pub enum AxisRelativeDirection {
             #[doc = r#"Physical motion matches axis direction"#]
             Identical = 0,
             #[doc = r#"Physical motion is the inverse of the axis direction"#]
             Inverted = 1,
         }
-        impl TryFrom<u32> for r#AxisRelativeDirection {
+        impl TryFrom<u32> for AxisRelativeDirection {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -3285,7 +3271,7 @@ pub mod wayland {
         #[doc = r#"events for the surfaces that the pointer is located over,"#]
         #[doc = r#"and button and axis events for button presses, button releases"#]
         #[doc = r#"and scrolling."#]
-        pub trait r#WlPointer: crate::Dispatcher {
+        pub trait WlPointer: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_pointer";
             const VERSION: u32 = 9;
 
@@ -3306,7 +3292,7 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_pointer.set_cursor");
-                        self.r#set_cursor(
+                        self.set_cursor(
                             client,
                             message.uint()?,
                             message.object()?,
@@ -3317,7 +3303,7 @@ pub mod wayland {
                     }
                     1 => {
                         tracing::debug!("wl_pointer.release");
-                        self.r#release(client).await
+                        self.release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -3355,33 +3341,33 @@ pub mod wayland {
             #[doc = r#"The serial parameter must match the latest wl_pointer.enter"#]
             #[doc = r#"serial number sent to the client. Otherwise the request will be"#]
             #[doc = r#"ignored."#]
-            async fn r#set_cursor(
+            async fn set_cursor(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: Option<crate::wire::ObjectId>,
-                r#hotspot_x: i32,
-                r#hotspot_y: i32,
+                set_cursor: u32,
+                set_cursor: Option<crate::wire::ObjectId>,
+                set_cursor: i32,
+                set_cursor: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the pointer object anymore."#]
             #[doc = r#""#]
             #[doc = r#"This request destroys the pointer proxy object, so clients must not call"#]
             #[doc = r#"wl_pointer_destroy() after using this request."#]
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Notification that this seat's pointer is focused on a certain"#]
             #[doc = r#"surface."#]
             #[doc = r#""#]
             #[doc = r#"When a seat's focus enters a surface, the pointer image"#]
             #[doc = r#"is undefined and a client should respond to this event by setting"#]
             #[doc = r#"an appropriate pointer image with the set_cursor request."#]
-            async fn r#enter(
+            async fn enter(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: crate::wire::ObjectId,
-                r#surface_x: crate::wire::Fixed,
-                r#surface_y: crate::wire::Fixed,
+                serial: u32,
+                surface: crate::wire::ObjectId,
+                surface_x: crate::wire::Fixed,
+                surface_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3400,11 +3386,11 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"The leave notification is sent before the enter notification"#]
             #[doc = r#"for the new focus."#]
-            async fn r#leave(
+            async fn leave(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: crate::wire::ObjectId,
+                serial: u32,
+                surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3419,12 +3405,12 @@ pub mod wayland {
             #[doc = r#"Notification of pointer location change. The arguments"#]
             #[doc = r#"surface_x and surface_y are the location relative to the"#]
             #[doc = r#"focused surface."#]
-            async fn r#motion(
+            async fn motion(
                 &self,
                 client: &mut crate::Client,
-                r#time: u32,
-                r#surface_x: crate::wire::Fixed,
-                r#surface_y: crate::wire::Fixed,
+                time: u32,
+                surface_x: crate::wire::Fixed,
+                surface_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3451,13 +3437,13 @@ pub mod wayland {
             #[doc = r#"kernel's event code list. All other button codes above 0xFFFF are"#]
             #[doc = r#"currently undefined but may be used in future versions of this"#]
             #[doc = r#"protocol."#]
-            async fn r#button(
+            async fn button(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#time: u32,
-                r#button: u32,
-                r#state: ButtonState,
+                serial: u32,
+                time: u32,
+                button: u32,
+                state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.button");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3487,12 +3473,12 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"When applicable, a client can transform its content relative to the"#]
             #[doc = r#"scroll distance."#]
-            async fn r#axis(
+            async fn axis(
                 &self,
                 client: &mut crate::Client,
-                r#time: u32,
-                r#axis: Axis,
-                r#value: crate::wire::Fixed,
+                time: u32,
+                axis: Axis,
+                value: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.axis");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3539,7 +3525,7 @@ pub mod wayland {
             #[doc = r#"Compositor-specific policies may require the wl_pointer.leave and"#]
             #[doc = r#"wl_pointer.enter event being split across multiple wl_pointer.frame"#]
             #[doc = r#"groups."#]
-            async fn r#frame(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn frame(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -3572,10 +3558,10 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"The order of wl_pointer.axis_discrete and wl_pointer.axis_source is"#]
             #[doc = r#"not guaranteed."#]
-            async fn r#axis_source(
+            async fn axis_source(
                 &self,
                 client: &mut crate::Client,
-                r#axis_source: AxisSource,
+                axis_source: AxisSource,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.axis_source");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3600,11 +3586,11 @@ pub mod wayland {
             #[doc = r#"The timestamp is to be interpreted identical to the timestamp in the"#]
             #[doc = r#"wl_pointer.axis event. The timestamp value may be the same as a"#]
             #[doc = r#"preceding wl_pointer.axis event."#]
-            async fn r#axis_stop(
+            async fn axis_stop(
                 &self,
                 client: &mut crate::Client,
-                r#time: u32,
-                r#axis: Axis,
+                time: u32,
+                axis: Axis,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.axis_stop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3646,11 +3632,11 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"The order of wl_pointer.axis_discrete and wl_pointer.axis_source is"#]
             #[doc = r#"not guaranteed."#]
-            async fn r#axis_discrete(
+            async fn axis_discrete(
                 &self,
                 client: &mut crate::Client,
-                r#axis: Axis,
-                r#discrete: i32,
+                axis: Axis,
+                discrete: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.axis_discrete");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3683,11 +3669,11 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"The order of wl_pointer.axis_value120 and wl_pointer.axis_source is"#]
             #[doc = r#"not guaranteed."#]
-            async fn r#axis_value120(
+            async fn axis_value120(
                 &self,
                 client: &mut crate::Client,
-                r#axis: Axis,
-                r#value120: i32,
+                axis: Axis,
+                value120: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.axis_value120");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3734,11 +3720,11 @@ pub mod wayland {
             #[doc = r#"The order of wl_pointer.axis_relative_direction,"#]
             #[doc = r#"wl_pointer.axis_discrete and wl_pointer.axis_source is not"#]
             #[doc = r#"guaranteed."#]
-            async fn r#axis_relative_direction(
+            async fn axis_relative_direction(
                 &self,
                 client: &mut crate::Client,
-                r#axis: Axis,
-                r#direction: AxisRelativeDirection,
+                axis: Axis,
+                direction: AxisRelativeDirection,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer.axis_relative_direction");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3758,13 +3744,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#KeymapFormat {
+        pub enum KeymapFormat {
             #[doc = r#"No keymap; client must understand how to interpret the raw keycode"#]
             NoKeymap = 0,
             #[doc = r#"Libxkbcommon compatible, null-terminated string; to determine the xkb keycode, clients must add 8 to the key event keycode"#]
             XkbV1 = 1,
         }
-        impl TryFrom<u32> for r#KeymapFormat {
+        impl TryFrom<u32> for KeymapFormat {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -3779,13 +3765,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#KeyState {
+        pub enum KeyState {
             #[doc = r#"Key is not pressed"#]
             Released = 0,
             #[doc = r#"Key is pressed"#]
             Pressed = 1,
         }
-        impl TryFrom<u32> for r#KeyState {
+        impl TryFrom<u32> for KeyState {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -3808,7 +3794,7 @@ pub mod wayland {
         #[doc = r#""#]
         #[doc = r#"By default, the active surface is null, the keys currently logically down"#]
         #[doc = r#"are empty, the active modifiers and the active group are 0."#]
-        pub trait r#WlKeyboard: crate::Dispatcher {
+        pub trait WlKeyboard: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_keyboard";
             const VERSION: u32 = 9;
 
@@ -3829,24 +3815,24 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_keyboard.release");
-                        self.r#release(client).await
+                        self.release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This event provides a file descriptor to the client which can be"#]
             #[doc = r#"memory-mapped in read-only mode to provide a keyboard mapping"#]
             #[doc = r#"description."#]
             #[doc = r#""#]
             #[doc = r#"From version 7 onwards, the fd must be mapped with MAP_PRIVATE by"#]
             #[doc = r#"the recipient, as MAP_SHARED may fail."#]
-            async fn r#keymap(
+            async fn keymap(
                 &self,
                 client: &mut crate::Client,
-                r#format: KeymapFormat,
-                r#fd: rustix::fd::OwnedFd,
-                r#size: u32,
+                format: KeymapFormat,
+                fd: rustix::fd::OwnedFd,
+                size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard.keymap");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3869,12 +3855,12 @@ pub mod wayland {
             #[doc = r#"the surface argument and the keys currently logically down to the keys"#]
             #[doc = r#"in the keys argument. The compositor must not send this event if the"#]
             #[doc = r#"wl_keyboard already had an active surface immediately before this event."#]
-            async fn r#enter(
+            async fn enter(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: crate::wire::ObjectId,
-                r#keys: Vec<u8>,
+                serial: u32,
+                surface: crate::wire::ObjectId,
+                keys: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3897,11 +3883,11 @@ pub mod wayland {
             #[doc = r#"defaults. The compositor must not send this event if the active surface"#]
             #[doc = r#"of the wl_keyboard was not equal to the surface argument immediately"#]
             #[doc = r#"before this event."#]
-            async fn r#leave(
+            async fn leave(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: crate::wire::ObjectId,
+                serial: u32,
+                surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3931,13 +3917,13 @@ pub mod wayland {
             #[doc = r#"compositor must not send this event if state is pressed (resp. released)"#]
             #[doc = r#"and the key was already logically down (resp. was not logically down)"#]
             #[doc = r#"immediately before this event."#]
-            async fn r#key(
+            async fn key(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#time: u32,
-                r#key: u32,
-                r#state: KeyState,
+                serial: u32,
+                time: u32,
+                key: u32,
+                state: KeyState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard.key");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3964,14 +3950,14 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"In the wl_keyboard logical state, this event updates the modifiers and"#]
             #[doc = r#"group."#]
-            async fn r#modifiers(
+            async fn modifiers(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#mods_depressed: u32,
-                r#mods_latched: u32,
-                r#mods_locked: u32,
-                r#group: u32,
+                serial: u32,
+                mods_depressed: u32,
+                mods_latched: u32,
+                mods_locked: u32,
+                group: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard.modifiers");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -3998,11 +3984,11 @@ pub mod wayland {
             #[doc = r#"This event can be sent later on as well with a new value if necessary,"#]
             #[doc = r#"so clients should continue listening for the event past the creation"#]
             #[doc = r#"of wl_keyboard."#]
-            async fn r#repeat_info(
+            async fn repeat_info(
                 &self,
                 client: &mut crate::Client,
-                r#rate: i32,
-                r#delay: i32,
+                rate: i32,
+                delay: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard.repeat_info");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4025,7 +4011,7 @@ pub mod wayland {
         #[doc = r#"with a down event, followed by zero or more motion events,"#]
         #[doc = r#"and ending with an up event. Events relating to the same"#]
         #[doc = r#"contact point can be identified by the ID of the sequence."#]
-        pub trait r#WlTouch: crate::Dispatcher {
+        pub trait WlTouch: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_touch";
             const VERSION: u32 = 9;
 
@@ -4046,25 +4032,25 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_touch.release");
-                        self.r#release(client).await
+                        self.release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"A new touch point has appeared on the surface. This touch point is"#]
             #[doc = r#"assigned a unique ID. Future events from this touch point reference"#]
             #[doc = r#"this ID. The ID ceases to be valid after a touch up event and may be"#]
             #[doc = r#"reused in the future."#]
-            async fn r#down(
+            async fn down(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#time: u32,
-                r#surface: crate::wire::ObjectId,
-                r#id: i32,
-                r#x: crate::wire::Fixed,
-                r#y: crate::wire::Fixed,
+                serial: u32,
+                time: u32,
+                surface: crate::wire::ObjectId,
+                id: i32,
+                x: crate::wire::Fixed,
+                y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch.down");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4083,12 +4069,12 @@ pub mod wayland {
             #[doc = r#"The touch point has disappeared. No further events will be sent for"#]
             #[doc = r#"this touch point and the touch point's ID is released and may be"#]
             #[doc = r#"reused in a future touch down event."#]
-            async fn r#up(
+            async fn up(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#time: u32,
-                r#id: i32,
+                serial: u32,
+                time: u32,
+                id: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch.up");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4102,13 +4088,13 @@ pub mod wayland {
                     .map_err(crate::error::Error::IoError)
             }
             #[doc = r#"A touch point has changed coordinates."#]
-            async fn r#motion(
+            async fn motion(
                 &self,
                 client: &mut crate::Client,
-                r#time: u32,
-                r#id: i32,
-                r#x: crate::wire::Fixed,
-                r#y: crate::wire::Fixed,
+                time: u32,
+                id: i32,
+                x: crate::wire::Fixed,
+                y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4130,7 +4116,7 @@ pub mod wayland {
             #[doc = r#"guarantee is provided about the set of events within a frame. A client"#]
             #[doc = r#"must assume that any state not updated in a frame is unchanged from the"#]
             #[doc = r#"previously known state."#]
-            async fn r#frame(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn frame(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -4146,7 +4132,7 @@ pub mod wayland {
             #[doc = r#"this surface may reuse the touch point ID."#]
             #[doc = r#""#]
             #[doc = r#"No frame event is required after the cancel event."#]
-            async fn r#cancel(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn cancel(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch.cancel");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -4179,12 +4165,12 @@ pub mod wayland {
             #[doc = r#"This event is only sent by the compositor if the touch device supports"#]
             #[doc = r#"shape reports. The client has to make reasonable assumptions about the"#]
             #[doc = r#"shape if it did not receive this event."#]
-            async fn r#shape(
+            async fn shape(
                 &self,
                 client: &mut crate::Client,
-                r#id: i32,
-                r#major: crate::wire::Fixed,
-                r#minor: crate::wire::Fixed,
+                id: i32,
+                major: crate::wire::Fixed,
+                minor: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch.shape");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4220,11 +4206,11 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"This event is only sent by the compositor if the touch device supports"#]
             #[doc = r#"orientation reports."#]
-            async fn r#orientation(
+            async fn orientation(
                 &self,
                 client: &mut crate::Client,
-                r#id: i32,
-                r#orientation: crate::wire::Fixed,
+                id: i32,
+                orientation: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch.orientation");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4244,7 +4230,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Subpixel {
+        pub enum Subpixel {
             #[doc = r#"Unknown geometry"#]
             Unknown = 0,
             #[doc = r#"No geometry"#]
@@ -4258,7 +4244,7 @@ pub mod wayland {
             #[doc = r#"Vertical BGR"#]
             VerticalBgr = 5,
         }
-        impl TryFrom<u32> for r#Subpixel {
+        impl TryFrom<u32> for Subpixel {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -4286,7 +4272,7 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Transform {
+        pub enum Transform {
             #[doc = r#"No transform"#]
             Normal = 0,
             #[doc = r#"90 degrees counter-clockwise"#]
@@ -4304,7 +4290,7 @@ pub mod wayland {
             #[doc = r#"Flip and rotate 270 degrees counter-clockwise"#]
             Flipped270 = 7,
         }
-        impl TryFrom<u32> for r#Transform {
+        impl TryFrom<u32> for Transform {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -4325,11 +4311,11 @@ pub mod wayland {
         #[doc = r#"They are used in the flags bitfield of the mode event."#]
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                                    pub struct r#Mode: u32 {#[doc = r#"Indicates this is the current mode"#]
+                                    pub struct Mode: u32 {#[doc = r#"Indicates this is the current mode"#]
         const Current = 0x1;#[doc = r#"Indicates this is the preferred mode"#]
         const Preferred = 0x2;}
                                 }
-        impl TryFrom<u32> for r#Mode {
+        impl TryFrom<u32> for Mode {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -4342,7 +4328,7 @@ pub mod wayland {
         #[doc = r#"actually visible.  This typically corresponds to a monitor that"#]
         #[doc = r#"displays part of the compositor space.  This object is published"#]
         #[doc = r#"as global during start up, or when a monitor is hotplugged."#]
-        pub trait r#WlOutput: crate::Dispatcher {
+        pub trait WlOutput: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_output";
             const VERSION: u32 = 4;
 
@@ -4363,14 +4349,14 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_output.release");
-                        self.r#release(client).await
+                        self.release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the output object anymore."#]
-            async fn r#release(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn release(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"The geometry event describes geometric properties of the output."#]
             #[doc = r#"The event is sent when binding to the output object and whenever"#]
             #[doc = r#"any of the properties change."#]
@@ -4391,17 +4377,17 @@ pub mod wayland {
             #[doc = r#"outputs, might fake this information. Instead of using x and y, clients"#]
             #[doc = r#"should use xdg_output.logical_position. Instead of using make and model,"#]
             #[doc = r#"clients should use name and description."#]
-            async fn r#geometry(
+            async fn geometry(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#physical_width: i32,
-                r#physical_height: i32,
-                r#subpixel: Subpixel,
-                r#make: String,
-                r#model: String,
-                r#transform: Transform,
+                x: i32,
+                y: i32,
+                physical_width: i32,
+                physical_height: i32,
+                subpixel: Subpixel,
+                make: String,
+                model: String,
+                transform: Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output.geometry");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4452,13 +4438,13 @@ pub mod wayland {
             #[doc = r#"Note: this information is not always meaningful for all outputs. Some"#]
             #[doc = r#"compositors, such as those exposing virtual outputs, might fake the"#]
             #[doc = r#"refresh rate or the size."#]
-            async fn r#mode(
+            async fn mode(
                 &self,
                 client: &mut crate::Client,
-                r#flags: Mode,
-                r#width: i32,
-                r#height: i32,
-                r#refresh: i32,
+                flags: Mode,
+                width: i32,
+                height: i32,
+                refresh: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output.mode");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4477,7 +4463,7 @@ pub mod wayland {
             #[doc = r#"other property changes done after that. This allows"#]
             #[doc = r#"changes to the output properties to be seen as"#]
             #[doc = r#"atomic, even if they happen via multiple events."#]
-            async fn r#done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wl_output.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -4503,11 +4489,7 @@ pub mod wayland {
             #[doc = r#"scale to use for a surface."#]
             #[doc = r#""#]
             #[doc = r#"The scale event will be followed by a done event."#]
-            async fn r#scale(
-                &self,
-                client: &mut crate::Client,
-                r#factor: i32,
-            ) -> crate::Result<()> {
+            async fn scale(&self, client: &mut crate::Client, factor: i32) -> crate::Result<()> {
                 tracing::debug!("-> wl_output.scale");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
                 client
@@ -4543,11 +4525,7 @@ pub mod wayland {
             #[doc = r#"same name if possible."#]
             #[doc = r#""#]
             #[doc = r#"The name event will be followed by a done event."#]
-            async fn r#name(
-                &self,
-                client: &mut crate::Client,
-                r#name: String,
-            ) -> crate::Result<()> {
+            async fn name(&self, client: &mut crate::Client, name: String) -> crate::Result<()> {
                 tracing::debug!("-> wl_output.name");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
@@ -4571,10 +4549,10 @@ pub mod wayland {
             #[doc = r#"not be sent at all."#]
             #[doc = r#""#]
             #[doc = r#"The description event will be followed by a done event."#]
-            async fn r#description(
+            async fn description(
                 &self,
                 client: &mut crate::Client,
-                r#description: String,
+                description: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output.description");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -4592,7 +4570,7 @@ pub mod wayland {
         #[doc = r#""#]
         #[doc = r#"Region objects are used to describe the opaque and input"#]
         #[doc = r#"regions of a surface."#]
-        pub trait r#WlRegion: crate::Dispatcher {
+        pub trait WlRegion: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_region";
             const VERSION: u32 = 1;
 
@@ -4613,11 +4591,11 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_region.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("wl_region.add");
-                        self.r#add(
+                        self.add(
                             client,
                             message.int()?,
                             message.int()?,
@@ -4628,7 +4606,7 @@ pub mod wayland {
                     }
                     2 => {
                         tracing::debug!("wl_region.subtract");
-                        self.r#subtract(
+                        self.subtract(
                             client,
                             message.int()?,
                             message.int()?,
@@ -4641,24 +4619,24 @@ pub mod wayland {
                 }
             }
             #[doc = r#"Destroy the region.  This will invalidate the object ID."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Add the specified rectangle to the region."#]
-            async fn r#add(
+            async fn add(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#width: i32,
-                r#height: i32,
+                add: i32,
+                add: i32,
+                add: i32,
+                add: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Subtract the specified rectangle from the region."#]
-            async fn r#subtract(
+            async fn subtract(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#width: i32,
-                r#height: i32,
+                subtract: i32,
+                subtract: i32,
+                subtract: i32,
+                subtract: i32,
             ) -> crate::Result<()>;
         }
     }
@@ -4666,13 +4644,13 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"The to-be sub-surface is invalid"#]
             BadSurface = 0,
             #[doc = r#"The to-be sub-surface parent is invalid"#]
             BadParent = 1,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -4702,7 +4680,7 @@ pub mod wayland {
         #[doc = r#"a video player with decorations and video in separate wl_surface"#]
         #[doc = r#"objects. This should allow the compositor to pass YUV video buffer"#]
         #[doc = r#"processing to dedicated overlay hardware when possible."#]
-        pub trait r#WlSubcompositor: crate::Dispatcher {
+        pub trait WlSubcompositor: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_subcompositor";
             const VERSION: u32 = 1;
 
@@ -4723,11 +4701,11 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_subcompositor.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("wl_subcompositor.get_subsurface");
-                        self.r#get_subsurface(
+                        self.get_subsurface(
                             client,
                             message
                                 .object()?
@@ -4747,7 +4725,7 @@ pub mod wayland {
             #[doc = r#"Informs the server that the client will not be using this"#]
             #[doc = r#"protocol object anymore. This does not affect any other"#]
             #[doc = r#"objects, wl_subsurface objects included."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Create a sub-surface interface for the given surface, and"#]
             #[doc = r#"associate it with the given parent surface. This turns a"#]
             #[doc = r#"plain wl_surface into a sub-surface."#]
@@ -4767,12 +4745,12 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"This request modifies the behaviour of wl_surface.commit request on"#]
             #[doc = r#"the sub-surface, see the documentation on wl_subsurface interface."#]
-            async fn r#get_subsurface(
+            async fn get_subsurface(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#surface: crate::wire::ObjectId,
-                r#parent: crate::wire::ObjectId,
+                get_subsurface: crate::wire::ObjectId,
+                get_subsurface: crate::wire::ObjectId,
+                get_subsurface: crate::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -4780,11 +4758,11 @@ pub mod wayland {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Wl_surface is not a sibling or the parent"#]
             BadSurface = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -4846,7 +4824,7 @@ pub mod wayland {
         #[doc = r#""#]
         #[doc = r#"The wl_surface.offset request is ignored: clients must use set_position"#]
         #[doc = r#"instead to move the sub-surface."#]
-        pub trait r#WlSubsurface: crate::Dispatcher {
+        pub trait WlSubsurface: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_subsurface";
             const VERSION: u32 = 1;
 
@@ -4867,16 +4845,16 @@ pub mod wayland {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wl_subsurface.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("wl_subsurface.set_position");
-                        self.r#set_position(client, message.int()?, message.int()?)
+                        self.set_position(client, message.int()?, message.int()?)
                             .await
                     }
                     2 => {
                         tracing::debug!("wl_subsurface.place_above");
-                        self.r#place_above(
+                        self.place_above(
                             client,
                             message
                                 .object()?
@@ -4886,7 +4864,7 @@ pub mod wayland {
                     }
                     3 => {
                         tracing::debug!("wl_subsurface.place_below");
-                        self.r#place_below(
+                        self.place_below(
                             client,
                             message
                                 .object()?
@@ -4896,11 +4874,11 @@ pub mod wayland {
                     }
                     4 => {
                         tracing::debug!("wl_subsurface.set_sync");
-                        self.r#set_sync(client).await
+                        self.set_sync(client).await
                     }
                     5 => {
                         tracing::debug!("wl_subsurface.set_desync");
-                        self.r#set_desync(client).await
+                        self.set_desync(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -4909,7 +4887,7 @@ pub mod wayland {
             #[doc = r#"that was turned into a sub-surface with a"#]
             #[doc = r#"wl_subcompositor.get_subsurface request. The wl_surface's association"#]
             #[doc = r#"to the parent is deleted. The wl_surface is unmapped immediately."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This schedules a sub-surface position change."#]
             #[doc = r#"The sub-surface will be moved so that its origin (top left"#]
             #[doc = r#"corner pixel) will be at the location x, y of the parent surface"#]
@@ -4924,11 +4902,11 @@ pub mod wayland {
             #[doc = r#"replaces the scheduled position from any previous request."#]
             #[doc = r#""#]
             #[doc = r#"The initial position is 0, 0."#]
-            async fn r#set_position(
+            async fn set_position(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
+                set_position: i32,
+                set_position: i32,
             ) -> crate::Result<()>;
             #[doc = r#"This sub-surface is taken from the stack, and put back just"#]
             #[doc = r#"above the reference surface, changing the z-order of the sub-surfaces."#]
@@ -4943,17 +4921,17 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"A new sub-surface is initially added as the top-most in the stack"#]
             #[doc = r#"of its siblings and parent."#]
-            async fn r#place_above(
+            async fn place_above(
                 &self,
                 client: &mut crate::Client,
-                r#sibling: crate::wire::ObjectId,
+                place_above: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The sub-surface is placed just below the reference surface."#]
             #[doc = r#"See wl_subsurface.place_above."#]
-            async fn r#place_below(
+            async fn place_below(
                 &self,
                 client: &mut crate::Client,
-                r#sibling: crate::wire::ObjectId,
+                place_below: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Change the commit behaviour of the sub-surface to synchronized"#]
             #[doc = r#"mode, also described as the parent dependent mode."#]
@@ -4968,7 +4946,7 @@ pub mod wayland {
             #[doc = r#"parent surface commits do not (re-)apply old state."#]
             #[doc = r#""#]
             #[doc = r#"See wl_subsurface for the recursive effect of this mode."#]
-            async fn r#set_sync(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn set_sync(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Change the commit behaviour of the sub-surface to desynchronized"#]
             #[doc = r#"mode, also described as independent or freely running mode."#]
             #[doc = r#""#]
@@ -4988,7 +4966,7 @@ pub mod wayland {
             #[doc = r#""#]
             #[doc = r#"If a surface's parent surface behaves as desynchronized, then"#]
             #[doc = r#"the cached state is applied on set_desync."#]
-            async fn r#set_desync(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn set_desync(&self, client: &mut crate::Client) -> crate::Result<()>;
         }
     }
 }
@@ -5058,7 +5036,7 @@ pub mod linux_dmabuf_v1 {
         #[doc = r#"synchronization is used. In other words, compositors and clients must"#]
         #[doc = r#"wait and signal fences implicitly passed via the DMA-BUF's reservation"#]
         #[doc = r#"mechanism."#]
-        pub trait r#ZwpLinuxDmabufV1: crate::Dispatcher {
+        pub trait ZwpLinuxDmabufV1: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_linux_dmabuf_v1";
             const VERSION: u32 = 5;
 
@@ -5079,11 +5057,11 @@ pub mod linux_dmabuf_v1 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_linux_dmabuf_v1.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("zwp_linux_dmabuf_v1.create_params");
-                        self.r#create_params(
+                        self.create_params(
                             client,
                             message
                                 .object()?
@@ -5093,7 +5071,7 @@ pub mod linux_dmabuf_v1 {
                     }
                     2 => {
                         tracing::debug!("zwp_linux_dmabuf_v1.get_default_feedback");
-                        self.r#get_default_feedback(
+                        self.get_default_feedback(
                             client,
                             message
                                 .object()?
@@ -5103,7 +5081,7 @@ pub mod linux_dmabuf_v1 {
                     }
                     3 => {
                         tracing::debug!("zwp_linux_dmabuf_v1.get_surface_feedback");
-                        self.r#get_surface_feedback(
+                        self.get_surface_feedback(
                             client,
                             message
                                 .object()?
@@ -5119,24 +5097,24 @@ pub mod linux_dmabuf_v1 {
             }
             #[doc = r#"Objects created through this interface, especially wl_buffers, will"#]
             #[doc = r#"remain valid."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This temporary object is used to collect multiple dmabuf handles into"#]
             #[doc = r#"a single batch to create a wl_buffer. It can only be used once and"#]
             #[doc = r#"should be destroyed after a 'created' or 'failed' event has been"#]
             #[doc = r#"received."#]
-            async fn r#create_params(
+            async fn create_params(
                 &self,
                 client: &mut crate::Client,
-                r#params_id: crate::wire::ObjectId,
+                create_params: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request creates a new wp_linux_dmabuf_feedback object not bound"#]
             #[doc = r#"to a particular surface. This object will deliver feedback about dmabuf"#]
             #[doc = r#"parameters to use if the client doesn't support per-surface feedback"#]
             #[doc = r#"(see get_surface_feedback)."#]
-            async fn r#get_default_feedback(
+            async fn get_default_feedback(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                get_default_feedback: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request creates a new wp_linux_dmabuf_feedback object for the"#]
             #[doc = r#"specified wl_surface. This object will deliver feedback about dmabuf"#]
@@ -5144,11 +5122,11 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#""#]
             #[doc = r#"If the surface is destroyed before the wp_linux_dmabuf_feedback object,"#]
             #[doc = r#"the feedback object becomes inert."#]
-            async fn r#get_surface_feedback(
+            async fn get_surface_feedback(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#surface: crate::wire::ObjectId,
+                get_surface_feedback: crate::wire::ObjectId,
+                get_surface_feedback: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This event advertises one buffer format that the server supports."#]
             #[doc = r#"All the supported formats are advertised once when the client"#]
@@ -5161,11 +5139,7 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"Starting version 4, the format event is deprecated and must not be"#]
             #[doc = r#"sent by compositors. Instead, use get_default_feedback or"#]
             #[doc = r#"get_surface_feedback."#]
-            async fn r#format(
-                &self,
-                client: &mut crate::Client,
-                r#format: u32,
-            ) -> crate::Result<()> {
+            async fn format(&self, client: &mut crate::Client, format: u32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_v1.format");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(format).build();
                 client
@@ -5196,12 +5170,12 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"Starting version 4, the modifier event is deprecated and must not be"#]
             #[doc = r#"sent by compositors. Instead, use get_default_feedback or"#]
             #[doc = r#"get_surface_feedback."#]
-            async fn r#modifier(
+            async fn modifier(
                 &self,
                 client: &mut crate::Client,
-                r#format: u32,
-                r#modifier_hi: u32,
-                r#modifier_lo: u32,
+                format: u32,
+                modifier_hi: u32,
+                modifier_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_v1.modifier");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -5220,7 +5194,7 @@ pub mod linux_dmabuf_v1 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"The dmabuf_batch object has already been used to create a wl_buffer"#]
             AlreadyUsed = 0,
             #[doc = r#"Plane index out of bounds"#]
@@ -5239,7 +5213,7 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"The create_immed request on given buffer_params"#]
             InvalidWlBuffer = 7,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -5258,12 +5232,12 @@ pub mod linux_dmabuf_v1 {
         }
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                                    pub struct r#Flags: u32 {#[doc = r#"Contents are y-inverted"#]
+                                    pub struct Flags: u32 {#[doc = r#"Contents are y-inverted"#]
         const YInvert = 1;#[doc = r#"Content is interlaced"#]
         const Interlaced = 2;#[doc = r#"Bottom field first"#]
         const BottomFirst = 4;}
                                 }
-        impl TryFrom<u32> for r#Flags {
+        impl TryFrom<u32> for Flags {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -5284,7 +5258,7 @@ pub mod linux_dmabuf_v1 {
         #[doc = r#"from zero to the number of planes used by the drm_fourcc format code."#]
         #[doc = r#"All planes required by the format must be given exactly once, but can"#]
         #[doc = r#"be given in any order. Each plane index can be set only once."#]
-        pub trait r#ZwpLinuxBufferParamsV1: crate::Dispatcher {
+        pub trait ZwpLinuxBufferParamsV1: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_linux_buffer_params_v1";
             const VERSION: u32 = 5;
 
@@ -5305,11 +5279,11 @@ pub mod linux_dmabuf_v1 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_linux_buffer_params_v1.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("zwp_linux_buffer_params_v1.add");
-                        self.r#add(
+                        self.add(
                             client,
                             message.fd()?,
                             message.uint()?,
@@ -5322,7 +5296,7 @@ pub mod linux_dmabuf_v1 {
                     }
                     2 => {
                         tracing::debug!("zwp_linux_buffer_params_v1.create");
-                        self.r#create(
+                        self.create(
                             client,
                             message.int()?,
                             message.int()?,
@@ -5333,7 +5307,7 @@ pub mod linux_dmabuf_v1 {
                     }
                     3 => {
                         tracing::debug!("zwp_linux_buffer_params_v1.create_immed");
-                        self.r#create_immed(
+                        self.create_immed(
                             client,
                             message
                                 .object()?
@@ -5350,7 +5324,7 @@ pub mod linux_dmabuf_v1 {
             }
             #[doc = r#"Cleans up the temporary data sent to the server for dmabuf-based"#]
             #[doc = r#"wl_buffer creation."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This request adds one dmabuf to the set in this"#]
             #[doc = r#"zwp_linux_buffer_params_v1."#]
             #[doc = r#""#]
@@ -5370,15 +5344,15 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"This request raises the PLANE_IDX error if plane_idx is too large."#]
             #[doc = r#"The error PLANE_SET is raised if attempting to set a plane that"#]
             #[doc = r#"was already set."#]
-            async fn r#add(
+            async fn add(
                 &self,
                 client: &mut crate::Client,
-                r#fd: rustix::fd::OwnedFd,
-                r#plane_idx: u32,
-                r#offset: u32,
-                r#stride: u32,
-                r#modifier_hi: u32,
-                r#modifier_lo: u32,
+                add: rustix::fd::OwnedFd,
+                add: u32,
+                add: u32,
+                add: u32,
+                add: u32,
+                add: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This asks for creation of a wl_buffer from the added dmabuf"#]
             #[doc = r#"buffers. The wl_buffer is not created immediately but returned via"#]
@@ -5439,13 +5413,13 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#""#]
             #[doc = r#"It is not mandatory to issue 'create'. If a client wants to"#]
             #[doc = r#"cancel the buffer creation, it can just destroy this object."#]
-            async fn r#create(
+            async fn create(
                 &self,
                 client: &mut crate::Client,
-                r#width: i32,
-                r#height: i32,
-                r#format: u32,
-                r#flags: Flags,
+                create: i32,
+                create: i32,
+                create: u32,
+                create: Flags,
             ) -> crate::Result<()>;
             #[doc = r#"This asks for immediate creation of a wl_buffer by importing the"#]
             #[doc = r#"added dmabufs."#]
@@ -5470,24 +5444,24 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#""#]
             #[doc = r#"This takes the same arguments as a 'create' request, and obeys the"#]
             #[doc = r#"same restrictions."#]
-            async fn r#create_immed(
+            async fn create_immed(
                 &self,
                 client: &mut crate::Client,
-                r#buffer_id: crate::wire::ObjectId,
-                r#width: i32,
-                r#height: i32,
-                r#format: u32,
-                r#flags: Flags,
+                create_immed: crate::wire::ObjectId,
+                create_immed: i32,
+                create_immed: i32,
+                create_immed: u32,
+                create_immed: Flags,
             ) -> crate::Result<()>;
             #[doc = r#"This event indicates that the attempted buffer creation was"#]
             #[doc = r#"successful. It provides the new wl_buffer referencing the dmabuf(s)."#]
             #[doc = r#""#]
             #[doc = r#"Upon receiving this event, the client should destroy the"#]
             #[doc = r#"zwp_linux_buffer_params_v1 object."#]
-            async fn r#created(
+            async fn created(
                 &self,
                 client: &mut crate::Client,
-                r#buffer: crate::wire::ObjectId,
+                buffer: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_buffer_params_v1.created");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -5504,7 +5478,7 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#""#]
             #[doc = r#"Upon receiving this event, the client should destroy the"#]
             #[doc = r#"zwp_linux_buffer_params_v1 object."#]
-            async fn r#failed(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn failed(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_buffer_params_v1.failed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -5517,10 +5491,10 @@ pub mod linux_dmabuf_v1 {
     pub mod zwp_linux_dmabuf_feedback_v1 {
         bitflags::bitflags! {
                                     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                                    pub struct r#TrancheFlags: u32 {#[doc = r#"Direct scan-out tranche"#]
+                                    pub struct TrancheFlags: u32 {#[doc = r#"Direct scan-out tranche"#]
         const Scanout = 1;}
                                 }
-        impl TryFrom<u32> for r#TrancheFlags {
+        impl TryFrom<u32> for TrancheFlags {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -5552,7 +5526,7 @@ pub mod linux_dmabuf_v1 {
         #[doc = r#"(each consisting of one tranche_target_device event, one tranche_flags"#]
         #[doc = r#"event, tranche_formats events and then a tranche_done event), then one"#]
         #[doc = r#"done event."#]
-        pub trait r#ZwpLinuxDmabufFeedbackV1: crate::Dispatcher {
+        pub trait ZwpLinuxDmabufFeedbackV1: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_linux_dmabuf_feedback_v1";
             const VERSION: u32 = 5;
 
@@ -5573,20 +5547,20 @@ pub mod linux_dmabuf_v1 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_linux_dmabuf_feedback_v1.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the wp_linux_dmabuf_feedback object anymore."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This event is sent after all parameters of a wp_linux_dmabuf_feedback"#]
             #[doc = r#"object have been sent."#]
             #[doc = r#""#]
             #[doc = r#"This allows changes to the wp_linux_dmabuf_feedback parameters to be"#]
             #[doc = r#"seen as atomic, even if they happen via multiple events."#]
-            async fn r#done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -5608,11 +5582,11 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"event has been sent. Instead, compositors must create a new, separate"#]
             #[doc = r#"table file and re-send feedback parameters. Compositors are allowed to"#]
             #[doc = r#"store duplicate format + modifier pairs in the table."#]
-            async fn r#format_table(
+            async fn format_table(
                 &self,
                 client: &mut crate::Client,
-                r#fd: rustix::fd::OwnedFd,
-                r#size: u32,
+                fd: rustix::fd::OwnedFd,
+                size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.format_table");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -5647,10 +5621,10 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"If explicit modifiers are not supported and the client performs buffer"#]
             #[doc = r#"allocations on a different device than the main device, then the client"#]
             #[doc = r#"must force the buffer to have a linear layout."#]
-            async fn r#main_device(
+            async fn main_device(
                 &self,
                 client: &mut crate::Client,
-                r#device: Vec<u8>,
+                device: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.main_device");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
@@ -5663,7 +5637,7 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"preference tranches. It is sent after a set of tranche_target_device"#]
             #[doc = r#"and tranche_formats events; it represents the end of a tranche. The"#]
             #[doc = r#"next tranche will have a lower preference."#]
-            async fn r#tranche_done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn tranche_done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -5697,10 +5671,10 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"comparing the dev_t value."#]
             #[doc = r#""#]
             #[doc = r#"This event is tied to a preference tranche, see the tranche_done event."#]
-            async fn r#tranche_target_device(
+            async fn tranche_target_device(
                 &self,
                 client: &mut crate::Client,
-                r#device: Vec<u8>,
+                device: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_target_device");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
@@ -5733,10 +5707,10 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#""#]
             #[doc = r#"For the definition of the format and modifier codes, see the"#]
             #[doc = r#"wp_linux_buffer_params.create request."#]
-            async fn r#tranche_formats(
+            async fn tranche_formats(
                 &self,
                 client: &mut crate::Client,
-                r#indices: Vec<u8>,
+                indices: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_formats");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -5755,10 +5729,10 @@ pub mod linux_dmabuf_v1 {
             #[doc = r#"device is implementation-defined."#]
             #[doc = r#""#]
             #[doc = r#"This event is tied to a preference tranche, see the tranche_done event."#]
-            async fn r#tranche_flags(
+            async fn tranche_flags(
                 &self,
                 client: &mut crate::Client,
-                r#flags: TrancheFlags,
+                flags: TrancheFlags,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_flags");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -5779,13 +5753,13 @@ pub mod presentation_time {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Invalid value in tv_nsec"#]
             InvalidTimestamp = 0,
             #[doc = r#"Invalid flag"#]
             InvalidFlag = 1,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -5815,7 +5789,7 @@ pub mod presentation_time {
         #[doc = r#"presentation time can differ from the compositor's predicted"#]
         #[doc = r#"display update time and the update's target time, especially"#]
         #[doc = r#"when the compositor misses its target vertical blanking period."#]
-        pub trait r#WpPresentation: crate::Dispatcher {
+        pub trait WpPresentation: crate::Dispatcher {
             const INTERFACE: &'static str = "wp_presentation";
             const VERSION: u32 = 1;
 
@@ -5836,11 +5810,11 @@ pub mod presentation_time {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wp_presentation.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("wp_presentation.feedback");
-                        self.r#feedback(
+                        self.feedback(
                             client,
                             message
                                 .object()?
@@ -5857,7 +5831,7 @@ pub mod presentation_time {
             #[doc = r#"Informs the server that the client will no longer be using"#]
             #[doc = r#"this protocol object. Existing objects created by this object"#]
             #[doc = r#"are not affected."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Request presentation feedback for the current content submission"#]
             #[doc = r#"on the given surface. This creates a new presentation_feedback"#]
             #[doc = r#"object, which will deliver the feedback information once. If"#]
@@ -5866,11 +5840,11 @@ pub mod presentation_time {
             #[doc = r#""#]
             #[doc = r#"For details on what information is returned, see the"#]
             #[doc = r#"presentation_feedback interface."#]
-            async fn r#feedback(
+            async fn feedback(
                 &self,
                 client: &mut crate::Client,
-                r#surface: crate::wire::ObjectId,
-                r#callback: crate::wire::ObjectId,
+                feedback: crate::wire::ObjectId,
+                feedback: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This event tells the client in which clock domain the"#]
             #[doc = r#"compositor interprets the timestamps used by the presentation"#]
@@ -5900,11 +5874,7 @@ pub mod presentation_time {
             #[doc = r#"irrelevant. Precision of one millisecond or better is"#]
             #[doc = r#"recommended. Clients must be able to query the current clock"#]
             #[doc = r#"value directly, not by asking the compositor."#]
-            async fn r#clock_id(
-                &self,
-                client: &mut crate::Client,
-                r#clk_id: u32,
-            ) -> crate::Result<()> {
+            async fn clock_id(&self, client: &mut crate::Client, clk_id: u32) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation.clock_id");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(clk_id).build();
                 client
@@ -5921,9 +5891,9 @@ pub mod presentation_time {
         #[doc = r#"quality with respect to possible tearing and timings."#]
         bitflags::bitflags! {
             #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-            pub struct r#Kind: u32 {const Vsync = 0x1;const HwClock = 0x2;const HwCompletion = 0x4;const ZeroCopy = 0x8;}
+            pub struct Kind: u32 {const Vsync = 0x1;const HwClock = 0x2;const HwCompletion = 0x4;const ZeroCopy = 0x8;}
         }
-        impl TryFrom<u32> for r#Kind {
+        impl TryFrom<u32> for Kind {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -5941,7 +5911,7 @@ pub mod presentation_time {
         #[doc = r#""#]
         #[doc = r#"Once a presentation_feedback object has delivered a 'presented'"#]
         #[doc = r#"or 'discarded' event it is automatically destroyed."#]
-        pub trait r#WpPresentationFeedback: crate::Dispatcher {
+        pub trait WpPresentationFeedback: crate::Dispatcher {
             const INTERFACE: &'static str = "wp_presentation_feedback";
             const VERSION: u32 = 1;
 
@@ -5971,10 +5941,10 @@ pub mod presentation_time {
             #[doc = r#"times, this event is sent for each bound instance that matches"#]
             #[doc = r#"the synchronized output. If a client has not bound to the"#]
             #[doc = r#"right wl_output global at all, this event is not sent."#]
-            async fn r#sync_output(
+            async fn sync_output(
                 &self,
                 client: &mut crate::Client,
-                r#output: crate::wire::ObjectId,
+                output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation_feedback.sync_output");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6026,16 +5996,16 @@ pub mod presentation_time {
             #[doc = r#"refresh cycle, or the output device is self-refreshing without"#]
             #[doc = r#"a way to query the refresh count, then the arguments seq_hi"#]
             #[doc = r#"and seq_lo must be zero."#]
-            async fn r#presented(
+            async fn presented(
                 &self,
                 client: &mut crate::Client,
-                r#tv_sec_hi: u32,
-                r#tv_sec_lo: u32,
-                r#tv_nsec: u32,
-                r#refresh: u32,
-                r#seq_hi: u32,
-                r#seq_lo: u32,
-                r#flags: Kind,
+                tv_sec_hi: u32,
+                tv_sec_lo: u32,
+                tv_nsec: u32,
+                refresh: u32,
+                seq_hi: u32,
+                seq_lo: u32,
+                flags: Kind,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation_feedback.presented");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6053,7 +6023,7 @@ pub mod presentation_time {
                     .map_err(crate::error::Error::IoError)
             }
             #[doc = r#"The content update was never displayed to the user."#]
-            async fn r#discarded(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn discarded(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation_feedback.discarded");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -6145,7 +6115,7 @@ pub mod tablet_v2 {
         #[doc = r#"An object that provides access to the graphics tablets available on this"#]
         #[doc = r#"system. All tablets are associated with a seat, to get access to the"#]
         #[doc = r#"actual tablets, use wp_tablet_manager.get_tablet_seat."#]
-        pub trait r#ZwpTabletManagerV2: crate::Dispatcher {
+        pub trait ZwpTabletManagerV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_manager_v2";
             const VERSION: u32 = 1;
 
@@ -6166,7 +6136,7 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_manager_v2.get_tablet_seat");
-                        self.r#get_tablet_seat(
+                        self.get_tablet_seat(
                             client,
                             message
                                 .object()?
@@ -6179,29 +6149,29 @@ pub mod tablet_v2 {
                     }
                     1 => {
                         tracing::debug!("zwp_tablet_manager_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Get the wp_tablet_seat object for the given seat. This object"#]
             #[doc = r#"provides access to all graphics tablets in this seat."#]
-            async fn r#get_tablet_seat(
+            async fn get_tablet_seat(
                 &self,
                 client: &mut crate::Client,
-                r#tablet_seat: crate::wire::ObjectId,
-                r#seat: crate::wire::ObjectId,
+                get_tablet_seat: crate::wire::ObjectId,
+                get_tablet_seat: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Destroy the wp_tablet_manager object. Objects created from this"#]
             #[doc = r#"object are unaffected and should be destroyed separately."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
         }
     }
     pub mod zwp_tablet_seat_v2 {
         #[doc = r#"An object that provides access to the graphics tablets available on this"#]
         #[doc = r#"seat. After binding to this interface, the compositor sends a set of"#]
         #[doc = r#"wp_tablet_seat.tablet_added and wp_tablet_seat.tool_added events."#]
-        pub trait r#ZwpTabletSeatV2: crate::Dispatcher {
+        pub trait ZwpTabletSeatV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_seat_v2";
             const VERSION: u32 = 1;
 
@@ -6222,22 +6192,22 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_seat_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Destroy the wp_tablet_seat object. Objects created from this"#]
             #[doc = r#"object are unaffected and should be destroyed separately."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This event is sent whenever a new tablet becomes available on this"#]
             #[doc = r#"seat. This event only provides the object id of the tablet, any"#]
             #[doc = r#"static information about the tablet (device name, vid/pid, etc.) is"#]
             #[doc = r#"sent through the wp_tablet interface."#]
-            async fn r#tablet_added(
+            async fn tablet_added(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_seat_v2.tablet_added");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6252,10 +6222,10 @@ pub mod tablet_v2 {
             #[doc = r#"with a tablet comes into use. This event only provides the object id"#]
             #[doc = r#"of the tool; any static information about the tool (capabilities,"#]
             #[doc = r#"type, etc.) is sent through the wp_tablet_tool interface."#]
-            async fn r#tool_added(
+            async fn tool_added(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_seat_v2.tool_added");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6276,10 +6246,10 @@ pub mod tablet_v2 {
             #[doc = r#"This event only provides the object id of the pad. All further"#]
             #[doc = r#"features (buttons, strips, rings) are sent through the wp_tablet_pad"#]
             #[doc = r#"interface."#]
-            async fn r#pad_added(
+            async fn pad_added(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_seat_v2.pad_added");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6305,7 +6275,7 @@ pub mod tablet_v2 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Type {
+        pub enum Type {
             #[doc = r#"Pen"#]
             Pen = 0x140,
             #[doc = r#"Eraser"#]
@@ -6323,7 +6293,7 @@ pub mod tablet_v2 {
             #[doc = r#"Lens"#]
             Lens = 0x147,
         }
-        impl TryFrom<u32> for r#Type {
+        impl TryFrom<u32> for Type {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -6347,7 +6317,7 @@ pub mod tablet_v2 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Capability {
+        pub enum Capability {
             #[doc = r#"Tilt axes"#]
             Tilt = 1,
             #[doc = r#"Pressure axis"#]
@@ -6361,7 +6331,7 @@ pub mod tablet_v2 {
             #[doc = r#"Wheel axis"#]
             Wheel = 6,
         }
-        impl TryFrom<u32> for r#Capability {
+        impl TryFrom<u32> for Capability {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -6380,13 +6350,13 @@ pub mod tablet_v2 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#ButtonState {
+        pub enum ButtonState {
             #[doc = r#"Button is not pressed"#]
             Released = 0,
             #[doc = r#"Button is pressed"#]
             Pressed = 1,
         }
-        impl TryFrom<u32> for r#ButtonState {
+        impl TryFrom<u32> for ButtonState {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -6400,11 +6370,11 @@ pub mod tablet_v2 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -6434,7 +6404,7 @@ pub mod tablet_v2 {
         #[doc = r#"Tablet tool events are grouped by wp_tablet_tool.frame events."#]
         #[doc = r#"Any events received before a wp_tablet_tool.frame event should be"#]
         #[doc = r#"considered part of the same hardware state change."#]
-        pub trait r#ZwpTabletToolV2: crate::Dispatcher {
+        pub trait ZwpTabletToolV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_tool_v2";
             const VERSION: u32 = 1;
 
@@ -6455,7 +6425,7 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_tool_v2.set_cursor");
-                        self.r#set_cursor(
+                        self.set_cursor(
                             client,
                             message.uint()?,
                             message.object()?,
@@ -6466,7 +6436,7 @@ pub mod tablet_v2 {
                     }
                     1 => {
                         tracing::debug!("zwp_tablet_tool_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -6501,16 +6471,16 @@ pub mod tablet_v2 {
             #[doc = r#"wp_tablet_tool. If the surface already has another role or has"#]
             #[doc = r#"previously been used as cursor surface for a different tool, a"#]
             #[doc = r#"protocol error is raised."#]
-            async fn r#set_cursor(
+            async fn set_cursor(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: Option<crate::wire::ObjectId>,
-                r#hotspot_x: i32,
-                r#hotspot_y: i32,
+                set_cursor: u32,
+                set_cursor: Option<crate::wire::ObjectId>,
+                set_cursor: i32,
+                set_cursor: i32,
             ) -> crate::Result<()>;
             #[doc = r#"This destroys the client's resource for this tool object."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"The tool type is the high-level type of the tool and usually decides"#]
             #[doc = r#"the interaction expected from this tool."#]
             #[doc = r#""#]
@@ -6519,7 +6489,7 @@ pub mod tablet_v2 {
             async fn r#type(
                 &self,
                 client: &mut crate::Client,
-                r#tool_type: Type,
+                tool_type: Type,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.type");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6545,11 +6515,11 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_tool.done event."#]
-            async fn r#hardware_serial(
+            async fn hardware_serial(
                 &self,
                 client: &mut crate::Client,
-                r#hardware_serial_hi: u32,
-                r#hardware_serial_lo: u32,
+                hardware_serial_hi: u32,
+                hardware_serial_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.hardware_serial");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6571,11 +6541,11 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_tool.done event."#]
-            async fn r#hardware_id_wacom(
+            async fn hardware_id_wacom(
                 &self,
                 client: &mut crate::Client,
-                r#hardware_id_hi: u32,
-                r#hardware_id_lo: u32,
+                hardware_id_hi: u32,
+                hardware_id_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.hardware_id_wacom");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6594,10 +6564,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_tool.done event."#]
-            async fn r#capability(
+            async fn capability(
                 &self,
                 client: &mut crate::Client,
-                r#capability: Capability,
+                capability: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.capability");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6611,7 +6581,7 @@ pub mod tablet_v2 {
             #[doc = r#"This event signals the end of the initial burst of descriptive"#]
             #[doc = r#"events. A client may consider the static description of the tool to"#]
             #[doc = r#"be complete and finalize initialization of the tool."#]
-            async fn r#done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -6633,7 +6603,7 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"When this event is received, the client must wp_tablet_tool.destroy"#]
             #[doc = r#"the object."#]
-            async fn r#removed(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn removed(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.removed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -6650,12 +6620,12 @@ pub mod tablet_v2 {
             #[doc = r#"If any button is logically down when the tool comes into proximity,"#]
             #[doc = r#"the respective button event is sent after the proximity_in event but"#]
             #[doc = r#"within the same frame as the proximity_in event."#]
-            async fn r#proximity_in(
+            async fn proximity_in(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#tablet: crate::wire::ObjectId,
-                r#surface: crate::wire::ObjectId,
+                serial: u32,
+                tablet: crate::wire::ObjectId,
+                surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.proximity_in");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6680,7 +6650,7 @@ pub mod tablet_v2 {
             #[doc = r#"changes from one surface to another, a button release event may not"#]
             #[doc = r#"be sent until the button is actually released or the tool leaves the"#]
             #[doc = r#"proximity of the tablet."#]
-            async fn r#proximity_out(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn proximity_out(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.proximity_out");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -6700,7 +6670,7 @@ pub mod tablet_v2 {
             #[doc = r#"contact. On some devices, a compositor may not consider a tool in"#]
             #[doc = r#"logical contact until a minimum physical pressure threshold is"#]
             #[doc = r#"exceeded."#]
-            async fn r#down(&self, client: &mut crate::Client, r#serial: u32) -> crate::Result<()> {
+            async fn down(&self, client: &mut crate::Client, serial: u32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.down");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
@@ -6724,7 +6694,7 @@ pub mod tablet_v2 {
             #[doc = r#"contact. On some devices, a compositor may not consider a tool out"#]
             #[doc = r#"of logical contact until physical pressure falls below a specific"#]
             #[doc = r#"threshold."#]
-            async fn r#up(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn up(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.up");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -6733,11 +6703,11 @@ pub mod tablet_v2 {
                     .map_err(crate::error::Error::IoError)
             }
             #[doc = r#"Sent whenever a tablet tool moves."#]
-            async fn r#motion(
+            async fn motion(
                 &self,
                 client: &mut crate::Client,
-                r#x: crate::wire::Fixed,
-                r#y: crate::wire::Fixed,
+                x: crate::wire::Fixed,
+                y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6754,10 +6724,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"Note that pressure may be nonzero even when a tool is not in logical"#]
             #[doc = r#"contact. See the down and up events for more details."#]
-            async fn r#pressure(
+            async fn pressure(
                 &self,
                 client: &mut crate::Client,
-                r#pressure: u32,
+                pressure: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.pressure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6773,10 +6743,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"Note that distance may be nonzero even when a tool is not in logical"#]
             #[doc = r#"contact. See the down and up events for more details."#]
-            async fn r#distance(
+            async fn distance(
                 &self,
                 client: &mut crate::Client,
-                r#distance: u32,
+                distance: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.distance");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6791,11 +6761,11 @@ pub mod tablet_v2 {
             #[doc = r#"value is in degrees, relative to the z-axis of the tablet."#]
             #[doc = r#"The angle is positive when the top of a tool tilts along the"#]
             #[doc = r#"positive x or y axis."#]
-            async fn r#tilt(
+            async fn tilt(
                 &self,
                 client: &mut crate::Client,
-                r#tilt_x: crate::wire::Fixed,
-                r#tilt_y: crate::wire::Fixed,
+                tilt_x: crate::wire::Fixed,
+                tilt_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.tilt");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6810,10 +6780,10 @@ pub mod tablet_v2 {
             #[doc = r#"Sent whenever the z-rotation axis on the tool changes. The"#]
             #[doc = r#"rotation value is in degrees clockwise from the tool's"#]
             #[doc = r#"logical neutral position."#]
-            async fn r#rotation(
+            async fn rotation(
                 &self,
                 client: &mut crate::Client,
-                r#degrees: crate::wire::Fixed,
+                degrees: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.rotation");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6829,11 +6799,7 @@ pub mod tablet_v2 {
             #[doc = r#"neutral position of the slider."#]
             #[doc = r#""#]
             #[doc = r#"The slider is available on e.g. the Wacom Airbrush tool."#]
-            async fn r#slider(
-                &self,
-                client: &mut crate::Client,
-                r#position: i32,
-            ) -> crate::Result<()> {
+            async fn slider(&self, client: &mut crate::Client, position: i32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.slider");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(position).build();
                 client
@@ -6853,11 +6819,11 @@ pub mod tablet_v2 {
             #[doc = r#"click and emulate click events when a certain threshold is met."#]
             #[doc = r#"Thus, wl_tablet_tool.wheel events with non-zero clicks values may"#]
             #[doc = r#"have different degrees values."#]
-            async fn r#wheel(
+            async fn wheel(
                 &self,
                 client: &mut crate::Client,
-                r#degrees: crate::wire::Fixed,
-                r#clicks: i32,
+                degrees: crate::wire::Fixed,
+                clicks: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.wheel");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6875,12 +6841,12 @@ pub mod tablet_v2 {
             #[doc = r#"button events are generated by the compositor. See"#]
             #[doc = r#"wp_tablet_tool.proximity_in and wp_tablet_tool.proximity_out for"#]
             #[doc = r#"details."#]
-            async fn r#button(
+            async fn button(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#button: u32,
-                r#state: ButtonState,
+                serial: u32,
+                button: u32,
+                state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.button");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -6897,7 +6863,7 @@ pub mod tablet_v2 {
             #[doc = r#"tablet. The Wayland protocol requires axis updates to be sent"#]
             #[doc = r#"sequentially, however all events within a frame should be considered"#]
             #[doc = r#"one hardware event."#]
-            async fn r#frame(&self, client: &mut crate::Client, r#time: u32) -> crate::Result<()> {
+            async fn frame(&self, client: &mut crate::Client, time: u32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
@@ -6916,7 +6882,7 @@ pub mod tablet_v2 {
         #[doc = r#"pid/vid. These capabilities are sent in an event sequence after the"#]
         #[doc = r#"wp_tablet_seat.tablet_added event. This initial event sequence is"#]
         #[doc = r#"terminated by a wp_tablet.done event."#]
-        pub trait r#ZwpTabletV2: crate::Dispatcher {
+        pub trait ZwpTabletV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_v2";
             const VERSION: u32 = 1;
 
@@ -6937,24 +6903,20 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"This destroys the client's resource for this tablet object."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"A descriptive name for the tablet device."#]
             #[doc = r#""#]
             #[doc = r#"If the device has no descriptive name, this event is not sent."#]
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet.done event."#]
-            async fn r#name(
-                &self,
-                client: &mut crate::Client,
-                r#name: String,
-            ) -> crate::Result<()> {
+            async fn name(&self, client: &mut crate::Client, name: String) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2.name");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
@@ -6971,11 +6933,11 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet.done event."#]
-            async fn r#id(
+            async fn id(
                 &self,
                 client: &mut crate::Client,
-                r#vid: u32,
-                r#pid: u32,
+                vid: u32,
+                pid: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2.id");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7001,11 +6963,7 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet.done event."#]
-            async fn r#path(
-                &self,
-                client: &mut crate::Client,
-                r#path: String,
-            ) -> crate::Result<()> {
+            async fn path(&self, client: &mut crate::Client, path: String) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2.path");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(path))
@@ -7019,7 +6977,7 @@ pub mod tablet_v2 {
             #[doc = r#"burst of descriptive events. A client may consider the static"#]
             #[doc = r#"description of the tablet to be complete and finalize initialization"#]
             #[doc = r#"of the tablet."#]
-            async fn r#done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -7032,7 +6990,7 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"When this event is received, the client must wp_tablet.destroy"#]
             #[doc = r#"the object."#]
-            async fn r#removed(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn removed(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2.removed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -7050,11 +7008,11 @@ pub mod tablet_v2 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Source {
+        pub enum Source {
             #[doc = r#"Finger"#]
             Finger = 1,
         }
-        impl TryFrom<u32> for r#Source {
+        impl TryFrom<u32> for Source {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -7069,7 +7027,7 @@ pub mod tablet_v2 {
         #[doc = r#""#]
         #[doc = r#"Events on a ring are logically grouped by the wl_tablet_pad_ring.frame"#]
         #[doc = r#"event."#]
-        pub trait r#ZwpTabletPadRingV2: crate::Dispatcher {
+        pub trait ZwpTabletPadRingV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_pad_ring_v2";
             const VERSION: u32 = 1;
 
@@ -7090,7 +7048,7 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_pad_ring_v2.set_feedback");
-                        self.r#set_feedback(
+                        self.set_feedback(
                             client,
                             message
                                 .string()?
@@ -7101,7 +7059,7 @@ pub mod tablet_v2 {
                     }
                     1 => {
                         tracing::debug!("zwp_tablet_pad_ring_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -7125,14 +7083,14 @@ pub mod tablet_v2 {
             #[doc = r#"wp_tablet_pad_group.mode_switch event received for the group of this"#]
             #[doc = r#"ring. Requests providing other serials than the most recent one will be"#]
             #[doc = r#"ignored."#]
-            async fn r#set_feedback(
+            async fn set_feedback(
                 &self,
                 client: &mut crate::Client,
-                r#description: String,
-                r#serial: u32,
+                set_feedback: String,
+                set_feedback: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This destroys the client's resource for this ring object."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Source information for ring events."#]
             #[doc = r#""#]
             #[doc = r#"This event does not occur on its own. It is sent before a"#]
@@ -7145,10 +7103,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is optional. If the source is unknown for an interaction,"#]
             #[doc = r#"no event is sent."#]
-            async fn r#source(
+            async fn source(
                 &self,
                 client: &mut crate::Client,
-                r#source: Source,
+                source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2.source");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7163,10 +7121,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"The angle is provided in degrees clockwise from the logical"#]
             #[doc = r#"north of the ring in the pad's current rotation."#]
-            async fn r#angle(
+            async fn angle(
                 &self,
                 client: &mut crate::Client,
-                r#degrees: crate::wire::Fixed,
+                degrees: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2.angle");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7187,7 +7145,7 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"Any wp_tablet_pad_ring.angle events with the same source after this"#]
             #[doc = r#"event should be considered as the start of a new interaction."#]
-            async fn r#stop(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn stop(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2.stop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -7208,7 +7166,7 @@ pub mod tablet_v2 {
             #[doc = r#"group, even if the group only contains a single wp_tablet_pad_ring"#]
             #[doc = r#"event. Specifically, a client may get a sequence: angle, frame,"#]
             #[doc = r#"angle, frame, etc."#]
-            async fn r#frame(&self, client: &mut crate::Client, r#time: u32) -> crate::Result<()> {
+            async fn frame(&self, client: &mut crate::Client, time: u32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
@@ -7226,11 +7184,11 @@ pub mod tablet_v2 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Source {
+        pub enum Source {
             #[doc = r#"Finger"#]
             Finger = 1,
         }
-        impl TryFrom<u32> for r#Source {
+        impl TryFrom<u32> for Source {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -7245,7 +7203,7 @@ pub mod tablet_v2 {
         #[doc = r#""#]
         #[doc = r#"Events on a strip are logically grouped by the wl_tablet_pad_strip.frame"#]
         #[doc = r#"event."#]
-        pub trait r#ZwpTabletPadStripV2: crate::Dispatcher {
+        pub trait ZwpTabletPadStripV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_pad_strip_v2";
             const VERSION: u32 = 1;
 
@@ -7266,7 +7224,7 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_pad_strip_v2.set_feedback");
-                        self.r#set_feedback(
+                        self.set_feedback(
                             client,
                             message
                                 .string()?
@@ -7277,7 +7235,7 @@ pub mod tablet_v2 {
                     }
                     1 => {
                         tracing::debug!("zwp_tablet_pad_strip_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -7301,14 +7259,14 @@ pub mod tablet_v2 {
             #[doc = r#"wp_tablet_pad_group.mode_switch event received for the group of this"#]
             #[doc = r#"strip. Requests providing other serials than the most recent one will be"#]
             #[doc = r#"ignored."#]
-            async fn r#set_feedback(
+            async fn set_feedback(
                 &self,
                 client: &mut crate::Client,
-                r#description: String,
-                r#serial: u32,
+                set_feedback: String,
+                set_feedback: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This destroys the client's resource for this strip object."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Source information for strip events."#]
             #[doc = r#""#]
             #[doc = r#"This event does not occur on its own. It is sent before a"#]
@@ -7321,10 +7279,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is optional. If the source is unknown for an interaction,"#]
             #[doc = r#"no event is sent."#]
-            async fn r#source(
+            async fn source(
                 &self,
                 client: &mut crate::Client,
-                r#source: Source,
+                source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2.source");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7340,10 +7298,10 @@ pub mod tablet_v2 {
             #[doc = r#"The position is normalized to a range of [0, 65535], the 0-value"#]
             #[doc = r#"represents the top-most and/or left-most position of the strip in"#]
             #[doc = r#"the pad's current rotation."#]
-            async fn r#position(
+            async fn position(
                 &self,
                 client: &mut crate::Client,
-                r#position: u32,
+                position: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2.position");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7364,7 +7322,7 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"Any wp_tablet_pad_strip.position events with the same source after this"#]
             #[doc = r#"event should be considered as the start of a new interaction."#]
-            async fn r#stop(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn stop(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2.stop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -7386,7 +7344,7 @@ pub mod tablet_v2 {
             #[doc = r#"group, even if the group only contains a single wp_tablet_pad_strip"#]
             #[doc = r#"event. Specifically, a client may get a sequence: position, frame,"#]
             #[doc = r#"position, frame, etc."#]
-            async fn r#frame(&self, client: &mut crate::Client, r#time: u32) -> crate::Result<()> {
+            async fn frame(&self, client: &mut crate::Client, time: u32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
@@ -7418,7 +7376,7 @@ pub mod tablet_v2 {
         #[doc = r#"although it is at clients' discretion whether to actually perform different"#]
         #[doc = r#"actions, and/or issue the respective .set_feedback requests to notify the"#]
         #[doc = r#"compositor. See the wp_tablet_pad_group.mode_switch event for more details."#]
-        pub trait r#ZwpTabletPadGroupV2: crate::Dispatcher {
+        pub trait ZwpTabletPadGroupV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_pad_group_v2";
             const VERSION: u32 = 1;
 
@@ -7439,14 +7397,14 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_pad_group_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Destroy the wp_tablet_pad_group object. Objects created from this object"#]
             #[doc = r#"are unaffected and should be destroyed separately."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Sent on wp_tablet_pad_group initialization to announce the available"#]
             #[doc = r#"buttons in the group. Button indices start at 0, a button may only be"#]
             #[doc = r#"in one group at a time."#]
@@ -7459,10 +7417,10 @@ pub mod tablet_v2 {
             #[doc = r#"event in the case of changes to the mapping of these reserved buttons."#]
             #[doc = r#"If the compositor happens to reserve all buttons in a group, this event"#]
             #[doc = r#"will be sent with an empty array."#]
-            async fn r#buttons(
+            async fn buttons(
                 &self,
                 client: &mut crate::Client,
-                r#buttons: Vec<u8>,
+                buttons: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2.buttons");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7478,10 +7436,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_pad_group.done event."#]
-            async fn r#ring(
+            async fn ring(
                 &self,
                 client: &mut crate::Client,
-                r#ring: crate::wire::ObjectId,
+                ring: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2.ring");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7497,10 +7455,10 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_pad_group.done event."#]
-            async fn r#strip(
+            async fn strip(
                 &self,
                 client: &mut crate::Client,
-                r#strip: crate::wire::ObjectId,
+                strip: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2.strip");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7523,7 +7481,7 @@ pub mod tablet_v2 {
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_pad_group.done event. This event is only sent when more than"#]
             #[doc = r#"more than one mode is available."#]
-            async fn r#modes(&self, client: &mut crate::Client, r#modes: u32) -> crate::Result<()> {
+            async fn modes(&self, client: &mut crate::Client, modes: u32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2.modes");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(modes).build();
                 client
@@ -7535,7 +7493,7 @@ pub mod tablet_v2 {
             #[doc = r#"burst of descriptive events. A client may consider the static"#]
             #[doc = r#"description of the tablet to be complete and finalize initialization"#]
             #[doc = r#"of the tablet group."#]
-            async fn r#done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -7570,12 +7528,12 @@ pub mod tablet_v2 {
             #[doc = r#"in the previous mode, the client should immediately issue a"#]
             #[doc = r#"wp_tablet_ring.set_feedback or wp_tablet_strip.set_feedback request"#]
             #[doc = r#"for each changed ring or strip."#]
-            async fn r#mode_switch(
+            async fn mode_switch(
                 &self,
                 client: &mut crate::Client,
-                r#time: u32,
-                r#serial: u32,
-                r#mode: u32,
+                time: u32,
+                serial: u32,
+                mode: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2.mode_switch");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7596,13 +7554,13 @@ pub mod tablet_v2 {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#ButtonState {
+        pub enum ButtonState {
             #[doc = r#"The button is not pressed"#]
             Released = 0,
             #[doc = r#"The button is pressed"#]
             Pressed = 1,
         }
-        impl TryFrom<u32> for r#ButtonState {
+        impl TryFrom<u32> for ButtonState {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -7635,7 +7593,7 @@ pub mod tablet_v2 {
         #[doc = r#"Groups may have multiple modes. Modes allow clients to map multiple"#]
         #[doc = r#"actions to a single pad feature. Only one mode can be active per group,"#]
         #[doc = r#"although different groups may have different active modes."#]
-        pub trait r#ZwpTabletPadV2: crate::Dispatcher {
+        pub trait ZwpTabletPadV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_pad_v2";
             const VERSION: u32 = 1;
 
@@ -7656,7 +7614,7 @@ pub mod tablet_v2 {
                 match message.opcode {
                     0 => {
                         tracing::debug!("zwp_tablet_pad_v2.set_feedback");
-                        self.r#set_feedback(
+                        self.set_feedback(
                             client,
                             message.uint()?,
                             message
@@ -7668,7 +7626,7 @@ pub mod tablet_v2 {
                     }
                     1 => {
                         tracing::debug!("zwp_tablet_pad_v2.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -7697,25 +7655,25 @@ pub mod tablet_v2 {
             #[doc = r#"wp_tablet_pad_group.mode_switch event received for the group of this"#]
             #[doc = r#"button. Requests providing other serials than the most recent one will"#]
             #[doc = r#"be ignored."#]
-            async fn r#set_feedback(
+            async fn set_feedback(
                 &self,
                 client: &mut crate::Client,
-                r#button: u32,
-                r#description: String,
-                r#serial: u32,
+                set_feedback: u32,
+                set_feedback: String,
+                set_feedback: u32,
             ) -> crate::Result<()>;
             #[doc = r#"Destroy the wp_tablet_pad object. Objects created from this object"#]
             #[doc = r#"are unaffected and should be destroyed separately."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Sent on wp_tablet_pad initialization to announce available groups."#]
             #[doc = r#"One event is sent for each pad group available."#]
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_pad.done event. At least one group will be announced."#]
-            async fn r#group(
+            async fn group(
                 &self,
                 client: &mut crate::Client,
-                r#pad_group: crate::wire::ObjectId,
+                pad_group: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.group");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7736,11 +7694,7 @@ pub mod tablet_v2 {
             #[doc = r#""#]
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_pad.done event."#]
-            async fn r#path(
-                &self,
-                client: &mut crate::Client,
-                r#path: String,
-            ) -> crate::Result<()> {
+            async fn path(&self, client: &mut crate::Client, path: String) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.path");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(path))
@@ -7756,11 +7710,7 @@ pub mod tablet_v2 {
             #[doc = r#"This event is sent in the initial burst of events before the"#]
             #[doc = r#"wp_tablet_pad.done event. This event is only sent when at least one"#]
             #[doc = r#"button is available."#]
-            async fn r#buttons(
-                &self,
-                client: &mut crate::Client,
-                r#buttons: u32,
-            ) -> crate::Result<()> {
+            async fn buttons(&self, client: &mut crate::Client, buttons: u32) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.buttons");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(buttons).build();
                 client
@@ -7771,7 +7721,7 @@ pub mod tablet_v2 {
             #[doc = r#"This event signals the end of the initial burst of descriptive"#]
             #[doc = r#"events. A client may consider the static description of the pad to"#]
             #[doc = r#"be complete and finalize initialization of the pad."#]
-            async fn r#done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -7780,12 +7730,12 @@ pub mod tablet_v2 {
                     .map_err(crate::error::Error::IoError)
             }
             #[doc = r#"Sent whenever the physical state of a button changes."#]
-            async fn r#button(
+            async fn button(
                 &self,
                 client: &mut crate::Client,
-                r#time: u32,
-                r#button: u32,
-                r#state: ButtonState,
+                time: u32,
+                button: u32,
+                state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.button");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7799,12 +7749,12 @@ pub mod tablet_v2 {
                     .map_err(crate::error::Error::IoError)
             }
             #[doc = r#"Notification that this pad is focused on the specified surface."#]
-            async fn r#enter(
+            async fn enter(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#tablet: crate::wire::ObjectId,
-                r#surface: crate::wire::ObjectId,
+                serial: u32,
+                tablet: crate::wire::ObjectId,
+                surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7819,11 +7769,11 @@ pub mod tablet_v2 {
             }
             #[doc = r#"Notification that this pad is no longer focused on the specified"#]
             #[doc = r#"surface."#]
-            async fn r#leave(
+            async fn leave(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
-                r#surface: crate::wire::ObjectId,
+                serial: u32,
+                surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -7841,7 +7791,7 @@ pub mod tablet_v2 {
             #[doc = r#"When this event is received, the client must destroy all rings, strips"#]
             #[doc = r#"and groups that were offered by this pad, and issue wp_tablet_pad.destroy"#]
             #[doc = r#"the pad itself."#]
-            async fn r#removed(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn removed(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2.removed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -7857,11 +7807,11 @@ pub mod viewporter {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"The surface already has a viewport object associated"#]
             ViewportExists = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -7877,7 +7827,7 @@ pub mod viewporter {
         #[doc = r#"cropping and scaling the surface contents, effectively"#]
         #[doc = r#"disconnecting the direct relationship between the buffer and the"#]
         #[doc = r#"surface size."#]
-        pub trait r#WpViewporter: crate::Dispatcher {
+        pub trait WpViewporter: crate::Dispatcher {
             const INTERFACE: &'static str = "wp_viewporter";
             const VERSION: u32 = 1;
 
@@ -7898,11 +7848,11 @@ pub mod viewporter {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wp_viewporter.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("wp_viewporter.get_viewport");
-                        self.r#get_viewport(
+                        self.get_viewport(
                             client,
                             message
                                 .object()?
@@ -7919,16 +7869,16 @@ pub mod viewporter {
             #[doc = r#"Informs the server that the client will not be using this"#]
             #[doc = r#"protocol object anymore. This does not affect any other objects,"#]
             #[doc = r#"wp_viewport objects included."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Instantiate an interface extension for the given wl_surface to"#]
             #[doc = r#"crop and scale its content. If the given wl_surface already has"#]
             #[doc = r#"a wp_viewport object associated, the viewport_exists"#]
             #[doc = r#"protocol error is raised."#]
-            async fn r#get_viewport(
+            async fn get_viewport(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#surface: crate::wire::ObjectId,
+                get_viewport: crate::wire::ObjectId,
+                get_viewport: crate::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -7936,7 +7886,7 @@ pub mod viewporter {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Negative or zero values in width or height"#]
             BadValue = 0,
             #[doc = r#"Destination size is not integer"#]
@@ -7946,7 +7896,7 @@ pub mod viewporter {
             #[doc = r#"The wl_surface was destroyed"#]
             NoSurface = 3,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8014,7 +7964,7 @@ pub mod viewporter {
         #[doc = r#"If the wp_viewport object is destroyed, the crop and scale"#]
         #[doc = r#"state is removed from the wl_surface. The change will be applied"#]
         #[doc = r#"on the next wl_surface.commit."#]
-        pub trait r#WpViewport: crate::Dispatcher {
+        pub trait WpViewport: crate::Dispatcher {
             const INTERFACE: &'static str = "wp_viewport";
             const VERSION: u32 = 1;
 
@@ -8035,11 +7985,11 @@ pub mod viewporter {
                 match message.opcode {
                     0 => {
                         tracing::debug!("wp_viewport.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("wp_viewport.set_source");
-                        self.r#set_source(
+                        self.set_source(
                             client,
                             message.fixed()?,
                             message.fixed()?,
@@ -8050,7 +8000,7 @@ pub mod viewporter {
                     }
                     2 => {
                         tracing::debug!("wp_viewport.set_destination");
-                        self.r#set_destination(client, message.int()?, message.int()?)
+                        self.set_destination(client, message.int()?, message.int()?)
                             .await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -8058,7 +8008,7 @@ pub mod viewporter {
             }
             #[doc = r#"The associated wl_surface's crop and scale state is removed."#]
             #[doc = r#"The change is applied on the next wl_surface.commit."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Set the source rectangle of the associated wl_surface. See"#]
             #[doc = r#"wp_viewport for the description, and relation to the wl_buffer"#]
             #[doc = r#"size."#]
@@ -8070,13 +8020,13 @@ pub mod viewporter {
             #[doc = r#""#]
             #[doc = r#"The crop and scale state is double-buffered state, and will be"#]
             #[doc = r#"applied on the next wl_surface.commit."#]
-            async fn r#set_source(
+            async fn set_source(
                 &self,
                 client: &mut crate::Client,
-                r#x: crate::wire::Fixed,
-                r#y: crate::wire::Fixed,
-                r#width: crate::wire::Fixed,
-                r#height: crate::wire::Fixed,
+                set_source: crate::wire::Fixed,
+                set_source: crate::wire::Fixed,
+                set_source: crate::wire::Fixed,
+                set_source: crate::wire::Fixed,
             ) -> crate::Result<()>;
             #[doc = r#"Set the destination size of the associated wl_surface. See"#]
             #[doc = r#"wp_viewport for the description, and relation to the wl_buffer"#]
@@ -8089,11 +8039,11 @@ pub mod viewporter {
             #[doc = r#""#]
             #[doc = r#"The crop and scale state is double-buffered state, and will be"#]
             #[doc = r#"applied on the next wl_surface.commit."#]
-            async fn r#set_destination(
+            async fn set_destination(
                 &self,
                 client: &mut crate::Client,
-                r#width: i32,
-                r#height: i32,
+                set_destination: i32,
+                set_destination: i32,
             ) -> crate::Result<()>;
         }
     }
@@ -8103,7 +8053,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Given wl_surface has another role"#]
             Role = 0,
             #[doc = r#"Xdg_wm_base was destroyed before children"#]
@@ -8119,7 +8069,7 @@ pub mod xdg_shell {
             #[doc = r#"The client didn’t respond to a ping event in time"#]
             Unresponsive = 6,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8140,7 +8090,7 @@ pub mod xdg_shell {
         #[doc = r#"defines the basic functionality needed for clients and the compositor to"#]
         #[doc = r#"create windows that can be dragged, resized, maximized, etc, as well as"#]
         #[doc = r#"creating transient windows such as popup menus."#]
-        pub trait r#XdgWmBase: crate::Dispatcher {
+        pub trait XdgWmBase: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_wm_base";
             const VERSION: u32 = 6;
 
@@ -8161,11 +8111,11 @@ pub mod xdg_shell {
                 match message.opcode {
                     0 => {
                         tracing::debug!("xdg_wm_base.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("xdg_wm_base.create_positioner");
-                        self.r#create_positioner(
+                        self.create_positioner(
                             client,
                             message
                                 .object()?
@@ -8175,7 +8125,7 @@ pub mod xdg_shell {
                     }
                     2 => {
                         tracing::debug!("xdg_wm_base.get_xdg_surface");
-                        self.r#get_xdg_surface(
+                        self.get_xdg_surface(
                             client,
                             message
                                 .object()?
@@ -8188,7 +8138,7 @@ pub mod xdg_shell {
                     }
                     3 => {
                         tracing::debug!("xdg_wm_base.pong");
-                        self.r#pong(client, message.uint()?).await
+                        self.pong(client, message.uint()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -8198,14 +8148,14 @@ pub mod xdg_shell {
             #[doc = r#"Destroying a bound xdg_wm_base object while there are surfaces"#]
             #[doc = r#"still alive created by this xdg_wm_base object instance is illegal"#]
             #[doc = r#"and will result in a defunct_surfaces error."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Create a positioner object. A positioner object is used to position"#]
             #[doc = r#"surfaces relative to some parent surface. See the interface description"#]
             #[doc = r#"and xdg_surface.get_popup for details."#]
-            async fn r#create_positioner(
+            async fn create_positioner(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                create_positioner: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This creates an xdg_surface for the given surface. While xdg_surface"#]
             #[doc = r#"itself is not a role, the corresponding surface may only be assigned"#]
@@ -8220,16 +8170,16 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"See the documentation of xdg_surface for more details about what an"#]
             #[doc = r#"xdg_surface is and how it is used."#]
-            async fn r#get_xdg_surface(
+            async fn get_xdg_surface(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#surface: crate::wire::ObjectId,
+                get_xdg_surface: crate::wire::ObjectId,
+                get_xdg_surface: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"A client must respond to a ping event with a pong request or"#]
             #[doc = r#"the client may be deemed unresponsive. See xdg_wm_base.ping"#]
             #[doc = r#"and xdg_wm_base.error.unresponsive."#]
-            async fn r#pong(&self, client: &mut crate::Client, r#serial: u32) -> crate::Result<()>;
+            async fn pong(&self, client: &mut crate::Client, pong: u32) -> crate::Result<()>;
             #[doc = r#"The ping event asks the client if it's still alive. Pass the"#]
             #[doc = r#"serial specified in the event back to the compositor by sending"#]
             #[doc = r#"a "pong" request back with the specified serial. See xdg_wm_base.pong."#]
@@ -8243,7 +8193,7 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"A compositor is free to ping in any way it wants, but a client must"#]
             #[doc = r#"always respond to any xdg_wm_base object it created."#]
-            async fn r#ping(&self, client: &mut crate::Client, r#serial: u32) -> crate::Result<()> {
+            async fn ping(&self, client: &mut crate::Client, serial: u32) -> crate::Result<()> {
                 tracing::debug!("-> xdg_wm_base.ping");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
@@ -8257,11 +8207,11 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Invalid input provided"#]
             InvalidInput = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8274,7 +8224,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Anchor {
+        pub enum Anchor {
             None = 0,
             Top = 1,
             Bottom = 2,
@@ -8285,7 +8235,7 @@ pub mod xdg_shell {
             TopRight = 7,
             BottomRight = 8,
         }
-        impl TryFrom<u32> for r#Anchor {
+        impl TryFrom<u32> for Anchor {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8306,7 +8256,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Gravity {
+        pub enum Gravity {
             None = 0,
             Top = 1,
             Bottom = 2,
@@ -8317,7 +8267,7 @@ pub mod xdg_shell {
             TopRight = 7,
             BottomRight = 8,
         }
-        impl TryFrom<u32> for r#Gravity {
+        impl TryFrom<u32> for Gravity {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8348,9 +8298,9 @@ pub mod xdg_shell {
         #[doc = r#"Flip, 2) Slide, 3) Resize."#]
         bitflags::bitflags! {
             #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-            pub struct r#ConstraintAdjustment: u32 {const None = 0;const SlideX = 1;const SlideY = 2;const FlipX = 4;const FlipY = 8;const ResizeX = 16;const ResizeY = 32;}
+            pub struct ConstraintAdjustment: u32 {const None = 0;const SlideX = 1;const SlideY = 2;const FlipX = 4;const FlipY = 8;const ResizeX = 16;const ResizeY = 32;}
         }
-        impl TryFrom<u32> for r#ConstraintAdjustment {
+        impl TryFrom<u32> for ConstraintAdjustment {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8376,7 +8326,7 @@ pub mod xdg_shell {
         #[doc = r#"non-zero size set by set_size, and a non-zero anchor rectangle set by"#]
         #[doc = r#"set_anchor_rect. Passing an incomplete xdg_positioner object when"#]
         #[doc = r#"positioning a surface raises an invalid_positioner error."#]
-        pub trait r#XdgPositioner: crate::Dispatcher {
+        pub trait XdgPositioner: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_positioner";
             const VERSION: u32 = 6;
 
@@ -8397,16 +8347,15 @@ pub mod xdg_shell {
                 match message.opcode {
                     0 => {
                         tracing::debug!("xdg_positioner.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("xdg_positioner.set_size");
-                        self.r#set_size(client, message.int()?, message.int()?)
-                            .await
+                        self.set_size(client, message.int()?, message.int()?).await
                     }
                     2 => {
                         tracing::debug!("xdg_positioner.set_anchor_rect");
-                        self.r#set_anchor_rect(
+                        self.set_anchor_rect(
                             client,
                             message.int()?,
                             message.int()?,
@@ -8417,51 +8366,50 @@ pub mod xdg_shell {
                     }
                     3 => {
                         tracing::debug!("xdg_positioner.set_anchor");
-                        self.r#set_anchor(client, message.uint()?.try_into()?).await
+                        self.set_anchor(client, message.uint()?.try_into()?).await
                     }
                     4 => {
                         tracing::debug!("xdg_positioner.set_gravity");
-                        self.r#set_gravity(client, message.uint()?.try_into()?)
-                            .await
+                        self.set_gravity(client, message.uint()?.try_into()?).await
                     }
                     5 => {
                         tracing::debug!("xdg_positioner.set_constraint_adjustment");
-                        self.r#set_constraint_adjustment(client, message.uint()?.try_into()?)
+                        self.set_constraint_adjustment(client, message.uint()?.try_into()?)
                             .await
                     }
                     6 => {
                         tracing::debug!("xdg_positioner.set_offset");
-                        self.r#set_offset(client, message.int()?, message.int()?)
+                        self.set_offset(client, message.int()?, message.int()?)
                             .await
                     }
                     7 => {
                         tracing::debug!("xdg_positioner.set_reactive");
-                        self.r#set_reactive(client).await
+                        self.set_reactive(client).await
                     }
                     8 => {
                         tracing::debug!("xdg_positioner.set_parent_size");
-                        self.r#set_parent_size(client, message.int()?, message.int()?)
+                        self.set_parent_size(client, message.int()?, message.int()?)
                             .await
                     }
                     9 => {
                         tracing::debug!("xdg_positioner.set_parent_configure");
-                        self.r#set_parent_configure(client, message.uint()?).await
+                        self.set_parent_configure(client, message.uint()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"Notify the compositor that the xdg_positioner will no longer be used."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Set the size of the surface that is to be positioned with the positioner"#]
             #[doc = r#"object. The size is in surface-local coordinates and corresponds to the"#]
             #[doc = r#"window geometry. See xdg_surface.set_window_geometry."#]
             #[doc = r#""#]
             #[doc = r#"If a zero or negative size is set the invalid_input error is raised."#]
-            async fn r#set_size(
+            async fn set_size(
                 &self,
                 client: &mut crate::Client,
-                r#width: i32,
-                r#height: i32,
+                set_size: i32,
+                set_size: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Specify the anchor rectangle within the parent surface that the child"#]
             #[doc = r#"surface will be placed relative to. The rectangle is relative to the"#]
@@ -8473,13 +8421,13 @@ pub mod xdg_shell {
             #[doc = r#"positioned child's parent surface."#]
             #[doc = r#""#]
             #[doc = r#"If a negative size is set the invalid_input error is raised."#]
-            async fn r#set_anchor_rect(
+            async fn set_anchor_rect(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#width: i32,
-                r#height: i32,
+                set_anchor_rect: i32,
+                set_anchor_rect: i32,
+                set_anchor_rect: i32,
+                set_anchor_rect: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Defines the anchor point for the anchor rectangle. The specified anchor"#]
             #[doc = r#"is used derive an anchor point that the child surface will be"#]
@@ -8487,10 +8435,10 @@ pub mod xdg_shell {
             #[doc = r#"'bottom_right'), the anchor point will be at the specified corner;"#]
             #[doc = r#"otherwise, the derived anchor point will be centered on the specified"#]
             #[doc = r#"edge, or in the center of the anchor rectangle if no edge is specified."#]
-            async fn r#set_anchor(
+            async fn set_anchor(
                 &self,
                 client: &mut crate::Client,
-                r#anchor: Anchor,
+                set_anchor: Anchor,
             ) -> crate::Result<()>;
             #[doc = r#"Defines in what direction a surface should be positioned, relative to"#]
             #[doc = r#"the anchor point of the parent surface. If a corner gravity is"#]
@@ -8499,10 +8447,10 @@ pub mod xdg_shell {
             #[doc = r#"surface will be centered over the anchor point on any axis that had no"#]
             #[doc = r#"gravity specified. If the gravity is not in the ‘gravity’ enum, an"#]
             #[doc = r#"invalid_input error is raised."#]
-            async fn r#set_gravity(
+            async fn set_gravity(
                 &self,
                 client: &mut crate::Client,
-                r#gravity: Gravity,
+                set_gravity: Gravity,
             ) -> crate::Result<()>;
             #[doc = r#"Specify how the window should be positioned if the originally intended"#]
             #[doc = r#"position caused the surface to be constrained, meaning at least"#]
@@ -8517,10 +8465,10 @@ pub mod xdg_shell {
             #[doc = r#"are applied is specified in the corresponding adjustment descriptions."#]
             #[doc = r#""#]
             #[doc = r#"The default adjustment is none."#]
-            async fn r#set_constraint_adjustment(
+            async fn set_constraint_adjustment(
                 &self,
                 client: &mut crate::Client,
-                r#constraint_adjustment: ConstraintAdjustment,
+                set_constraint_adjustment: ConstraintAdjustment,
             ) -> crate::Result<()>;
             #[doc = r#"Specify the surface position offset relative to the position of the"#]
             #[doc = r#"anchor on the anchor rectangle and the anchor on the surface. For"#]
@@ -8533,11 +8481,11 @@ pub mod xdg_shell {
             #[doc = r#"An example use case is placing a popup menu on top of a user interface"#]
             #[doc = r#"element, while aligning the user interface element of the parent surface"#]
             #[doc = r#"with some user interface element placed somewhere in the popup surface."#]
-            async fn r#set_offset(
+            async fn set_offset(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
+                set_offset: i32,
+                set_offset: i32,
             ) -> crate::Result<()>;
             #[doc = r#"When set reactive, the surface is reconstrained if the conditions used"#]
             #[doc = r#"for constraining changed, e.g. the parent window moved."#]
@@ -8545,7 +8493,7 @@ pub mod xdg_shell {
             #[doc = r#"If the conditions changed and the popup was reconstrained, an"#]
             #[doc = r#"xdg_popup.configure event is sent with updated geometry, followed by an"#]
             #[doc = r#"xdg_surface.configure event."#]
-            async fn r#set_reactive(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn set_reactive(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Set the parent window geometry the compositor should use when"#]
             #[doc = r#"positioning the popup. The compositor may use this information to"#]
             #[doc = r#"determine the future state the popup should be constrained using. If"#]
@@ -8553,20 +8501,20 @@ pub mod xdg_shell {
             #[doc = r#"positioned against, the behavior is undefined."#]
             #[doc = r#""#]
             #[doc = r#"The arguments are given in the surface-local coordinate space."#]
-            async fn r#set_parent_size(
+            async fn set_parent_size(
                 &self,
                 client: &mut crate::Client,
-                r#parent_width: i32,
-                r#parent_height: i32,
+                set_parent_size: i32,
+                set_parent_size: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Set the serial of an xdg_surface.configure event this positioner will be"#]
             #[doc = r#"used in response to. The compositor may use this information together"#]
             #[doc = r#"with set_parent_size to determine what future state the popup should be"#]
             #[doc = r#"constrained using."#]
-            async fn r#set_parent_configure(
+            async fn set_parent_configure(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
+                set_parent_configure: u32,
             ) -> crate::Result<()>;
         }
     }
@@ -8574,7 +8522,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Surface was not fully constructed"#]
             NotConstructed = 1,
             #[doc = r#"Surface was already constructed"#]
@@ -8588,7 +8536,7 @@ pub mod xdg_shell {
             #[doc = r#"Surface was destroyed before its role object"#]
             DefunctRoleObject = 6,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8650,7 +8598,7 @@ pub mod xdg_shell {
         #[doc = r#"of the 3 required conditions for mapping a surface if its role surface"#]
         #[doc = r#"has not been destroyed, i.e. the client must perform the initial commit"#]
         #[doc = r#"again before attaching a buffer."#]
-        pub trait r#XdgSurface: crate::Dispatcher {
+        pub trait XdgSurface: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_surface";
             const VERSION: u32 = 6;
 
@@ -8671,11 +8619,11 @@ pub mod xdg_shell {
                 match message.opcode {
                     0 => {
                         tracing::debug!("xdg_surface.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("xdg_surface.get_toplevel");
-                        self.r#get_toplevel(
+                        self.get_toplevel(
                             client,
                             message
                                 .object()?
@@ -8685,7 +8633,7 @@ pub mod xdg_shell {
                     }
                     2 => {
                         tracing::debug!("xdg_surface.get_popup");
-                        self.r#get_popup(
+                        self.get_popup(
                             client,
                             message
                                 .object()?
@@ -8699,7 +8647,7 @@ pub mod xdg_shell {
                     }
                     3 => {
                         tracing::debug!("xdg_surface.set_window_geometry");
-                        self.r#set_window_geometry(
+                        self.set_window_geometry(
                             client,
                             message.int()?,
                             message.int()?,
@@ -8710,7 +8658,7 @@ pub mod xdg_shell {
                     }
                     4 => {
                         tracing::debug!("xdg_surface.ack_configure");
-                        self.r#ack_configure(client, message.uint()?).await
+                        self.ack_configure(client, message.uint()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
@@ -8718,16 +8666,16 @@ pub mod xdg_shell {
             #[doc = r#"Destroy the xdg_surface object. An xdg_surface must only be destroyed"#]
             #[doc = r#"after its role object has been destroyed, otherwise"#]
             #[doc = r#"a defunct_role_object error is raised."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This creates an xdg_toplevel object for the given xdg_surface and gives"#]
             #[doc = r#"the associated wl_surface the xdg_toplevel role."#]
             #[doc = r#""#]
             #[doc = r#"See the documentation of xdg_toplevel for more details about what an"#]
             #[doc = r#"xdg_toplevel is and how it is used."#]
-            async fn r#get_toplevel(
+            async fn get_toplevel(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
+                get_toplevel: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This creates an xdg_popup object for the given xdg_surface and gives"#]
             #[doc = r#"the associated wl_surface the xdg_popup role."#]
@@ -8737,12 +8685,12 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"See the documentation of xdg_popup for more details about what an"#]
             #[doc = r#"xdg_popup is and how it is used."#]
-            async fn r#get_popup(
+            async fn get_popup(
                 &self,
                 client: &mut crate::Client,
-                r#id: crate::wire::ObjectId,
-                r#parent: Option<crate::wire::ObjectId>,
-                r#positioner: crate::wire::ObjectId,
+                get_popup: crate::wire::ObjectId,
+                get_popup: Option<crate::wire::ObjectId>,
+                get_popup: crate::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The window geometry of a surface is its "visible bounds" from the"#]
             #[doc = r#"user's perspective. Client-side decorations often have invisible"#]
@@ -8782,13 +8730,13 @@ pub mod xdg_shell {
             #[doc = r#"The width and height of the effective window geometry must be"#]
             #[doc = r#"greater than zero. Setting an invalid size will raise an"#]
             #[doc = r#"invalid_size error."#]
-            async fn r#set_window_geometry(
+            async fn set_window_geometry(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#width: i32,
-                r#height: i32,
+                set_window_geometry: i32,
+                set_window_geometry: i32,
+                set_window_geometry: i32,
+                set_window_geometry: i32,
             ) -> crate::Result<()>;
             #[doc = r#"When a configure event is received, if a client commits the"#]
             #[doc = r#"surface in response to the configure event, then the client"#]
@@ -8822,10 +8770,10 @@ pub mod xdg_shell {
             #[doc = r#"request referencing a serial from a configure event issued before the"#]
             #[doc = r#"event identified by the last ack_configure request for the same"#]
             #[doc = r#"xdg_surface. Doing so will raise an invalid_serial error."#]
-            async fn r#ack_configure(
+            async fn ack_configure(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
+                ack_configure: u32,
             ) -> crate::Result<()>;
             #[doc = r#"The configure event marks the end of a configure sequence. A configure"#]
             #[doc = r#"sequence is a set of one or more events configuring the state of the"#]
@@ -8843,10 +8791,10 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"If the client receives multiple configure events before it can respond"#]
             #[doc = r#"to one, it is free to discard all but the last event it received."#]
-            async fn r#configure(
+            async fn configure(
                 &self,
                 client: &mut crate::Client,
-                r#serial: u32,
+                serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_surface.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
@@ -8861,7 +8809,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Provided value is"#]
             #[doc = r#"Not a valid variant of the resize_edge enum"#]
             InvalidResizeEdge = 0,
@@ -8870,7 +8818,7 @@ pub mod xdg_shell {
             #[doc = r#"Client provided an invalid min or max size"#]
             InvalidSize = 2,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8887,7 +8835,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#ResizeEdge {
+        pub enum ResizeEdge {
             None = 0,
             Top = 1,
             Bottom = 2,
@@ -8898,7 +8846,7 @@ pub mod xdg_shell {
             TopRight = 9,
             BottomRight = 10,
         }
-        impl TryFrom<u32> for r#ResizeEdge {
+        impl TryFrom<u32> for ResizeEdge {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8926,7 +8874,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#State {
+        pub enum State {
             #[doc = r#"The surface is maximized"#]
             Maximized = 1,
             #[doc = r#"The surface is fullscreen"#]
@@ -8941,7 +8889,7 @@ pub mod xdg_shell {
             TiledBottom = 8,
             Suspended = 9,
         }
-        impl TryFrom<u32> for r#State {
+        impl TryFrom<u32> for State {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -8962,7 +8910,7 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#WmCapabilities {
+        pub enum WmCapabilities {
             #[doc = r#"Show_window_menu is available"#]
             WindowMenu = 1,
             #[doc = r#"Set_maximized and unset_maximized are available"#]
@@ -8972,7 +8920,7 @@ pub mod xdg_shell {
             #[doc = r#"Set_minimized is available"#]
             Minimize = 4,
         }
-        impl TryFrom<u32> for r#WmCapabilities {
+        impl TryFrom<u32> for WmCapabilities {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -9006,7 +8954,7 @@ pub mod xdg_shell {
         #[doc = r#"xdg_surface description)."#]
         #[doc = r#""#]
         #[doc = r#"Attaching a null buffer to a toplevel unmaps the surface."#]
-        pub trait r#XdgToplevel: crate::Dispatcher {
+        pub trait XdgToplevel: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_toplevel";
             const VERSION: u32 = 6;
 
@@ -9027,15 +8975,15 @@ pub mod xdg_shell {
                 match message.opcode {
                     0 => {
                         tracing::debug!("xdg_toplevel.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("xdg_toplevel.set_parent");
-                        self.r#set_parent(client, message.object()?).await
+                        self.set_parent(client, message.object()?).await
                     }
                     2 => {
                         tracing::debug!("xdg_toplevel.set_title");
-                        self.r#set_title(
+                        self.set_title(
                             client,
                             message
                                 .string()?
@@ -9045,7 +8993,7 @@ pub mod xdg_shell {
                     }
                     3 => {
                         tracing::debug!("xdg_toplevel.set_app_id");
-                        self.r#set_app_id(
+                        self.set_app_id(
                             client,
                             message
                                 .string()?
@@ -9055,7 +9003,7 @@ pub mod xdg_shell {
                     }
                     4 => {
                         tracing::debug!("xdg_toplevel.show_window_menu");
-                        self.r#show_window_menu(
+                        self.show_window_menu(
                             client,
                             message
                                 .object()?
@@ -9079,7 +9027,7 @@ pub mod xdg_shell {
                     }
                     6 => {
                         tracing::debug!("xdg_toplevel.resize");
-                        self.r#resize(
+                        self.resize(
                             client,
                             message
                                 .object()?
@@ -9091,40 +9039,40 @@ pub mod xdg_shell {
                     }
                     7 => {
                         tracing::debug!("xdg_toplevel.set_max_size");
-                        self.r#set_max_size(client, message.int()?, message.int()?)
+                        self.set_max_size(client, message.int()?, message.int()?)
                             .await
                     }
                     8 => {
                         tracing::debug!("xdg_toplevel.set_min_size");
-                        self.r#set_min_size(client, message.int()?, message.int()?)
+                        self.set_min_size(client, message.int()?, message.int()?)
                             .await
                     }
                     9 => {
                         tracing::debug!("xdg_toplevel.set_maximized");
-                        self.r#set_maximized(client).await
+                        self.set_maximized(client).await
                     }
                     10 => {
                         tracing::debug!("xdg_toplevel.unset_maximized");
-                        self.r#unset_maximized(client).await
+                        self.unset_maximized(client).await
                     }
                     11 => {
                         tracing::debug!("xdg_toplevel.set_fullscreen");
-                        self.r#set_fullscreen(client, message.object()?).await
+                        self.set_fullscreen(client, message.object()?).await
                     }
                     12 => {
                         tracing::debug!("xdg_toplevel.unset_fullscreen");
-                        self.r#unset_fullscreen(client).await
+                        self.unset_fullscreen(client).await
                     }
                     13 => {
                         tracing::debug!("xdg_toplevel.set_minimized");
-                        self.r#set_minimized(client).await
+                        self.set_minimized(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
             #[doc = r#"This request destroys the role surface and unmaps the surface;"#]
             #[doc = r#"see "Unmapping" behavior in interface section for details."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Set the "parent" of this surface. This surface should be stacked"#]
             #[doc = r#"above the parent surface and all other ancestor surfaces."#]
             #[doc = r#""#]
@@ -9145,10 +9093,10 @@ pub mod xdg_shell {
             #[doc = r#"The parent toplevel must not be one of the child toplevel's"#]
             #[doc = r#"descendants, and the parent must be different from the child toplevel,"#]
             #[doc = r#"otherwise the invalid_parent protocol error is raised."#]
-            async fn r#set_parent(
+            async fn set_parent(
                 &self,
                 client: &mut crate::Client,
-                r#parent: Option<crate::wire::ObjectId>,
+                set_parent: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Set a short title for the surface."#]
             #[doc = r#""#]
@@ -9157,10 +9105,10 @@ pub mod xdg_shell {
             #[doc = r#"compositor."#]
             #[doc = r#""#]
             #[doc = r#"The string must be encoded in UTF-8."#]
-            async fn r#set_title(
+            async fn set_title(
                 &self,
                 client: &mut crate::Client,
-                r#title: String,
+                set_title: String,
             ) -> crate::Result<()>;
             #[doc = r#"Set an application identifier for the surface."#]
             #[doc = r#""#]
@@ -9185,10 +9133,10 @@ pub mod xdg_shell {
             #[doc = r#"names and .desktop files."#]
             #[doc = r#""#]
             #[doc = r#"[0] https://standards.freedesktop.org/desktop-entry-spec/"#]
-            async fn r#set_app_id(
+            async fn set_app_id(
                 &self,
                 client: &mut crate::Client,
-                r#app_id: String,
+                set_app_id: String,
             ) -> crate::Result<()>;
             #[doc = r#"Clients implementing client-side decorations might want to show"#]
             #[doc = r#"a context menu when right-clicking on the decorations, giving the"#]
@@ -9202,13 +9150,13 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"This request must be used in response to some sort of user action"#]
             #[doc = r#"like a button press, key press, or touch down event."#]
-            async fn r#show_window_menu(
+            async fn show_window_menu(
                 &self,
                 client: &mut crate::Client,
-                r#seat: crate::wire::ObjectId,
-                r#serial: u32,
-                r#x: i32,
-                r#y: i32,
+                show_window_menu: crate::wire::ObjectId,
+                show_window_menu: u32,
+                show_window_menu: i32,
+                show_window_menu: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Start an interactive, user-driven move of the surface."#]
             #[doc = r#""#]
@@ -9229,8 +9177,8 @@ pub mod xdg_shell {
             async fn r#move(
                 &self,
                 client: &mut crate::Client,
-                r#seat: crate::wire::ObjectId,
-                r#serial: u32,
+                r#move: crate::wire::ObjectId,
+                r#move: u32,
             ) -> crate::Result<()>;
             #[doc = r#"Start a user-driven, interactive resize of the surface."#]
             #[doc = r#""#]
@@ -9263,12 +9211,12 @@ pub mod xdg_shell {
             #[doc = r#"for example when dragging the top left corner. The compositor may also"#]
             #[doc = r#"use this information to adapt its behavior, e.g. choose an appropriate"#]
             #[doc = r#"cursor image."#]
-            async fn r#resize(
+            async fn resize(
                 &self,
                 client: &mut crate::Client,
-                r#seat: crate::wire::ObjectId,
-                r#serial: u32,
-                r#edges: ResizeEdge,
+                resize: crate::wire::ObjectId,
+                resize: u32,
+                resize: ResizeEdge,
             ) -> crate::Result<()>;
             #[doc = r#"Set a maximum size for the window."#]
             #[doc = r#""#]
@@ -9304,11 +9252,11 @@ pub mod xdg_shell {
             #[doc = r#"The width and height must be greater than or equal to zero. Using"#]
             #[doc = r#"strictly negative values for width or height will result in a"#]
             #[doc = r#"invalid_size error."#]
-            async fn r#set_max_size(
+            async fn set_max_size(
                 &self,
                 client: &mut crate::Client,
-                r#width: i32,
-                r#height: i32,
+                set_max_size: i32,
+                set_max_size: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Set a minimum size for the window."#]
             #[doc = r#""#]
@@ -9344,11 +9292,11 @@ pub mod xdg_shell {
             #[doc = r#"The width and height must be greater than or equal to zero. Using"#]
             #[doc = r#"strictly negative values for width and height will result in a"#]
             #[doc = r#"invalid_size error."#]
-            async fn r#set_min_size(
+            async fn set_min_size(
                 &self,
                 client: &mut crate::Client,
-                r#width: i32,
-                r#height: i32,
+                set_min_size: i32,
+                set_min_size: i32,
             ) -> crate::Result<()>;
             #[doc = r#"Maximize the surface."#]
             #[doc = r#""#]
@@ -9369,7 +9317,7 @@ pub mod xdg_shell {
             #[doc = r#"If the surface is in a fullscreen state, this request has no direct"#]
             #[doc = r#"effect. It may alter the state the surface is returned to when"#]
             #[doc = r#"unmaximized unless overridden by the compositor."#]
-            async fn r#set_maximized(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn set_maximized(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Unmaximize the surface."#]
             #[doc = r#""#]
             #[doc = r#"After requesting that the surface should be unmaximized, the compositor"#]
@@ -9391,7 +9339,7 @@ pub mod xdg_shell {
             #[doc = r#"If the surface is in a fullscreen state, this request has no direct"#]
             #[doc = r#"effect. It may alter the state the surface is returned to when"#]
             #[doc = r#"unmaximized unless overridden by the compositor."#]
-            async fn r#unset_maximized(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn unset_maximized(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Make the surface fullscreen."#]
             #[doc = r#""#]
             #[doc = r#"After requesting that the surface should be fullscreened, the"#]
@@ -9415,10 +9363,10 @@ pub mod xdg_shell {
             #[doc = r#"sure that other screen content not part of the same surface tree (made"#]
             #[doc = r#"up of subsurfaces, popups or similarly coupled surfaces) are not"#]
             #[doc = r#"visible below the fullscreened surface."#]
-            async fn r#set_fullscreen(
+            async fn set_fullscreen(
                 &self,
                 client: &mut crate::Client,
-                r#output: Option<crate::wire::ObjectId>,
+                set_fullscreen: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Make the surface no longer fullscreen."#]
             #[doc = r#""#]
@@ -9437,7 +9385,7 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"The client must also acknowledge the configure when committing the new"#]
             #[doc = r#"content (see ack_configure)."#]
-            async fn r#unset_fullscreen(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn unset_fullscreen(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Request that the compositor minimize your surface. There is no"#]
             #[doc = r#"way to know if the surface is currently minimized, nor is there"#]
             #[doc = r#"any way to unset minimization on this surface."#]
@@ -9446,7 +9394,7 @@ pub mod xdg_shell {
             #[doc = r#"instead use the wl_surface.frame event for this, as this will"#]
             #[doc = r#"also work with live previews on windows in Alt-Tab, Expose or"#]
             #[doc = r#"similar compositor features."#]
-            async fn r#set_minimized(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn set_minimized(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This configure event asks the client to resize its toplevel surface or"#]
             #[doc = r#"to change its state. The configured state should not be applied"#]
             #[doc = r#"immediately. See xdg_surface.configure for details."#]
@@ -9466,12 +9414,12 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"Clients must send an ack_configure in response to this event. See"#]
             #[doc = r#"xdg_surface.configure and xdg_surface.ack_configure for details."#]
-            async fn r#configure(
+            async fn configure(
                 &self,
                 client: &mut crate::Client,
-                r#width: i32,
-                r#height: i32,
-                r#states: Vec<u8>,
+                width: i32,
+                height: i32,
+                states: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -9492,7 +9440,7 @@ pub mod xdg_shell {
             #[doc = r#"This is only a request that the user intends to close the"#]
             #[doc = r#"window. The client may choose to ignore this request, or show"#]
             #[doc = r#"a dialog to ask the user to save their data, etc."#]
-            async fn r#close(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn close(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel.close");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -9515,11 +9463,11 @@ pub mod xdg_shell {
             #[doc = r#"The bounds may change at any point, and in such a case, a new"#]
             #[doc = r#"xdg_toplevel.configure_bounds will be sent, followed by"#]
             #[doc = r#"xdg_toplevel.configure and xdg_surface.configure."#]
-            async fn r#configure_bounds(
+            async fn configure_bounds(
                 &self,
                 client: &mut crate::Client,
-                r#width: i32,
-                r#height: i32,
+                width: i32,
+                height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel.configure_bounds");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -9551,10 +9499,10 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"The capabilities are sent as an array of 32-bit unsigned integers in"#]
             #[doc = r#"native endianness."#]
-            async fn r#wm_capabilities(
+            async fn wm_capabilities(
                 &self,
                 client: &mut crate::Client,
-                r#capabilities: Vec<u8>,
+                capabilities: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel.wm_capabilities");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -9571,11 +9519,11 @@ pub mod xdg_shell {
         #[repr(u32)]
         #[non_exhaustive]
         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-        pub enum r#Error {
+        pub enum Error {
             #[doc = r#"Tried to grab after being mapped"#]
             InvalidGrab = 0,
         }
-        impl TryFrom<u32> for r#Error {
+        impl TryFrom<u32> for Error {
             type Error = crate::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
@@ -9609,7 +9557,7 @@ pub mod xdg_shell {
         #[doc = r#""#]
         #[doc = r#"The client must call wl_surface.commit on the corresponding wl_surface"#]
         #[doc = r#"for the xdg_popup state to take effect."#]
-        pub trait r#XdgPopup: crate::Dispatcher {
+        pub trait XdgPopup: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_popup";
             const VERSION: u32 = 6;
 
@@ -9630,11 +9578,11 @@ pub mod xdg_shell {
                 match message.opcode {
                     0 => {
                         tracing::debug!("xdg_popup.destroy");
-                        self.r#destroy(client).await
+                        self.destroy(client).await
                     }
                     1 => {
                         tracing::debug!("xdg_popup.grab");
-                        self.r#grab(
+                        self.grab(
                             client,
                             message
                                 .object()?
@@ -9645,7 +9593,7 @@ pub mod xdg_shell {
                     }
                     2 => {
                         tracing::debug!("xdg_popup.reposition");
-                        self.r#reposition(
+                        self.reposition(
                             client,
                             message
                                 .object()?
@@ -9662,7 +9610,7 @@ pub mod xdg_shell {
             #[doc = r#""#]
             #[doc = r#"If this xdg_popup is not the "topmost" popup, the"#]
             #[doc = r#"xdg_wm_base.not_the_topmost_popup protocol error will be sent."#]
-            async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
+            async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This request makes the created popup take an explicit grab. An explicit"#]
             #[doc = r#"grab will be dismissed when the user dismisses the popup, or when the"#]
             #[doc = r#"client destroys the xdg_popup. This can be done by the user clicking"#]
@@ -9700,11 +9648,11 @@ pub mod xdg_shell {
             #[doc = r#"and touch events for all their surfaces as normal (similar to an"#]
             #[doc = r#""owner-events" grab in X11 parlance), while the top most grabbing popup"#]
             #[doc = r#"will always have keyboard focus."#]
-            async fn r#grab(
+            async fn grab(
                 &self,
                 client: &mut crate::Client,
-                r#seat: crate::wire::ObjectId,
-                r#serial: u32,
+                grab: crate::wire::ObjectId,
+                grab: u32,
             ) -> crate::Result<()>;
             #[doc = r#"Reposition an already-mapped popup. The popup will be placed given the"#]
             #[doc = r#"details in the passed xdg_positioner object, and a"#]
@@ -9729,11 +9677,11 @@ pub mod xdg_shell {
             #[doc = r#"If the popup is repositioned together with a parent that is being"#]
             #[doc = r#"resized, but not in response to a configure event, the client should"#]
             #[doc = r#"send an xdg_positioner.set_parent_size request."#]
-            async fn r#reposition(
+            async fn reposition(
                 &self,
                 client: &mut crate::Client,
-                r#positioner: crate::wire::ObjectId,
-                r#token: u32,
+                reposition: crate::wire::ObjectId,
+                reposition: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This event asks the popup surface to configure itself given the"#]
             #[doc = r#"configuration. The configured state should not be applied immediately."#]
@@ -9747,13 +9695,13 @@ pub mod xdg_shell {
             #[doc = r#"ever sent once for the initial configuration. Starting with version 3,"#]
             #[doc = r#"it may be sent again if the popup is setup with an xdg_positioner with"#]
             #[doc = r#"set_reactive requested, or in response to xdg_popup.reposition requests."#]
-            async fn r#configure(
+            async fn configure(
                 &self,
                 client: &mut crate::Client,
-                r#x: i32,
-                r#y: i32,
-                r#width: i32,
-                r#height: i32,
+                x: i32,
+                y: i32,
+                width: i32,
+                height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_popup.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
@@ -9770,7 +9718,7 @@ pub mod xdg_shell {
             #[doc = r#"The popup_done event is sent out when a popup is dismissed by the"#]
             #[doc = r#"compositor. The client should destroy the xdg_popup object at this"#]
             #[doc = r#"point."#]
-            async fn r#popup_done(&self, client: &mut crate::Client) -> crate::Result<()> {
+            async fn popup_done(&self, client: &mut crate::Client) -> crate::Result<()> {
                 tracing::debug!("-> xdg_popup.popup_done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
@@ -9793,10 +9741,10 @@ pub mod xdg_shell {
             #[doc = r#"The client should optionally update the content of the popup, but must"#]
             #[doc = r#"acknowledge the new popup configuration for the new position to take"#]
             #[doc = r#"effect. See xdg_surface.ack_configure for details."#]
-            async fn r#repositioned(
+            async fn repositioned(
                 &self,
                 client: &mut crate::Client,
-                r#token: u32,
+                token: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_popup.repositioned");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(token).build();

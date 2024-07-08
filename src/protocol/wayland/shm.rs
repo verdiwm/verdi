@@ -32,7 +32,7 @@ impl WlShm for Shm {
         self.id
     }
 
-    async fn r#create_pool(
+    async fn create_pool(
         &self,
         client: &mut Client,
         id: ObjectId,
@@ -47,7 +47,7 @@ impl WlShm for Shm {
         Ok(())
     }
 
-    async fn r#release(&self, _client: &mut Client) -> Result<()> {
+    async fn release(&self, _client: &mut Client) -> Result<()> {
         todo!()
     }
 }

@@ -51,11 +51,11 @@ impl WlSurface for Surface {
         self.id
     }
 
-    async fn r#destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#attach(
+    async fn attach(
         &self,
         _client: &mut crate::Client,
         _buffer: Option<crate::wire::ObjectId>,
@@ -65,7 +65,7 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#damage(
+    async fn damage(
         &self,
         _client: &mut crate::Client,
         _x: i32,
@@ -76,7 +76,7 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#frame(
+    async fn frame(
         &self,
         _client: &mut crate::Client,
         _callback: crate::wire::ObjectId,
@@ -84,7 +84,7 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#set_opaque_region(
+    async fn set_opaque_region(
         &self,
         _client: &mut crate::Client,
         _region: Option<crate::wire::ObjectId>,
@@ -92,7 +92,7 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#set_input_region(
+    async fn set_input_region(
         &self,
         _client: &mut crate::Client,
         _region: Option<crate::wire::ObjectId>,
@@ -100,13 +100,13 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#commit(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn commit(&self, _client: &mut crate::Client) -> crate::Result<()> {
         // FIXME: commit state
 
         Ok(())
     }
 
-    async fn r#set_buffer_transform(
+    async fn set_buffer_transform(
         &self,
         _client: &mut crate::Client,
         _transform: crate::protocol::interfaces::wayland::wl_output::Transform,
@@ -114,7 +114,7 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#set_buffer_scale(
+    async fn set_buffer_scale(
         &self,
         _client: &mut crate::Client,
         _scale: i32,
@@ -122,7 +122,7 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#damage_buffer(
+    async fn damage_buffer(
         &self,
         _client: &mut crate::Client,
         _x: i32,
@@ -133,7 +133,7 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn r#offset(&self, _client: &mut crate::Client, _x: i32, _y: i32) -> crate::Result<()> {
+    async fn offset(&self, _client: &mut crate::Client, _x: i32, _y: i32) -> crate::Result<()> {
         todo!()
     }
 }
