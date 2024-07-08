@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{
+    protocol::wayland::surface::{Surface, WlSurface},
     wire::{Message, ObjectId},
     Client, Dispatcher, Result,
 };
@@ -23,8 +24,10 @@ impl WlCompositor for Compositor {
         self.id
     }
 
-    async fn r#create_surface(&self, _client: &mut Client, _id: ObjectId) -> Result<()> {
-        todo!()
+    async fn r#create_surface(&self, client: &mut Client, id: ObjectId) -> Result<()> {
+        client.insert(id, Surface::new(id).into_dispatcher());
+
+        Ok(())
     }
 
     async fn r#create_region(&self, _client: &mut Client, _id: ObjectId) -> Result<()> {
