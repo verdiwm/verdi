@@ -41,7 +41,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_display -> sync");
+                        tracing::debug!("wl_display.sync");
                         Self::r#sync(
                             client,
                             message
@@ -51,7 +51,7 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_display -> get_registry");
+                        tracing::debug!("wl_display.get_registry");
                         Self::r#get_registry(
                             client,
                             message
@@ -106,7 +106,7 @@ pub mod wayland {
                 r#code: u32,
                 r#message: String,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_display -> error");
+                tracing::debug!("-> wl_display.error");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(object_id))
                     .put_uint(code)
@@ -127,7 +127,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#id: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_display -> delete_id");
+                tracing::debug!("-> wl_display.delete_id");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(id).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
@@ -166,7 +166,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_registry -> bind");
+                        tracing::debug!("wl_registry.bind");
                         Self::r#bind(client, message.uint()?, message.new_id()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -192,7 +192,7 @@ pub mod wayland {
                 r#interface: String,
                 r#version: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_registry -> global");
+                tracing::debug!("-> wl_registry.global");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(name)
                     .put_string(Some(interface))
@@ -218,7 +218,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#name: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_registry -> global_remove");
+                tracing::debug!("-> wl_registry.global_remove");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(name).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
@@ -251,7 +251,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#callback_data: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_callback -> done");
+                tracing::debug!("-> wl_callback.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(callback_data)
                     .build();
@@ -275,7 +275,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_compositor -> create_surface");
+                        tracing::debug!("wl_compositor.create_surface");
                         Self::r#create_surface(
                             client,
                             message
@@ -285,7 +285,7 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_compositor -> create_region");
+                        tracing::debug!("wl_compositor.create_region");
                         Self::r#create_region(
                             client,
                             message
@@ -327,7 +327,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_shm_pool -> create_buffer");
+                        tracing::debug!("wl_shm_pool.create_buffer");
                         Self::r#create_buffer(
                             client,
                             message
@@ -342,11 +342,11 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_shm_pool -> destroy");
+                        tracing::debug!("wl_shm_pool.destroy");
                         Self::r#destroy(client).await
                     }
                     2 => {
-                        tracing::debug!("wl_shm_pool -> resize");
+                        tracing::debug!("wl_shm_pool.resize");
                         Self::r#resize(client, message.int()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -818,7 +818,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_shm -> create_pool");
+                        tracing::debug!("wl_shm.create_pool");
                         Self::r#create_pool(
                             client,
                             message
@@ -830,7 +830,7 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_shm -> release");
+                        tracing::debug!("wl_shm.release");
                         Self::r#release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -861,7 +861,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#format: Format,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_shm -> format");
+                tracing::debug!("-> wl_shm.format");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(format as u32)
                     .build();
@@ -897,7 +897,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_buffer -> destroy");
+                        tracing::debug!("wl_buffer.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -925,7 +925,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_buffer -> release");
+                tracing::debug!("-> wl_buffer.release");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
@@ -976,11 +976,11 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_data_offer -> accept");
+                        tracing::debug!("wl_data_offer.accept");
                         Self::r#accept(client, message.uint()?, message.string()?).await
                     }
                     1 => {
-                        tracing::debug!("wl_data_offer -> receive");
+                        tracing::debug!("wl_data_offer.receive");
                         Self::r#receive(
                             client,
                             message
@@ -991,15 +991,15 @@ pub mod wayland {
                         .await
                     }
                     2 => {
-                        tracing::debug!("wl_data_offer -> destroy");
+                        tracing::debug!("wl_data_offer.destroy");
                         Self::r#destroy(client).await
                     }
                     3 => {
-                        tracing::debug!("wl_data_offer -> finish");
+                        tracing::debug!("wl_data_offer.finish");
                         Self::r#finish(client).await
                     }
                     4 => {
-                        tracing::debug!("wl_data_offer -> set_actions");
+                        tracing::debug!("wl_data_offer.set_actions");
                         Self::r#set_actions(
                             client,
                             message.uint()?.try_into()?,
@@ -1110,7 +1110,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#mime_type: String,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_offer -> offer");
+                tracing::debug!("-> wl_data_offer.offer");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(mime_type))
                     .build();
@@ -1128,7 +1128,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#source_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_offer -> source_actions");
+                tracing::debug!("-> wl_data_offer.source_actions");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(source_actions.bits())
                     .build();
@@ -1177,7 +1177,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_offer -> action");
+                tracing::debug!("-> wl_data_offer.action");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(dnd_action.bits())
                     .build();
@@ -1222,7 +1222,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_data_source -> offer");
+                        tracing::debug!("wl_data_source.offer");
                         Self::r#offer(
                             client,
                             message
@@ -1232,11 +1232,11 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_data_source -> destroy");
+                        tracing::debug!("wl_data_source.destroy");
                         Self::r#destroy(client).await
                     }
                     2 => {
-                        tracing::debug!("wl_data_source -> set_actions");
+                        tracing::debug!("wl_data_source.set_actions");
                         Self::r#set_actions(client, message.uint()?.try_into()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -1275,7 +1275,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#mime_type: Option<String>,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_source -> target");
+                tracing::debug!("-> wl_data_source.target");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(mime_type)
                     .build();
@@ -1293,7 +1293,7 @@ pub mod wayland {
                 r#mime_type: String,
                 r#fd: std::os::fd::RawFd,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_source -> send");
+                tracing::debug!("-> wl_data_source.send");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(mime_type))
                     .put_fd(fd)
@@ -1327,7 +1327,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_source -> cancelled");
+                tracing::debug!("-> wl_data_source.cancelled");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -1347,7 +1347,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_source -> dnd_drop_performed");
+                tracing::debug!("-> wl_data_source.dnd_drop_performed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -1364,7 +1364,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_source -> dnd_finished");
+                tracing::debug!("-> wl_data_source.dnd_finished");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
@@ -1401,7 +1401,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_source -> action");
+                tracing::debug!("-> wl_data_source.action");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(dnd_action.bits())
                     .build();
@@ -1447,7 +1447,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_data_device -> start_drag");
+                        tracing::debug!("wl_data_device.start_drag");
                         Self::r#start_drag(
                             client,
                             message.object()?,
@@ -1460,11 +1460,11 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_data_device -> set_selection");
+                        tracing::debug!("wl_data_device.set_selection");
                         Self::r#set_selection(client, message.object()?, message.uint()?).await
                     }
                     2 => {
-                        tracing::debug!("wl_data_device -> release");
+                        tracing::debug!("wl_data_device.release");
                         Self::r#release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -1534,7 +1534,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_device -> data_offer");
+                tracing::debug!("-> wl_data_device.data_offer");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
@@ -1556,7 +1556,7 @@ pub mod wayland {
                 r#y: crate::wire::Fixed,
                 r#id: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_device -> enter");
+                tracing::debug!("-> wl_data_device.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
@@ -1576,7 +1576,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_device -> leave");
+                tracing::debug!("-> wl_data_device.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -1594,7 +1594,7 @@ pub mod wayland {
                 r#x: crate::wire::Fixed,
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_device -> motion");
+                tracing::debug!("-> wl_data_device.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_fixed(x)
@@ -1622,7 +1622,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_device -> drop");
+                tracing::debug!("-> wl_data_device.drop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
@@ -1646,7 +1646,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#id: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_data_device -> selection");
+                tracing::debug!("-> wl_data_device.selection");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_object(id).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
@@ -1713,7 +1713,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_data_device_manager -> create_data_source");
+                        tracing::debug!("wl_data_device_manager.create_data_source");
                         Self::r#create_data_source(
                             client,
                             message
@@ -1723,7 +1723,7 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_data_device_manager -> get_data_device");
+                        tracing::debug!("wl_data_device_manager.get_data_device");
                         Self::r#get_data_device(
                             client,
                             message
@@ -1788,7 +1788,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_shell -> get_shell_surface");
+                        tracing::debug!("wl_shell.get_shell_surface");
                         Self::r#get_shell_surface(
                             client,
                             message
@@ -1904,11 +1904,11 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_shell_surface -> pong");
+                        tracing::debug!("wl_shell_surface.pong");
                         Self::r#pong(client, message.uint()?).await
                     }
                     1 => {
-                        tracing::debug!("wl_shell_surface -> move");
+                        tracing::debug!("wl_shell_surface.move");
                         Self::r#move(
                             client,
                             message
@@ -1919,7 +1919,7 @@ pub mod wayland {
                         .await
                     }
                     2 => {
-                        tracing::debug!("wl_shell_surface -> resize");
+                        tracing::debug!("wl_shell_surface.resize");
                         Self::r#resize(
                             client,
                             message
@@ -1931,11 +1931,11 @@ pub mod wayland {
                         .await
                     }
                     3 => {
-                        tracing::debug!("wl_shell_surface -> set_toplevel");
+                        tracing::debug!("wl_shell_surface.set_toplevel");
                         Self::r#set_toplevel(client).await
                     }
                     4 => {
-                        tracing::debug!("wl_shell_surface -> set_transient");
+                        tracing::debug!("wl_shell_surface.set_transient");
                         Self::r#set_transient(
                             client,
                             message
@@ -1948,7 +1948,7 @@ pub mod wayland {
                         .await
                     }
                     5 => {
-                        tracing::debug!("wl_shell_surface -> set_fullscreen");
+                        tracing::debug!("wl_shell_surface.set_fullscreen");
                         Self::r#set_fullscreen(
                             client,
                             message.uint()?.try_into()?,
@@ -1958,7 +1958,7 @@ pub mod wayland {
                         .await
                     }
                     6 => {
-                        tracing::debug!("wl_shell_surface -> set_popup");
+                        tracing::debug!("wl_shell_surface.set_popup");
                         Self::r#set_popup(
                             client,
                             message
@@ -1975,11 +1975,11 @@ pub mod wayland {
                         .await
                     }
                     7 => {
-                        tracing::debug!("wl_shell_surface -> set_maximized");
+                        tracing::debug!("wl_shell_surface.set_maximized");
                         Self::r#set_maximized(client, message.object()?).await
                     }
                     8 => {
-                        tracing::debug!("wl_shell_surface -> set_title");
+                        tracing::debug!("wl_shell_surface.set_title");
                         Self::r#set_title(
                             client,
                             message
@@ -1989,7 +1989,7 @@ pub mod wayland {
                         .await
                     }
                     9 => {
-                        tracing::debug!("wl_shell_surface -> set_class");
+                        tracing::debug!("wl_shell_surface.set_class");
                         Self::r#set_class(
                             client,
                             message
@@ -2155,7 +2155,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#serial: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_shell_surface -> ping");
+                tracing::debug!("-> wl_shell_surface.ping");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
@@ -2186,7 +2186,7 @@ pub mod wayland {
                 r#width: i32,
                 r#height: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_shell_surface -> configure");
+                tracing::debug!("-> wl_shell_surface.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(edges.bits())
                     .put_int(width)
@@ -2204,7 +2204,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_shell_surface -> popup_done");
+                tracing::debug!("-> wl_shell_surface.popup_done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -2295,16 +2295,16 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_surface -> destroy");
+                        tracing::debug!("wl_surface.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("wl_surface -> attach");
+                        tracing::debug!("wl_surface.attach");
                         Self::r#attach(client, message.object()?, message.int()?, message.int()?)
                             .await
                     }
                     2 => {
-                        tracing::debug!("wl_surface -> damage");
+                        tracing::debug!("wl_surface.damage");
                         Self::r#damage(
                             client,
                             message.int()?,
@@ -2315,7 +2315,7 @@ pub mod wayland {
                         .await
                     }
                     3 => {
-                        tracing::debug!("wl_surface -> frame");
+                        tracing::debug!("wl_surface.frame");
                         Self::r#frame(
                             client,
                             message
@@ -2325,27 +2325,27 @@ pub mod wayland {
                         .await
                     }
                     4 => {
-                        tracing::debug!("wl_surface -> set_opaque_region");
+                        tracing::debug!("wl_surface.set_opaque_region");
                         Self::r#set_opaque_region(client, message.object()?).await
                     }
                     5 => {
-                        tracing::debug!("wl_surface -> set_input_region");
+                        tracing::debug!("wl_surface.set_input_region");
                         Self::r#set_input_region(client, message.object()?).await
                     }
                     6 => {
-                        tracing::debug!("wl_surface -> commit");
+                        tracing::debug!("wl_surface.commit");
                         Self::r#commit(client).await
                     }
                     7 => {
-                        tracing::debug!("wl_surface -> set_buffer_transform");
+                        tracing::debug!("wl_surface.set_buffer_transform");
                         Self::r#set_buffer_transform(client, message.uint()?.try_into()?).await
                     }
                     8 => {
-                        tracing::debug!("wl_surface -> set_buffer_scale");
+                        tracing::debug!("wl_surface.set_buffer_scale");
                         Self::r#set_buffer_scale(client, message.int()?).await
                     }
                     9 => {
-                        tracing::debug!("wl_surface -> damage_buffer");
+                        tracing::debug!("wl_surface.damage_buffer");
                         Self::r#damage_buffer(
                             client,
                             message.int()?,
@@ -2356,7 +2356,7 @@ pub mod wayland {
                         .await
                     }
                     10 => {
-                        tracing::debug!("wl_surface -> offset");
+                        tracing::debug!("wl_surface.offset");
                         Self::r#offset(client, message.int()?, message.int()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -2697,7 +2697,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_surface -> enter");
+                tracing::debug!("-> wl_surface.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
@@ -2720,7 +2720,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_surface -> leave");
+                tracing::debug!("-> wl_surface.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
@@ -2746,7 +2746,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#factor: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_surface -> preferred_buffer_scale");
+                tracing::debug!("-> wl_surface.preferred_buffer_scale");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -2767,7 +2767,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#transform: super::wl_output::Transform,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_surface -> preferred_buffer_transform");
+                tracing::debug!("-> wl_surface.preferred_buffer_transform");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(transform as u32)
                     .build();
@@ -2826,7 +2826,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_seat -> get_pointer");
+                        tracing::debug!("wl_seat.get_pointer");
                         Self::r#get_pointer(
                             client,
                             message
@@ -2836,7 +2836,7 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_seat -> get_keyboard");
+                        tracing::debug!("wl_seat.get_keyboard");
                         Self::r#get_keyboard(
                             client,
                             message
@@ -2846,7 +2846,7 @@ pub mod wayland {
                         .await
                     }
                     2 => {
-                        tracing::debug!("wl_seat -> get_touch");
+                        tracing::debug!("wl_seat.get_touch");
                         Self::r#get_touch(
                             client,
                             message
@@ -2856,7 +2856,7 @@ pub mod wayland {
                         .await
                     }
                     3 => {
-                        tracing::debug!("wl_seat -> release");
+                        tracing::debug!("wl_seat.release");
                         Self::r#release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -2931,7 +2931,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#capabilities: Capability,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_seat -> capabilities");
+                tracing::debug!("-> wl_seat.capabilities");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(capabilities.bits())
                     .build();
@@ -2961,7 +2961,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#name: String,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_seat -> name");
+                tracing::debug!("-> wl_seat.name");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
@@ -3114,7 +3114,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_pointer -> set_cursor");
+                        tracing::debug!("wl_pointer.set_cursor");
                         Self::r#set_cursor(
                             client,
                             message.uint()?,
@@ -3125,7 +3125,7 @@ pub mod wayland {
                         .await
                     }
                     1 => {
-                        tracing::debug!("wl_pointer -> release");
+                        tracing::debug!("wl_pointer.release");
                         Self::r#release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -3192,7 +3192,7 @@ pub mod wayland {
                 r#surface_x: crate::wire::Fixed,
                 r#surface_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> enter");
+                tracing::debug!("-> wl_pointer.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
@@ -3215,7 +3215,7 @@ pub mod wayland {
                 r#serial: u32,
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> leave");
+                tracing::debug!("-> wl_pointer.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
@@ -3235,7 +3235,7 @@ pub mod wayland {
                 r#surface_x: crate::wire::Fixed,
                 r#surface_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> motion");
+                tracing::debug!("-> wl_pointer.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_fixed(surface_x)
@@ -3268,7 +3268,7 @@ pub mod wayland {
                 r#button: u32,
                 r#state: ButtonState,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> button");
+                tracing::debug!("-> wl_pointer.button");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
@@ -3303,7 +3303,7 @@ pub mod wayland {
                 r#axis: Axis,
                 r#value: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> axis");
+                tracing::debug!("-> wl_pointer.axis");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(axis as u32)
@@ -3352,7 +3352,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> frame");
+                tracing::debug!("-> wl_pointer.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
@@ -3389,7 +3389,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#axis_source: AxisSource,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> axis_source");
+                tracing::debug!("-> wl_pointer.axis_source");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis_source as u32)
                     .build();
@@ -3418,7 +3418,7 @@ pub mod wayland {
                 r#time: u32,
                 r#axis: Axis,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> axis_stop");
+                tracing::debug!("-> wl_pointer.axis_stop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(axis as u32)
@@ -3464,7 +3464,7 @@ pub mod wayland {
                 r#axis: Axis,
                 r#discrete: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> axis_discrete");
+                tracing::debug!("-> wl_pointer.axis_discrete");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_int(discrete)
@@ -3501,7 +3501,7 @@ pub mod wayland {
                 r#axis: Axis,
                 r#value120: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> axis_value120");
+                tracing::debug!("-> wl_pointer.axis_value120");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_int(value120)
@@ -3552,7 +3552,7 @@ pub mod wayland {
                 r#axis: Axis,
                 r#direction: AxisRelativeDirection,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_pointer -> axis_relative_direction");
+                tracing::debug!("-> wl_pointer.axis_relative_direction");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_uint(direction as u32)
@@ -3629,7 +3629,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_keyboard -> release");
+                        tracing::debug!("wl_keyboard.release");
                         Self::r#release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -3650,7 +3650,7 @@ pub mod wayland {
                 r#fd: std::os::fd::RawFd,
                 r#size: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_keyboard -> keymap");
+                tracing::debug!("-> wl_keyboard.keymap");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(format as u32)
                     .put_fd(fd)
@@ -3678,7 +3678,7 @@ pub mod wayland {
                 r#surface: crate::wire::ObjectId,
                 r#keys: Vec<u8>,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_keyboard -> enter");
+                tracing::debug!("-> wl_keyboard.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
@@ -3705,7 +3705,7 @@ pub mod wayland {
                 r#serial: u32,
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_keyboard -> leave");
+                tracing::debug!("-> wl_keyboard.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
@@ -3741,7 +3741,7 @@ pub mod wayland {
                 r#key: u32,
                 r#state: KeyState,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_keyboard -> key");
+                tracing::debug!("-> wl_keyboard.key");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
@@ -3775,7 +3775,7 @@ pub mod wayland {
                 r#mods_locked: u32,
                 r#group: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_keyboard -> modifiers");
+                tracing::debug!("-> wl_keyboard.modifiers");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(mods_depressed)
@@ -3806,7 +3806,7 @@ pub mod wayland {
                 r#rate: i32,
                 r#delay: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_keyboard -> repeat_info");
+                tracing::debug!("-> wl_keyboard.repeat_info");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(rate)
                     .put_int(delay)
@@ -3836,7 +3836,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_touch -> release");
+                        tracing::debug!("wl_touch.release");
                         Self::r#release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -3858,7 +3858,7 @@ pub mod wayland {
                 r#x: crate::wire::Fixed,
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_touch -> down");
+                tracing::debug!("-> wl_touch.down");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
@@ -3882,7 +3882,7 @@ pub mod wayland {
                 r#time: u32,
                 r#id: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_touch -> up");
+                tracing::debug!("-> wl_touch.up");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
@@ -3902,7 +3902,7 @@ pub mod wayland {
                 r#x: crate::wire::Fixed,
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_touch -> motion");
+                tracing::debug!("-> wl_touch.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_int(id)
@@ -3926,7 +3926,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_touch -> frame");
+                tracing::debug!("-> wl_touch.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -3945,7 +3945,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_touch -> cancel");
+                tracing::debug!("-> wl_touch.cancel");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
@@ -3984,7 +3984,7 @@ pub mod wayland {
                 r#major: crate::wire::Fixed,
                 r#minor: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_touch -> shape");
+                tracing::debug!("-> wl_touch.shape");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(id)
                     .put_fixed(major)
@@ -4024,7 +4024,7 @@ pub mod wayland {
                 r#id: i32,
                 r#orientation: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_touch -> orientation");
+                tracing::debug!("-> wl_touch.orientation");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(id)
                     .put_fixed(orientation)
@@ -4149,7 +4149,7 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_output -> release");
+                        tracing::debug!("wl_output.release");
                         Self::r#release(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -4191,7 +4191,7 @@ pub mod wayland {
                 r#model: String,
                 r#transform: Transform,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_output -> geometry");
+                tracing::debug!("-> wl_output.geometry");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(x)
                     .put_int(y)
@@ -4248,7 +4248,7 @@ pub mod wayland {
                 r#height: i32,
                 r#refresh: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_output -> mode");
+                tracing::debug!("-> wl_output.mode");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(flags.bits())
                     .put_int(width)
@@ -4269,7 +4269,7 @@ pub mod wayland {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_output -> done");
+                tracing::debug!("-> wl_output.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -4299,7 +4299,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#factor: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_output -> scale");
+                tracing::debug!("-> wl_output.scale");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -4339,7 +4339,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#name: String,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_output -> name");
+                tracing::debug!("-> wl_output.name");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
@@ -4367,7 +4367,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 r#description: String,
             ) -> crate::Result<()> {
-                tracing::debug!("wl_output -> description");
+                tracing::debug!("-> wl_output.description");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(description))
                     .build();
@@ -4392,11 +4392,11 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_region -> destroy");
+                        tracing::debug!("wl_region.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("wl_region -> add");
+                        tracing::debug!("wl_region.add");
                         Self::r#add(
                             client,
                             message.int()?,
@@ -4407,7 +4407,7 @@ pub mod wayland {
                         .await
                     }
                     2 => {
-                        tracing::debug!("wl_region -> subtract");
+                        tracing::debug!("wl_region.subtract");
                         Self::r#subtract(
                             client,
                             message.int()?,
@@ -4490,11 +4490,11 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_subcompositor -> destroy");
+                        tracing::debug!("wl_subcompositor.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("wl_subcompositor -> get_subsurface");
+                        tracing::debug!("wl_subcompositor.get_subsurface");
                         Self::r#get_subsurface(
                             client,
                             message
@@ -4623,15 +4623,15 @@ pub mod wayland {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wl_subsurface -> destroy");
+                        tracing::debug!("wl_subsurface.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("wl_subsurface -> set_position");
+                        tracing::debug!("wl_subsurface.set_position");
                         Self::r#set_position(client, message.int()?, message.int()?).await
                     }
                     2 => {
-                        tracing::debug!("wl_subsurface -> place_above");
+                        tracing::debug!("wl_subsurface.place_above");
                         Self::r#place_above(
                             client,
                             message
@@ -4641,7 +4641,7 @@ pub mod wayland {
                         .await
                     }
                     3 => {
-                        tracing::debug!("wl_subsurface -> place_below");
+                        tracing::debug!("wl_subsurface.place_below");
                         Self::r#place_below(
                             client,
                             message
@@ -4651,11 +4651,11 @@ pub mod wayland {
                         .await
                     }
                     4 => {
-                        tracing::debug!("wl_subsurface -> set_sync");
+                        tracing::debug!("wl_subsurface.set_sync");
                         Self::r#set_sync(client).await
                     }
                     5 => {
-                        tracing::debug!("wl_subsurface -> set_desync");
+                        tracing::debug!("wl_subsurface.set_desync");
                         Self::r#set_desync(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -4821,11 +4821,11 @@ pub mod linux_dmabuf_v1 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_linux_dmabuf_v1 -> destroy");
+                        tracing::debug!("zwp_linux_dmabuf_v1.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("zwp_linux_dmabuf_v1 -> create_params");
+                        tracing::debug!("zwp_linux_dmabuf_v1.create_params");
                         Self::r#create_params(
                             client,
                             message
@@ -4835,7 +4835,7 @@ pub mod linux_dmabuf_v1 {
                         .await
                     }
                     2 => {
-                        tracing::debug!("zwp_linux_dmabuf_v1 -> get_default_feedback");
+                        tracing::debug!("zwp_linux_dmabuf_v1.get_default_feedback");
                         Self::r#get_default_feedback(
                             client,
                             message
@@ -4845,7 +4845,7 @@ pub mod linux_dmabuf_v1 {
                         .await
                     }
                     3 => {
-                        tracing::debug!("zwp_linux_dmabuf_v1 -> get_surface_feedback");
+                        tracing::debug!("zwp_linux_dmabuf_v1.get_surface_feedback");
                         Self::r#get_surface_feedback(
                             client,
                             message
@@ -4907,7 +4907,7 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
                 r#format: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_v1 -> format");
+                tracing::debug!("-> zwp_linux_dmabuf_v1.format");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(format).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
@@ -4944,7 +4944,7 @@ pub mod linux_dmabuf_v1 {
                 r#modifier_hi: u32,
                 r#modifier_lo: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_v1 -> modifier");
+                tracing::debug!("-> zwp_linux_dmabuf_v1.modifier");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(format)
                     .put_uint(modifier_hi)
@@ -5034,11 +5034,11 @@ pub mod linux_dmabuf_v1 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_linux_buffer_params_v1 -> destroy");
+                        tracing::debug!("zwp_linux_buffer_params_v1.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("zwp_linux_buffer_params_v1 -> add");
+                        tracing::debug!("zwp_linux_buffer_params_v1.add");
                         Self::r#add(
                             client,
                             message.fd()?,
@@ -5051,7 +5051,7 @@ pub mod linux_dmabuf_v1 {
                         .await
                     }
                     2 => {
-                        tracing::debug!("zwp_linux_buffer_params_v1 -> create");
+                        tracing::debug!("zwp_linux_buffer_params_v1.create");
                         Self::r#create(
                             client,
                             message.int()?,
@@ -5062,7 +5062,7 @@ pub mod linux_dmabuf_v1 {
                         .await
                     }
                     3 => {
-                        tracing::debug!("zwp_linux_buffer_params_v1 -> create_immed");
+                        tracing::debug!("zwp_linux_buffer_params_v1.create_immed");
                         Self::r#create_immed(
                             client,
                             message
@@ -5217,7 +5217,7 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
                 r#buffer: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_buffer_params_v1 -> created");
+                tracing::debug!("-> zwp_linux_buffer_params_v1.created");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(buffer))
                     .build();
@@ -5236,7 +5236,7 @@ pub mod linux_dmabuf_v1 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_buffer_params_v1 -> failed");
+                tracing::debug!("-> zwp_linux_buffer_params_v1.failed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
@@ -5292,7 +5292,7 @@ pub mod linux_dmabuf_v1 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> destroy");
+                        tracing::debug!("zwp_linux_dmabuf_feedback_v1.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -5311,7 +5311,7 @@ pub mod linux_dmabuf_v1 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> done");
+                tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
@@ -5338,7 +5338,7 @@ pub mod linux_dmabuf_v1 {
                 r#fd: std::os::fd::RawFd,
                 r#size: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> format_table");
+                tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.format_table");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fd(fd)
                     .put_uint(size)
@@ -5376,7 +5376,7 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
                 r#device: Vec<u8>,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> main_device");
+                tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.main_device");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -5391,7 +5391,7 @@ pub mod linux_dmabuf_v1 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_done");
+                tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -5429,7 +5429,7 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
                 r#device: Vec<u8>,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_target_device");
+                tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_target_device");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
@@ -5465,7 +5465,7 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
                 r#indices: Vec<u8>,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_formats");
+                tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_formats");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_array(indices)
                     .build();
@@ -5487,7 +5487,7 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
                 r#flags: TrancheFlags,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_flags");
+                tracing::debug!("-> zwp_linux_dmabuf_feedback_v1.tranche_flags");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(flags.bits())
                     .build();
@@ -5551,11 +5551,11 @@ pub mod presentation_time {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wp_presentation -> destroy");
+                        tracing::debug!("wp_presentation.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("wp_presentation -> feedback");
+                        tracing::debug!("wp_presentation.feedback");
                         Self::r#feedback(
                             client,
                             message
@@ -5621,7 +5621,7 @@ pub mod presentation_time {
                 client: &mut crate::Client,
                 r#clk_id: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("wp_presentation -> clock_id");
+                tracing::debug!("-> wp_presentation.clock_id");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(clk_id).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
@@ -5682,7 +5682,7 @@ pub mod presentation_time {
                 client: &mut crate::Client,
                 r#output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("wp_presentation_feedback -> sync_output");
+                tracing::debug!("-> wp_presentation_feedback.sync_output");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
@@ -5743,7 +5743,7 @@ pub mod presentation_time {
                 r#seq_lo: u32,
                 r#flags: Kind,
             ) -> crate::Result<()> {
-                tracing::debug!("wp_presentation_feedback -> presented");
+                tracing::debug!("-> wp_presentation_feedback.presented");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(tv_sec_hi)
                     .put_uint(tv_sec_lo)
@@ -5763,7 +5763,7 @@ pub mod presentation_time {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("wp_presentation_feedback -> discarded");
+                tracing::debug!("-> wp_presentation_feedback.discarded");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -5863,7 +5863,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_manager_v2 -> get_tablet_seat");
+                        tracing::debug!("zwp_tablet_manager_v2.get_tablet_seat");
                         Self::r#get_tablet_seat(
                             client,
                             message
@@ -5876,7 +5876,7 @@ pub mod tablet_v2 {
                         .await
                     }
                     1 => {
-                        tracing::debug!("zwp_tablet_manager_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_manager_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -5908,7 +5908,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_seat_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_seat_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -5927,7 +5927,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_seat_v2 -> tablet_added");
+                tracing::debug!("-> zwp_tablet_seat_v2.tablet_added");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
@@ -5945,7 +5945,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_seat_v2 -> tool_added");
+                tracing::debug!("-> zwp_tablet_seat_v2.tool_added");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
@@ -5969,7 +5969,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_seat_v2 -> pad_added");
+                tracing::debug!("-> zwp_tablet_seat_v2.pad_added");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
@@ -6131,7 +6131,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_tool_v2 -> set_cursor");
+                        tracing::debug!("zwp_tablet_tool_v2.set_cursor");
                         Self::r#set_cursor(
                             client,
                             message.uint()?,
@@ -6142,7 +6142,7 @@ pub mod tablet_v2 {
                         .await
                     }
                     1 => {
-                        tracing::debug!("zwp_tablet_tool_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_tool_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -6198,7 +6198,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#tool_type: Type,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> type");
+                tracing::debug!("-> zwp_tablet_tool_v2.type");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(tool_type as u32)
                     .build();
@@ -6228,7 +6228,7 @@ pub mod tablet_v2 {
                 r#hardware_serial_hi: u32,
                 r#hardware_serial_lo: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> hardware_serial");
+                tracing::debug!("-> zwp_tablet_tool_v2.hardware_serial");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(hardware_serial_hi)
                     .put_uint(hardware_serial_lo)
@@ -6254,7 +6254,7 @@ pub mod tablet_v2 {
                 r#hardware_id_hi: u32,
                 r#hardware_id_lo: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> hardware_id_wacom");
+                tracing::debug!("-> zwp_tablet_tool_v2.hardware_id_wacom");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(hardware_id_hi)
                     .put_uint(hardware_id_lo)
@@ -6276,7 +6276,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#capability: Capability,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> capability");
+                tracing::debug!("-> zwp_tablet_tool_v2.capability");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(capability as u32)
                     .build();
@@ -6292,7 +6292,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> done");
+                tracing::debug!("-> zwp_tablet_tool_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
@@ -6317,7 +6317,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> removed");
+                tracing::debug!("-> zwp_tablet_tool_v2.removed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
@@ -6340,7 +6340,7 @@ pub mod tablet_v2 {
                 r#tablet: crate::wire::ObjectId,
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> proximity_in");
+                tracing::debug!("-> zwp_tablet_tool_v2.proximity_in");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(tablet))
@@ -6367,7 +6367,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> proximity_out");
+                tracing::debug!("-> zwp_tablet_tool_v2.proximity_out");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 7, payload, fds))
@@ -6391,7 +6391,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#serial: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> down");
+                tracing::debug!("-> zwp_tablet_tool_v2.down");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 8, payload, fds))
@@ -6418,7 +6418,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> up");
+                tracing::debug!("-> zwp_tablet_tool_v2.up");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 9, payload, fds))
@@ -6432,7 +6432,7 @@ pub mod tablet_v2 {
                 r#x: crate::wire::Fixed,
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> motion");
+                tracing::debug!("-> zwp_tablet_tool_v2.motion");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(x)
                     .put_fixed(y)
@@ -6452,7 +6452,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#pressure: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> pressure");
+                tracing::debug!("-> zwp_tablet_tool_v2.pressure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(pressure)
                     .build();
@@ -6471,7 +6471,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#distance: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> distance");
+                tracing::debug!("-> zwp_tablet_tool_v2.distance");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(distance)
                     .build();
@@ -6490,7 +6490,7 @@ pub mod tablet_v2 {
                 r#tilt_x: crate::wire::Fixed,
                 r#tilt_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> tilt");
+                tracing::debug!("-> zwp_tablet_tool_v2.tilt");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(tilt_x)
                     .put_fixed(tilt_y)
@@ -6508,7 +6508,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#degrees: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> rotation");
+                tracing::debug!("-> zwp_tablet_tool_v2.rotation");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .build();
@@ -6527,7 +6527,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#position: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> slider");
+                tracing::debug!("-> zwp_tablet_tool_v2.slider");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(position).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 15, payload, fds))
@@ -6552,7 +6552,7 @@ pub mod tablet_v2 {
                 r#degrees: crate::wire::Fixed,
                 r#clicks: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> wheel");
+                tracing::debug!("-> zwp_tablet_tool_v2.wheel");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .put_int(clicks)
@@ -6575,7 +6575,7 @@ pub mod tablet_v2 {
                 r#button: u32,
                 r#state: ButtonState,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> button");
+                tracing::debug!("-> zwp_tablet_tool_v2.button");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(button)
@@ -6595,7 +6595,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#time: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_tool_v2 -> frame");
+                tracing::debug!("-> zwp_tablet_tool_v2.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 18, payload, fds))
@@ -6622,7 +6622,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -6642,7 +6642,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#name: String,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_v2 -> name");
+                tracing::debug!("-> zwp_tablet_v2.name");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
@@ -6664,7 +6664,7 @@ pub mod tablet_v2 {
                 r#vid: u32,
                 r#pid: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_v2 -> id");
+                tracing::debug!("-> zwp_tablet_v2.id");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(vid)
                     .put_uint(pid)
@@ -6693,7 +6693,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#path: String,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_v2 -> path");
+                tracing::debug!("-> zwp_tablet_v2.path");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(path))
                     .build();
@@ -6710,7 +6710,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_v2 -> done");
+                tracing::debug!("-> zwp_tablet_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -6726,7 +6726,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_v2 -> removed");
+                tracing::debug!("-> zwp_tablet_v2.removed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
@@ -6771,7 +6771,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_pad_ring_v2 -> set_feedback");
+                        tracing::debug!("zwp_tablet_pad_ring_v2.set_feedback");
                         Self::r#set_feedback(
                             client,
                             message
@@ -6782,7 +6782,7 @@ pub mod tablet_v2 {
                         .await
                     }
                     1 => {
-                        tracing::debug!("zwp_tablet_pad_ring_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_pad_ring_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -6832,7 +6832,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#source: Source,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_ring_v2 -> source");
+                tracing::debug!("-> zwp_tablet_pad_ring_v2.source");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(source as u32)
                     .build();
@@ -6850,7 +6850,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#degrees: crate::wire::Fixed,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_ring_v2 -> angle");
+                tracing::debug!("-> zwp_tablet_pad_ring_v2.angle");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .build();
@@ -6873,7 +6873,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_ring_v2 -> stop");
+                tracing::debug!("-> zwp_tablet_pad_ring_v2.stop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -6898,7 +6898,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#time: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_ring_v2 -> frame");
+                tracing::debug!("-> zwp_tablet_pad_ring_v2.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -6943,7 +6943,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_pad_strip_v2 -> set_feedback");
+                        tracing::debug!("zwp_tablet_pad_strip_v2.set_feedback");
                         Self::r#set_feedback(
                             client,
                             message
@@ -6954,7 +6954,7 @@ pub mod tablet_v2 {
                         .await
                     }
                     1 => {
-                        tracing::debug!("zwp_tablet_pad_strip_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_pad_strip_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -7004,7 +7004,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#source: Source,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_strip_v2 -> source");
+                tracing::debug!("-> zwp_tablet_pad_strip_v2.source");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(source as u32)
                     .build();
@@ -7023,7 +7023,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#position: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_strip_v2 -> position");
+                tracing::debug!("-> zwp_tablet_pad_strip_v2.position");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(position)
                     .build();
@@ -7046,7 +7046,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_strip_v2 -> stop");
+                tracing::debug!("-> zwp_tablet_pad_strip_v2.stop");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -7072,7 +7072,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#time: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_strip_v2 -> frame");
+                tracing::debug!("-> zwp_tablet_pad_strip_v2.frame");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -7112,7 +7112,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_pad_group_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_pad_group_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -7139,7 +7139,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#buttons: Vec<u8>,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_group_v2 -> buttons");
+                tracing::debug!("-> zwp_tablet_pad_group_v2.buttons");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_array(buttons)
                     .build();
@@ -7158,7 +7158,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#ring: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_group_v2 -> ring");
+                tracing::debug!("-> zwp_tablet_pad_group_v2.ring");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(ring))
                     .build();
@@ -7177,7 +7177,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#strip: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_group_v2 -> strip");
+                tracing::debug!("-> zwp_tablet_pad_group_v2.strip");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(strip))
                     .build();
@@ -7203,7 +7203,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#modes: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_group_v2 -> modes");
+                tracing::debug!("-> zwp_tablet_pad_group_v2.modes");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(modes).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -7218,7 +7218,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_group_v2 -> done");
+                tracing::debug!("-> zwp_tablet_pad_group_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
@@ -7259,7 +7259,7 @@ pub mod tablet_v2 {
                 r#serial: u32,
                 r#mode: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_group_v2 -> mode_switch");
+                tracing::debug!("-> zwp_tablet_pad_group_v2.mode_switch");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(serial)
@@ -7326,7 +7326,7 @@ pub mod tablet_v2 {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("zwp_tablet_pad_v2 -> set_feedback");
+                        tracing::debug!("zwp_tablet_pad_v2.set_feedback");
                         Self::r#set_feedback(
                             client,
                             message.uint()?,
@@ -7338,7 +7338,7 @@ pub mod tablet_v2 {
                         .await
                     }
                     1 => {
-                        tracing::debug!("zwp_tablet_pad_v2 -> destroy");
+                        tracing::debug!("zwp_tablet_pad_v2.destroy");
                         Self::r#destroy(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -7388,7 +7388,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#pad_group: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> group");
+                tracing::debug!("-> zwp_tablet_pad_v2.group");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(pad_group))
                     .build();
@@ -7412,7 +7412,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#path: String,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> path");
+                tracing::debug!("-> zwp_tablet_pad_v2.path");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(path))
                     .build();
@@ -7432,7 +7432,7 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
                 r#buttons: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> buttons");
+                tracing::debug!("-> zwp_tablet_pad_v2.buttons");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(buttons).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
@@ -7446,7 +7446,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> done");
+                tracing::debug!("-> zwp_tablet_pad_v2.done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
@@ -7461,7 +7461,7 @@ pub mod tablet_v2 {
                 r#button: u32,
                 r#state: ButtonState,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> button");
+                tracing::debug!("-> zwp_tablet_pad_v2.button");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(button)
@@ -7480,7 +7480,7 @@ pub mod tablet_v2 {
                 r#tablet: crate::wire::ObjectId,
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> enter");
+                tracing::debug!("-> zwp_tablet_pad_v2.enter");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(tablet))
@@ -7499,7 +7499,7 @@ pub mod tablet_v2 {
                 r#serial: u32,
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> leave");
+                tracing::debug!("-> zwp_tablet_pad_v2.leave");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
@@ -7519,7 +7519,7 @@ pub mod tablet_v2 {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("zwp_tablet_pad_v2 -> removed");
+                tracing::debug!("-> zwp_tablet_pad_v2.removed");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 7, payload, fds))
@@ -7563,11 +7563,11 @@ pub mod viewporter {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wp_viewporter -> destroy");
+                        tracing::debug!("wp_viewporter.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("wp_viewporter -> get_viewport");
+                        tracing::debug!("wp_viewporter.get_viewport");
                         Self::r#get_viewport(
                             client,
                             message
@@ -7689,11 +7689,11 @@ pub mod viewporter {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("wp_viewport -> destroy");
+                        tracing::debug!("wp_viewport.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("wp_viewport -> set_source");
+                        tracing::debug!("wp_viewport.set_source");
                         Self::r#set_source(
                             client,
                             message.fixed()?,
@@ -7704,7 +7704,7 @@ pub mod viewporter {
                         .await
                     }
                     2 => {
-                        tracing::debug!("wp_viewport -> set_destination");
+                        tracing::debug!("wp_viewport.set_destination");
                         Self::r#set_destination(client, message.int()?, message.int()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -7802,11 +7802,11 @@ pub mod xdg_shell {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("xdg_wm_base -> destroy");
+                        tracing::debug!("xdg_wm_base.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("xdg_wm_base -> create_positioner");
+                        tracing::debug!("xdg_wm_base.create_positioner");
                         Self::r#create_positioner(
                             client,
                             message
@@ -7816,7 +7816,7 @@ pub mod xdg_shell {
                         .await
                     }
                     2 => {
-                        tracing::debug!("xdg_wm_base -> get_xdg_surface");
+                        tracing::debug!("xdg_wm_base.get_xdg_surface");
                         Self::r#get_xdg_surface(
                             client,
                             message
@@ -7829,7 +7829,7 @@ pub mod xdg_shell {
                         .await
                     }
                     3 => {
-                        tracing::debug!("xdg_wm_base -> pong");
+                        tracing::debug!("xdg_wm_base.pong");
                         Self::r#pong(client, message.uint()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -7889,7 +7889,7 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
                 r#serial: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_wm_base -> ping");
+                tracing::debug!("-> xdg_wm_base.ping");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
@@ -8030,15 +8030,15 @@ pub mod xdg_shell {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("xdg_positioner -> destroy");
+                        tracing::debug!("xdg_positioner.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("xdg_positioner -> set_size");
+                        tracing::debug!("xdg_positioner.set_size");
                         Self::r#set_size(client, message.int()?, message.int()?).await
                     }
                     2 => {
-                        tracing::debug!("xdg_positioner -> set_anchor_rect");
+                        tracing::debug!("xdg_positioner.set_anchor_rect");
                         Self::r#set_anchor_rect(
                             client,
                             message.int()?,
@@ -8049,31 +8049,31 @@ pub mod xdg_shell {
                         .await
                     }
                     3 => {
-                        tracing::debug!("xdg_positioner -> set_anchor");
+                        tracing::debug!("xdg_positioner.set_anchor");
                         Self::r#set_anchor(client, message.uint()?.try_into()?).await
                     }
                     4 => {
-                        tracing::debug!("xdg_positioner -> set_gravity");
+                        tracing::debug!("xdg_positioner.set_gravity");
                         Self::r#set_gravity(client, message.uint()?.try_into()?).await
                     }
                     5 => {
-                        tracing::debug!("xdg_positioner -> set_constraint_adjustment");
+                        tracing::debug!("xdg_positioner.set_constraint_adjustment");
                         Self::r#set_constraint_adjustment(client, message.uint()?.try_into()?).await
                     }
                     6 => {
-                        tracing::debug!("xdg_positioner -> set_offset");
+                        tracing::debug!("xdg_positioner.set_offset");
                         Self::r#set_offset(client, message.int()?, message.int()?).await
                     }
                     7 => {
-                        tracing::debug!("xdg_positioner -> set_reactive");
+                        tracing::debug!("xdg_positioner.set_reactive");
                         Self::r#set_reactive(client).await
                     }
                     8 => {
-                        tracing::debug!("xdg_positioner -> set_parent_size");
+                        tracing::debug!("xdg_positioner.set_parent_size");
                         Self::r#set_parent_size(client, message.int()?, message.int()?).await
                     }
                     9 => {
-                        tracing::debug!("xdg_positioner -> set_parent_configure");
+                        tracing::debug!("xdg_positioner.set_parent_configure");
                         Self::r#set_parent_configure(client, message.uint()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -8281,11 +8281,11 @@ pub mod xdg_shell {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("xdg_surface -> destroy");
+                        tracing::debug!("xdg_surface.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("xdg_surface -> get_toplevel");
+                        tracing::debug!("xdg_surface.get_toplevel");
                         Self::r#get_toplevel(
                             client,
                             message
@@ -8295,7 +8295,7 @@ pub mod xdg_shell {
                         .await
                     }
                     2 => {
-                        tracing::debug!("xdg_surface -> get_popup");
+                        tracing::debug!("xdg_surface.get_popup");
                         Self::r#get_popup(
                             client,
                             message
@@ -8309,7 +8309,7 @@ pub mod xdg_shell {
                         .await
                     }
                     3 => {
-                        tracing::debug!("xdg_surface -> set_window_geometry");
+                        tracing::debug!("xdg_surface.set_window_geometry");
                         Self::r#set_window_geometry(
                             client,
                             message.int()?,
@@ -8320,7 +8320,7 @@ pub mod xdg_shell {
                         .await
                     }
                     4 => {
-                        tracing::debug!("xdg_surface -> ack_configure");
+                        tracing::debug!("xdg_surface.ack_configure");
                         Self::r#ack_configure(client, message.uint()?).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -8456,7 +8456,7 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
                 r#serial: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_surface -> configure");
+                tracing::debug!("-> xdg_surface.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
@@ -8623,15 +8623,15 @@ pub mod xdg_shell {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("xdg_toplevel -> destroy");
+                        tracing::debug!("xdg_toplevel.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("xdg_toplevel -> set_parent");
+                        tracing::debug!("xdg_toplevel.set_parent");
                         Self::r#set_parent(client, message.object()?).await
                     }
                     2 => {
-                        tracing::debug!("xdg_toplevel -> set_title");
+                        tracing::debug!("xdg_toplevel.set_title");
                         Self::r#set_title(
                             client,
                             message
@@ -8641,7 +8641,7 @@ pub mod xdg_shell {
                         .await
                     }
                     3 => {
-                        tracing::debug!("xdg_toplevel -> set_app_id");
+                        tracing::debug!("xdg_toplevel.set_app_id");
                         Self::r#set_app_id(
                             client,
                             message
@@ -8651,7 +8651,7 @@ pub mod xdg_shell {
                         .await
                     }
                     4 => {
-                        tracing::debug!("xdg_toplevel -> show_window_menu");
+                        tracing::debug!("xdg_toplevel.show_window_menu");
                         Self::r#show_window_menu(
                             client,
                             message
@@ -8664,7 +8664,7 @@ pub mod xdg_shell {
                         .await
                     }
                     5 => {
-                        tracing::debug!("xdg_toplevel -> move");
+                        tracing::debug!("xdg_toplevel.move");
                         Self::r#move(
                             client,
                             message
@@ -8675,7 +8675,7 @@ pub mod xdg_shell {
                         .await
                     }
                     6 => {
-                        tracing::debug!("xdg_toplevel -> resize");
+                        tracing::debug!("xdg_toplevel.resize");
                         Self::r#resize(
                             client,
                             message
@@ -8687,31 +8687,31 @@ pub mod xdg_shell {
                         .await
                     }
                     7 => {
-                        tracing::debug!("xdg_toplevel -> set_max_size");
+                        tracing::debug!("xdg_toplevel.set_max_size");
                         Self::r#set_max_size(client, message.int()?, message.int()?).await
                     }
                     8 => {
-                        tracing::debug!("xdg_toplevel -> set_min_size");
+                        tracing::debug!("xdg_toplevel.set_min_size");
                         Self::r#set_min_size(client, message.int()?, message.int()?).await
                     }
                     9 => {
-                        tracing::debug!("xdg_toplevel -> set_maximized");
+                        tracing::debug!("xdg_toplevel.set_maximized");
                         Self::r#set_maximized(client).await
                     }
                     10 => {
-                        tracing::debug!("xdg_toplevel -> unset_maximized");
+                        tracing::debug!("xdg_toplevel.unset_maximized");
                         Self::r#unset_maximized(client).await
                     }
                     11 => {
-                        tracing::debug!("xdg_toplevel -> set_fullscreen");
+                        tracing::debug!("xdg_toplevel.set_fullscreen");
                         Self::r#set_fullscreen(client, message.object()?).await
                     }
                     12 => {
-                        tracing::debug!("xdg_toplevel -> unset_fullscreen");
+                        tracing::debug!("xdg_toplevel.unset_fullscreen");
                         Self::r#unset_fullscreen(client).await
                     }
                     13 => {
-                        tracing::debug!("xdg_toplevel -> set_minimized");
+                        tracing::debug!("xdg_toplevel.set_minimized");
                         Self::r#set_minimized(client).await
                     }
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -9057,7 +9057,7 @@ pub mod xdg_shell {
                 r#height: i32,
                 r#states: Vec<u8>,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_toplevel -> configure");
+                tracing::debug!("-> xdg_toplevel.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(width)
                     .put_int(height)
@@ -9080,7 +9080,7 @@ pub mod xdg_shell {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_toplevel -> close");
+                tracing::debug!("-> xdg_toplevel.close");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
@@ -9108,7 +9108,7 @@ pub mod xdg_shell {
                 r#width: i32,
                 r#height: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_toplevel -> configure_bounds");
+                tracing::debug!("-> xdg_toplevel.configure_bounds");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(width)
                     .put_int(height)
@@ -9143,7 +9143,7 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
                 r#capabilities: Vec<u8>,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_toplevel -> wm_capabilities");
+                tracing::debug!("-> xdg_toplevel.wm_capabilities");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_array(capabilities)
                     .build();
@@ -9205,11 +9205,11 @@ pub mod xdg_shell {
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
-                        tracing::debug!("xdg_popup -> destroy");
+                        tracing::debug!("xdg_popup.destroy");
                         Self::r#destroy(client).await
                     }
                     1 => {
-                        tracing::debug!("xdg_popup -> grab");
+                        tracing::debug!("xdg_popup.grab");
                         Self::r#grab(
                             client,
                             message
@@ -9220,7 +9220,7 @@ pub mod xdg_shell {
                         .await
                     }
                     2 => {
-                        tracing::debug!("xdg_popup -> reposition");
+                        tracing::debug!("xdg_popup.reposition");
                         Self::r#reposition(
                             client,
                             message
@@ -9330,7 +9330,7 @@ pub mod xdg_shell {
                 r#width: i32,
                 r#height: i32,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_popup -> configure");
+                tracing::debug!("-> xdg_popup.configure");
                 let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(x)
                     .put_int(y)
@@ -9349,7 +9349,7 @@ pub mod xdg_shell {
                 dispatcher_id: crate::wire::ObjectId,
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_popup -> popup_done");
+                tracing::debug!("-> xdg_popup.popup_done");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
@@ -9376,7 +9376,7 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
                 r#token: u32,
             ) -> crate::Result<()> {
-                tracing::debug!("xdg_popup -> repositioned");
+                tracing::debug!("-> xdg_popup.repositioned");
                 let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(token).build();
                 client
                     .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
