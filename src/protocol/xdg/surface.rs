@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{
+    protocol::xdg::toplevel::{Toplevel, XdgToplevel},
     wire::{Message, ObjectId},
     Client, Dispatcher, Result,
 };
@@ -24,43 +25,45 @@ impl XdgSurface for Surface {
         self.id
     }
 
-    async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#get_toplevel(
+    async fn get_toplevel(
         &self,
         client: &mut crate::Client,
-        r#id: crate::wire::ObjectId,
+        id: crate::wire::ObjectId,
+    ) -> crate::Result<()> {
+        client.insert(id, Toplevel::new(id).into_dispatcher());
+
+        Ok(())
+    }
+
+    async fn get_popup(
+        &self,
+        client: &mut crate::Client,
+        id: crate::wire::ObjectId,
+        parent: Option<crate::wire::ObjectId>,
+        positioner: crate::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#get_popup(
+    async fn set_window_geometry(
         &self,
         client: &mut crate::Client,
-        r#id: crate::wire::ObjectId,
-        r#parent: Option<crate::wire::ObjectId>,
-        r#positioner: crate::wire::ObjectId,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#set_window_geometry(
+    async fn ack_configure(
         &self,
         client: &mut crate::Client,
-        r#x: i32,
-        r#y: i32,
-        r#width: i32,
-        r#height: i32,
-    ) -> crate::Result<()> {
-        todo!()
-    }
-
-    async fn r#ack_configure(
-        &self,
-        client: &mut crate::Client,
-        r#serial: u32,
+        serial: u32,
     ) -> crate::Result<()> {
         todo!()
     }
