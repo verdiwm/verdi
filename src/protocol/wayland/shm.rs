@@ -21,7 +21,7 @@ impl Shm {
 }
 
 impl WlShm for Shm {
-    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
+    fn new(_id: crate::wire::ObjectId) -> crate::Result<Self>
     where
         Self: Sized,
     {
@@ -36,8 +36,8 @@ impl WlShm for Shm {
         &self,
         client: &mut Client,
         id: ObjectId,
-        fd: OwnedFd,
-        size: i32,
+        _fd: OwnedFd,
+        _size: i32,
     ) -> Result<()> {
         // let shm_pool = ShmPool::new(client, id, fd, size)?;
         let shm_pool = ShmPool::new(id)?;
