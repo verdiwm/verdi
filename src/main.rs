@@ -56,7 +56,10 @@ fn main() -> Result<()> {
                         while let Some(mut message) = client.next_message().await? {
                             match client.handle_message(&mut message).await {
                                 Ok(_) => {}
-                                Err(err) => error!("Error while handling message: {err}"),
+                                Err(err) => {
+                                    error!("Error while handling message: {err}");
+                                    Err(err)?;
+                                }
                             }
                         }
 

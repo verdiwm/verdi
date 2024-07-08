@@ -1,14 +1,24 @@
+#![feature(unix_socket_ancillary_data)]
+
 use anyhow::Result as AnyResult;
 use async_trait::async_trait;
 use error::Error;
-use futures_util::SinkExt;
-use std::{collections::HashMap, io, path::Path, sync::Arc};
+use futures_util::{stream, SinkExt};
+use socket::Socket;
+use std::{
+    collections::HashMap,
+    io,
+    os::fd::{AsFd, AsRawFd},
+    path::Path,
+    sync::Arc,
+};
 use tokio::net::{UnixListener, UnixStream};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 
 pub mod error;
 pub mod protocol;
+pub mod socket;
 pub mod wire;
 
 use protocol::wayland::display::{Display, WlDisplay};
@@ -35,7 +45,7 @@ impl Verdi {
 
     pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
         match self.listener.accept().await {
-            Ok((stream, _)) => {
+            Ok((stream, _addr)) => {
                 let mut client = Client::new(stream);
 
                 let id = unsafe { ObjectId::from_raw(1) };
@@ -50,7 +60,7 @@ impl Verdi {
 }
 
 pub struct Client {
-    stream: Framed<UnixStream, MessageCodec>,
+    socket: Socket,
     store: Store,
     _next_id: usize,
     event_serial: u32,
@@ -58,8 +68,11 @@ pub struct Client {
 
 impl Client {
     pub fn new(stream: UnixStream) -> Self {
+        // let fd = stream.as_fd().as_raw_fd();
+
         Self {
-            stream: Framed::new(stream, MessageCodec::new()),
+            // stream: Framed::new(stream, MessageCodec::new(fd)),
+            socket: Socket::new(stream.into_std().unwrap()),
             _next_id: 0xff000000,
             store: Store::new(),
             event_serial: 0,
@@ -84,11 +97,11 @@ impl Client {
     }
 
     pub async fn next_message(&mut self) -> Result<Option<Message>, DecodeError> {
-        self.stream.try_next().await
+        self.socket.try_next().await
     }
 
     pub async fn send_message(&mut self, message: Message) -> Result<(), io::Error> {
-        self.stream.send(message).await
+        self.socket.send(message).await
     }
 }
 
