@@ -24,13 +24,13 @@ impl WlCompositor for Compositor {
         self.id
     }
 
-    async fn r#create_surface(&self, client: &mut Client, id: ObjectId) -> Result<()> {
+    async fn create_surface(&self, client: &mut Client, id: ObjectId) -> Result<()> {
         client.insert(id, Surface::new(id).into_dispatcher());
 
         Ok(())
     }
 
-    async fn r#create_region(&self, _client: &mut Client, _id: ObjectId) -> Result<()> {
+    async fn create_region(&self, _client: &mut Client, _id: ObjectId) -> Result<()> {
         todo!()
     }
 }

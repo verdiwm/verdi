@@ -76,7 +76,7 @@ impl WlRegistry for Registry {
         self.id
     }
 
-    async fn r#bind(&self, client: &mut Client, name: u32, id: NewId) -> Result<()> {
+    async fn bind(&self, client: &mut Client, name: u32, id: NewId) -> Result<()> {
         match name {
             RegistryGlobals::COMPOSITOR => {
                 client.insert(id.id, Compositor::new(id.id).into_dispatcher())

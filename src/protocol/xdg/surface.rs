@@ -60,11 +60,7 @@ impl XdgSurface for Surface {
         todo!()
     }
 
-    async fn ack_configure(
-        &self,
-        client: &mut crate::Client,
-        serial: u32,
-    ) -> crate::Result<()> {
+    async fn ack_configure(&self, client: &mut crate::Client, serial: u32) -> crate::Result<()> {
         todo!()
     }
 }

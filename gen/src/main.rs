@@ -209,6 +209,14 @@ const PROTOCOLS: [&str; 6] = [
     "wayland-protocols/stable/xdg-shell/xdg-shell.xml",
 ];
 
+const KEYWORDS: [&str; 51] = [
+    "as", "break", "const", "continue", "crate", "else", "enum", "extern", "false", "fn", "for",
+    "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref", "return",
+    "self", "Self", "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where",
+    "while", "async", "await", "dyn", "abstract", "become", "box", "do", "final", "macro",
+    "override", "priv", "typeof", "unsized", "virtual", "yield", "try",
+];
+
 fn main() -> Result<()> {
     let mut generated_path = OpenOptions::new()
         .truncate(true)
@@ -280,19 +288,23 @@ fn main() -> Result<()> {
                         }
                     }
 
-                    let name = enu.name.to_upper_camel_case();
+                    let mut name = enu.name.to_upper_camel_case();
+
+                    if KEYWORDS.contains(&name.as_str()) {
+                        name = format!("r#{name}")
+                    }
 
                     writeln!(
                         &mut generated_path,
                         r#"#[repr(u32)]
                         #[non_exhaustive]
                         #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                        pub enum r#{name} {{{variants}}}"#,
+                        pub enum {name} {{{variants}}}"#,
                     )?;
 
                     writeln!(
                         &mut generated_path,
-                        r#"impl TryFrom<u32> for r#{name} {{
+                        r#"impl TryFrom<u32> for {name} {{
                             type Error = crate::wire::DecodeError;
         
                             fn try_from(v: u32) -> Result<Self, Self::Error> {{
@@ -344,13 +356,13 @@ fn main() -> Result<()> {
                         &mut generated_path,
                         r#"bitflags::bitflags! {{
                             #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-                            pub struct r#{name}: u32 {{{variants}}}
+                            pub struct {name}: u32 {{{variants}}}
                         }}"#,
                     )?;
 
                     writeln!(
                         &mut generated_path,
-                        r#"impl TryFrom<u32> for r#{name} {{
+                        r#"impl TryFrom<u32> for {name} {{
                             type Error = crate::wire::DecodeError;
         
                             fn try_from(v: u32) -> Result<Self, Self::Error> {{
@@ -367,7 +379,7 @@ fn main() -> Result<()> {
 
             writeln!(
                 &mut generated_path,
-                r#"pub trait r#{trait_name}: crate::Dispatcher {{
+                r#"pub trait {trait_name}: crate::Dispatcher {{
                     const INTERFACE: &'static str = "{name}";
                     const VERSION: u32 = {version};
 
@@ -409,10 +421,16 @@ fn main() -> Result<()> {
                     ))
                 }
 
+                let mut name = request.name.to_snek_case();
+
+                if KEYWORDS.contains(&name.as_str()) {
+                    name = format!("r#{name}")
+                }
+
                 writeln!(
                     &mut generated_path,
-                    r#"{opcode} => {{tracing::debug!("{interface_name}.{name}");  self.r#{name}({args}).await}}"#,
-                    name = request.name.to_snek_case(),
+                    r#"{opcode} => {{tracing::debug!("{interface_name}.{og_name}");  self.{name}({args}).await}}"#,
+                    og_name = request.name.to_snek_case(),
                     interface_name = interface.name
                 )?;
             }
@@ -432,17 +450,28 @@ fn main() -> Result<()> {
                         ty = format!("Option<{ty}>");
                     }
 
-                    args.push_str(&format!("r#{name}: {ty},", name = arg.name.to_snek_case(),))
+                    let mut name = request.name.to_snek_case();
+
+                    if KEYWORDS.contains(&name.as_str()) {
+                        name = format!("r#{name}")
+                    }
+
+                    args.push_str(&format!("{name}: {ty},"))
                 }
 
                 for line in request.description.lines() {
                     writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
                 }
 
+                let mut name = request.name.to_snek_case();
+
+                if KEYWORDS.contains(&name.as_str()) {
+                    name = format!("r#{name}")
+                }
+
                 writeln!(
                     &mut generated_path,
-                    "async fn r#{name}({args}) -> crate::Result<()>;",
-                    name = request.name.to_snek_case()
+                    "async fn {name}({args}) -> crate::Result<()>;",
                 )?;
             }
 
@@ -453,8 +482,16 @@ fn main() -> Result<()> {
                 for arg in &event.args {
                     let mut ty = arg.to_rust_type().to_string();
                     let build_ty = arg.to_caller();
-                    let name = arg.name.to_snek_case();
+                    let mut name = arg.name.to_snek_case();
                     let mut build_name = arg.name.to_snek_case();
+
+                    if KEYWORDS.contains(&name.as_str()) {
+                        name = format!("r#{name}")
+                    }
+
+                    if KEYWORDS.contains(&build_name.as_str()) {
+                        build_name = format!("r#{name}")
+                    }
 
                     if let Some(name) = arg.to_enum_name() {
                         let e = find_enum(&protocol, &name);
@@ -474,7 +511,7 @@ fn main() -> Result<()> {
                         build_name = format!("Some({build_name})")
                     }
 
-                    args.push_str(&format!("r#{name}: {ty},",));
+                    args.push_str(&format!("{name}: {ty},",));
                     build_args.push_str(&format!(".put_{build_ty}({build_name})",));
                 }
 
@@ -482,19 +519,24 @@ fn main() -> Result<()> {
                     writeln!(&mut generated_path, r##"#[doc = r#"{}"#]"##, line.trim())?;
                 }
 
+                let mut name = event.name.to_snek_case();
+
+                if KEYWORDS.contains(&name.as_str()) {
+                    name = format!("r#{name}")
+                }
+
                 writeln!(
                     &mut generated_path,
-                    "async fn r#{name}({args}) -> crate::Result<()> {{",
-                    name = event.name.to_snek_case()
+                    "async fn {name}({args}) -> crate::Result<()> {{",
                 )?;
 
                 writeln!(
                     &mut generated_path,
-                    r#"tracing::debug!("-> {interface_name}.{name}");
+                    r#"tracing::debug!("-> {interface_name}.{og_name}");
                     let (payload,fds) = crate::wire::PayloadBuilder::new()
                     {build_args}
                     .build();"#,
-                    name = event.name.to_snek_case(),
+                    og_name = event.name.to_snek_case(),
                     interface_name = interface.name
                 )?;
 
