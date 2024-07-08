@@ -1,10 +1,49 @@
-use anyhow::{Context, Result};
-use std::{fs, process::exit};
-use tokio::task::JoinSet;
+use anyhow::{Context, Result as AnyResult};
+use std::{fs, io, path::Path, process::exit, sync::Arc};
+use tokio::{net::UnixListener, task::JoinSet};
 use tracing::{error, info};
-use verdi::{error::Error, Verdi};
+
+use verdi::{
+    error::Error,
+    protocol::wayland::display::{Display, WlDisplay},
+    wire::ObjectId,
+    Client,
+};
 
 const SOCKET_PATH: &str = "verdi.sock";
+
+#[derive(Debug)]
+pub struct Verdi {
+    _state: Arc<State>,
+    listener: UnixListener,
+}
+
+#[derive(Debug)]
+struct State {}
+
+impl Verdi {
+    pub fn new<P: AsRef<Path>>(path: P) -> AnyResult<Self> {
+        Ok(Self {
+            _state: Arc::new(State {}),
+            listener: UnixListener::bind(path)?,
+        })
+    }
+
+    pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
+        match self.listener.accept().await {
+            Ok((stream, _addr)) => {
+                let mut client = Client::new(stream);
+
+                let id = unsafe { ObjectId::from_raw(1) };
+
+                client.insert(id, Display::new(id).into_dispatcher());
+
+                Some(Ok(client))
+            }
+            Err(err) => Some(Err(err)),
+        }
+    }
+}
 
 /// Register a ctrl+c handler that ensures the socket is removed
 fn register_ctrl_c_handler() {
@@ -26,7 +65,7 @@ fn register_ctrl_c_handler() {
     });
 }
 
-fn main() -> Result<()> {
+fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
 
     // Create the tokio runtime manually instead of using a macro for better controll
