@@ -1,3 +1,5 @@
+use std::os::fd::RawFd;
+
 use arbitrary::Arbitrary;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
@@ -5,11 +7,13 @@ use tokio_util::codec::{Decoder, Encoder};
 use super::{DecodeError, Fixed, NewId, ObjectId};
 
 #[derive(Debug)]
-pub struct MessageCodec;
+pub struct MessageCodec {
+    stream: RawFd,
+}
 
 impl MessageCodec {
-    pub const fn new() -> Self {
-        Self
+    pub const fn new(fd: RawFd) -> Self {
+        Self { stream: fd }
     }
 }
 
