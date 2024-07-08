@@ -1,13 +1,8 @@
 use anyhow::{Context, Result};
 use std::{fs, process::exit};
 use tokio::task::JoinSet;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 use verdi::Verdi;
-
-// const SERVER_ID_START: usize = 0xff000000;
-
-// const WIDTH: usize = 1280;
-// const HEIGHT: usize = 720;
 
 const SOCKET_PATH: &str = "verdi.sock";
 
