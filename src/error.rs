@@ -8,7 +8,7 @@ pub enum Error {
     NotFound,
     #[error("Malformed")]
     Malformed(#[from] DecodeError),
-    #[error("Io error")]
+    #[error("Io Error: {0}")]
     IoError(#[from] io::Error),
     #[error("Unknown Opcode")]
     UnknownOpcode,
