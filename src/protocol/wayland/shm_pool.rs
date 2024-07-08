@@ -16,30 +16,32 @@ pub use crate::protocol::interfaces::wayland::wl_shm_pool::*;
 #[derive(Debug)]
 pub struct ShmPool;
 
-impl ShmPool {
-    pub async fn new(client: &mut Client, id: ObjectId, fd: OwnedFd, size: i32) -> Result<Self> {
-        // client.insert(id, Self::create_dispatcher());
-
-        let map = unsafe {
-            mmap(
-                null_mut(),
-                size as usize,
-                ProtFlags::READ | ProtFlags::WRITE,
-                MapFlags::SHARED,
-                fd,
-                0,
-            )
-            .map_err(io::Error::from)?
-        };
+impl WlShmPool for ShmPool {
+    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
+    where
+        Self: Sized,
+    {
+        // let map = unsafe {
+        //     mmap(
+        //         null_mut(),
+        //         size as usize,
+        //         ProtFlags::READ | ProtFlags::WRITE,
+        //         MapFlags::SHARED,
+        //         fd,
+        //         0,
+        //     )
+        //     .map_err(io::Error::from)?
+        // };
 
         todo!();
-
-        // Ok(())
     }
-}
 
-impl WlShmPool for ShmPool {
+    fn get_id(&self) -> crate::wire::ObjectId {
+        todo!()
+    }
+
     async fn r#create_buffer(
+        &self,
         client: &mut crate::Client,
         r#id: crate::wire::ObjectId,
         r#offset: i32,
@@ -51,11 +53,11 @@ impl WlShmPool for ShmPool {
         todo!()
     }
 
-    async fn r#destroy(client: &mut crate::Client) -> crate::Result<()> {
+    async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
-    async fn r#resize(client: &mut crate::Client, r#size: i32) -> crate::Result<()> {
+    async fn r#resize(&self, client: &mut crate::Client, r#size: i32) -> crate::Result<()> {
         todo!()
     }
 }
@@ -63,6 +65,6 @@ impl WlShmPool for ShmPool {
 #[async_trait]
 impl Dispatcher for ShmPool {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        <Self as WlShmPool>::handle_request(client, message).await
+        self.handle_request(client, message).await
     }
 }

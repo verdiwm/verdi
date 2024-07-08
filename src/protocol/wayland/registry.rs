@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use async_trait::async_trait;
 
 use crate::{
@@ -25,12 +23,54 @@ impl RegistryGlobals {
 }
 
 #[derive(Debug)]
-pub struct Registry;
+pub struct Registry {
+    id: ObjectId,
+}
+
+impl Registry {
+    pub async fn advertise_globals(&self, client: &mut Client) -> Result<()> {
+        self.global(
+            client,
+            RegistryGlobals::COMPOSITOR,
+            Compositor::INTERFACE.to_string(),
+            Compositor::VERSION,
+        )
+        .await?;
+
+        self.global(
+            client,
+            RegistryGlobals::SHM,
+            Shm::INTERFACE.to_string(),
+            Shm::VERSION,
+        )
+        .await?;
+
+        self.global(
+            client,
+            RegistryGlobals::WM_BASE,
+            WmBase::INTERFACE.to_string(),
+            WmBase::VERSION,
+        )
+        .await?;
+
+        Ok(())
+    }
+}
 
 impl WlRegistry for Registry {
-    async fn r#bind(client: &mut Client, name: u32, id: NewId) -> Result<()> {
+    fn new(id: ObjectId) -> Result<Self> {
+        Ok(Self { id })
+    }
+
+    fn get_id(&self) -> ObjectId {
+        self.id
+    }
+
+    async fn r#bind(&self, client: &mut Client, name: u32, id: NewId) -> Result<()> {
         match name {
-            RegistryGlobals::COMPOSITOR => client.insert(id.id, Compositor::new()),
+            RegistryGlobals::COMPOSITOR => {
+                client.insert(id.id, Compositor::new(id.id)?.into_dispatcher())
+            }
             RegistryGlobals::SHM => client.insert(id.id, Shm::new()),
             RegistryGlobals::WM_BASE => client.insert(id.id, WmBase::new()),
             _ => return Err(Error::NotFound),
@@ -43,42 +83,6 @@ impl WlRegistry for Registry {
 #[async_trait]
 impl Dispatcher for Registry {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        <Self as WlRegistry>::handle_request(client, message).await
-    }
-}
-
-impl Registry {
-    pub async fn new(
-        client: &mut Client,
-        id: ObjectId,
-    ) -> Result<Arc<Box<dyn Dispatcher + Send + Sync>>> {
-        Registry::global(
-            id,
-            client,
-            RegistryGlobals::COMPOSITOR,
-            Compositor::INTERFACE.to_string(),
-            Compositor::VERSION,
-        )
-        .await?;
-
-        Registry::global(
-            id,
-            client,
-            RegistryGlobals::SHM,
-            Shm::INTERFACE.to_string(),
-            Shm::VERSION,
-        )
-        .await?;
-
-        Registry::global(
-            id,
-            client,
-            RegistryGlobals::WM_BASE,
-            WmBase::INTERFACE.to_string(),
-            WmBase::VERSION,
-        )
-        .await?;
-
-        Ok(Arc::new(Box::new(Self {})))
+        self.handle_request(client, message).await
     }
 }

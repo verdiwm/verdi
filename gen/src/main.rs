@@ -367,10 +367,24 @@ fn main() -> Result<()> {
 
             writeln!(
                 &mut generated_path,
-                r#"pub trait r#{trait_name} {{
+                r#"pub trait r#{trait_name}: crate::Dispatcher {{
                     const INTERFACE: &'static str = "{name}";
                     const VERSION: u32 = {version};
-                    async fn handle_request(client: &mut crate::Client, message: &mut crate::wire::Message) -> crate::Result<()> {{
+
+                    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
+                    where
+                        Self: Sized;
+
+                    fn get_id(&self) -> crate::wire::ObjectId;
+
+                    fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+                    where
+                        Self: Sized + Send + Sync + 'static,
+                    {{
+                        std::sync::Arc::new(Box::new(self))
+                    }}
+                    
+                    async fn handle_request(&self, client: &mut crate::Client, message: &mut crate::wire::Message) -> crate::Result<()> {{
                     match message.opcode {{"#,
                 trait_name = interface.name.to_upper_camel_case(),
                 name = interface.name,
@@ -401,7 +415,7 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    r#"{opcode} => {{tracing::debug!("{interface_name}.{name}");  Self::r#{name}({args}).await}}"#,
+                    r#"{opcode} => {{tracing::debug!("{interface_name}.{name}");  self.r#{name}({args}).await}}"#,
                     name = request.name.to_snek_case(),
                     interface_name = interface.name
                 )?;
@@ -413,7 +427,7 @@ fn main() -> Result<()> {
             )?;
 
             for request in &interface.requests {
-                let mut args = "client: &mut crate::Client,".to_string();
+                let mut args = "&self,client: &mut crate::Client,".to_string();
 
                 for arg in &request.args {
                     let mut ty = arg.to_rust_type().to_string();
@@ -437,8 +451,7 @@ fn main() -> Result<()> {
             }
 
             for (opcode, event) in interface.events.iter().enumerate() {
-                let mut args =
-                    "dispatcher_id: crate::wire::ObjectId, client: &mut crate::Client,".to_string();
+                let mut args = "&self, client: &mut crate::Client,".to_string();
                 let mut build_args = String::new();
 
                 for arg in &event.args {
@@ -492,7 +505,7 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"client
-                .send_message(crate::wire::Message::new(dispatcher_id, {opcode}, payload, fds))
+                .send_message(crate::wire::Message::new(self.get_id(), {opcode}, payload, fds))
                 .await
                 .map_err(crate::error::Error::IoError)"#
                 )?;

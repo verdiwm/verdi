@@ -43,7 +43,10 @@ impl Verdi {
 
                 let id = unsafe { ObjectId::from_raw(1) };
 
-                client.insert(id, Display::new());
+                client.insert(
+                    id,
+                    unsafe { Display::new(id).unwrap_unchecked() }.into_dispatcher(),
+                );
 
                 Some(Ok(client))
             }
