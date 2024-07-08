@@ -1,54 +1,19 @@
 #![feature(unix_socket_ancillary_data)]
 
-use anyhow::Result as AnyResult;
 use async_trait::async_trait;
 use error::Error;
 use futures_util::SinkExt;
-use std::{collections::HashMap, io, path::Path, sync::Arc};
-use tokio::net::{UnixListener, UnixStream};
+use std::{collections::HashMap, io, sync::Arc};
+use tokio::net::UnixStream;
 use tokio_stream::StreamExt;
 
 pub mod error;
 pub mod protocol;
 pub mod wire;
 
-use protocol::wayland::display::{Display, WlDisplay};
 use wire::{DecodeError, Message, ObjectId, Socket};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
-
-#[derive(Debug)]
-pub struct Verdi {
-    _state: Arc<State>,
-    listener: UnixListener,
-}
-
-#[derive(Debug)]
-struct State {}
-
-impl Verdi {
-    pub fn new<P: AsRef<Path>>(path: P) -> AnyResult<Self> {
-        Ok(Self {
-            _state: Arc::new(State {}),
-            listener: UnixListener::bind(path)?,
-        })
-    }
-
-    pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
-        match self.listener.accept().await {
-            Ok((stream, _addr)) => {
-                let mut client = Client::new(stream);
-
-                let id = unsafe { ObjectId::from_raw(1) };
-
-                client.insert(id, Display::new(id).into_dispatcher());
-
-                Some(Ok(client))
-            }
-            Err(err) => Some(Err(err)),
-        }
-    }
-}
 
 pub struct Client {
     socket: Socket,
