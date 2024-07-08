@@ -22,8 +22,7 @@ pin_project! {
         stream: AsyncFd<UnixStream>,
         codec: MessageCodec,
         read_state: ReadState,
-        output_buffer: BytesMut,
-        output_fds: Vec<RawFd>,
+        write_state: WriteState,
     }
 }
 
@@ -84,13 +83,24 @@ impl ReadState {
     }
 }
 
+struct WriteState {
+    buffer: BytesMut,
+    fds: Vec<RawFd>,
+}
+
+impl WriteState {
+    pub fn new() -> Self {
+        Self {
+            buffer: BytesMut::with_capacity(8192),
+            fds: Vec::new(),
+        }
+    }
+}
+
 impl Stream for Socket {
     type Item = Result<Message, DecodeError>;
 
-    fn poll_next(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> Poll<Option<Self::Item>> {
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let pinned = self.project();
         let state = pinned.read_state;
 
@@ -194,10 +204,7 @@ impl Stream for Socket {
 impl Sink<Message> for Socket {
     type Error = io::Error;
 
-    fn poll_ready(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         match self.stream.poll_write_ready(cx) {
             Poll::Ready(_) => Poll::Ready(Ok(())),
             Poll::Pending => Poll::Pending,
@@ -205,9 +212,10 @@ impl Sink<Message> for Socket {
     }
 
     fn start_send(self: std::pin::Pin<&mut Self>, message: Message) -> Result<(), Self::Error> {
-        let mut pinned = self.project();
+        let pinned = self.project();
+        let state = pinned.write_state;
 
-        message.to_bytes(&mut pinned.output_buffer, &mut pinned.output_fds);
+        message.to_bytes(&mut state.buffer, &mut state.fds);
 
         Ok(())
     }
@@ -219,14 +227,18 @@ impl Sink<Message> for Socket {
         const MAX_BUFS: usize = 64;
 
         let pinned = self.project();
+        let state = pinned.write_state;
 
-        let mut ancillary = SocketAncillary::new(&mut []);
+        let mut ancillary_buffer = [0; 128];
+        let mut ancillary = SocketAncillary::new(&mut ancillary_buffer);
 
-        while !pinned.output_buffer.is_empty() {
+        ancillary.add_fds(&state.fds);
+
+        while !state.buffer.is_empty() {
             let mut guard = ready!(pinned.stream.poll_write_ready(cx))?;
 
             let mut slices = [IoSlice::new(&[]); MAX_BUFS];
-            let cnt = pinned.output_buffer.chunks_vectored(&mut slices);
+            let cnt = state.buffer.chunks_vectored(&mut slices);
 
             match guard.try_io(|stream| {
                 stream
@@ -234,7 +246,7 @@ impl Sink<Message> for Socket {
                     .send_vectored_with_ancillary(&slices[..cnt], &mut ancillary)
             }) {
                 Ok(Ok(len)) => {
-                    pinned.output_buffer.advance(len);
+                    state.buffer.advance(len);
 
                     if len == 0 {
                         return Poll::Ready(Err(io::Error::new(
@@ -272,8 +284,7 @@ impl Socket {
             stream: AsyncFd::new(stream).unwrap(),
             codec: MessageCodec::new(),
             read_state: ReadState::new(),
-            output_buffer: BytesMut::with_capacity(8192),
-            output_fds: Vec::new(),
+            write_state: WriteState::new(),
         }
     }
 
@@ -334,7 +345,7 @@ impl Socket {
                     for ancillary_result in ancillary.messages() {
                         if let AncillaryData::ScmRights(scm_rights) = ancillary_result.unwrap() {
                             for fd in scm_rights {
-                                println!("receive file descriptor: {fd}");
+                                trace!("receive file descriptor: {fd}");
                                 fds.push(fd);
                             }
                         }
