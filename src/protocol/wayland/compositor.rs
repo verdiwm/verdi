@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use async_trait::async_trait;
 
 use crate::{
@@ -10,20 +8,27 @@ use crate::{
 pub use crate::protocol::interfaces::wayland::wl_compositor::*;
 
 #[derive(Debug)]
-pub struct Compositor;
-
-impl Compositor {
-    pub fn new() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        Arc::new(Box::new(Self {}))
-    }
+pub struct Compositor {
+    id: ObjectId,
 }
 
 impl WlCompositor for Compositor {
-    async fn r#create_surface(_client: &mut Client, _id: ObjectId) -> Result<()> {
+    fn new(id: ObjectId) -> crate::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Self { id })
+    }
+
+    fn get_id(&self) -> crate::wire::ObjectId {
+        self.id
+    }
+
+    async fn r#create_surface(&self, _client: &mut Client, _id: ObjectId) -> Result<()> {
         todo!()
     }
 
-    async fn r#create_region(_client: &mut Client, _id: ObjectId) -> Result<()> {
+    async fn r#create_region(&self, _client: &mut Client, _id: ObjectId) -> Result<()> {
         todo!()
     }
 }
@@ -31,6 +36,6 @@ impl WlCompositor for Compositor {
 #[async_trait]
 impl Dispatcher for Compositor {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        <Self as WlCompositor>::handle_request(client, message).await
+        self.handle_request(client, message).await
     }
 }

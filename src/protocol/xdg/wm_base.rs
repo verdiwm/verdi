@@ -16,11 +16,23 @@ impl WmBase {
 }
 
 impl XdgWmBase for WmBase {
-    async fn r#destroy(client: &mut crate::Client) -> crate::Result<()> {
+    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+
+    fn get_id(&self) -> crate::wire::ObjectId {
+        todo!()
+    }
+
+    async fn r#destroy(&self, client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
     async fn r#create_positioner(
+        &self,
         client: &mut crate::Client,
         r#id: crate::wire::ObjectId,
     ) -> crate::Result<()> {
@@ -28,6 +40,7 @@ impl XdgWmBase for WmBase {
     }
 
     async fn r#get_xdg_surface(
+        &self,
         client: &mut crate::Client,
         r#id: crate::wire::ObjectId,
         r#surface: crate::wire::ObjectId,
@@ -35,7 +48,7 @@ impl XdgWmBase for WmBase {
         todo!()
     }
 
-    async fn r#pong(client: &mut crate::Client, r#serial: u32) -> crate::Result<()> {
+    async fn r#pong(&self, client: &mut crate::Client, r#serial: u32) -> crate::Result<()> {
         todo!()
     }
 }
@@ -43,6 +56,6 @@ impl XdgWmBase for WmBase {
 #[async_trait]
 impl Dispatcher for WmBase {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        <Self as XdgWmBase>::handle_request(client, message).await
+        self.handle_request(client, message).await
     }
 }

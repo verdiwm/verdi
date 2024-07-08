@@ -1,10 +1,10 @@
-use std::{os::fd::RawFd, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use rustix::fd::OwnedFd;
 
 use crate::{
-    protocol::wayland::shm_pool::ShmPool,
+    protocol::wayland::shm_pool::{ShmPool, WlShmPool},
     wire::{Message, ObjectId},
     Client, Dispatcher, Result,
 };
@@ -21,17 +21,33 @@ impl Shm {
 }
 
 impl WlShm for Shm {
+    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+
+    fn get_id(&self) -> crate::wire::ObjectId {
+        todo!()
+    }
+
     async fn r#create_pool(
+        &self,
         client: &mut Client,
         id: ObjectId,
         fd: OwnedFd,
         size: i32,
     ) -> Result<()> {
-        // ShmPool::new(client, id, fd, size).await
-        todo!()
+        // let shm_pool = ShmPool::new(client, id, fd, size)?;
+        let shm_pool = ShmPool::new(id)?;
+
+        client.insert(id, shm_pool.into_dispatcher());
+
+        Ok(())
     }
 
-    async fn r#release(_client: &mut Client) -> Result<()> {
+    async fn r#release(&self, _client: &mut Client) -> Result<()> {
         todo!()
     }
 }
@@ -39,6 +55,6 @@ impl WlShm for Shm {
 #[async_trait]
 impl Dispatcher for Shm {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        <Self as WlShm>::handle_request(client, message).await
+        self.handle_request(client, message).await
     }
 }
