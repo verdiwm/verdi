@@ -71,7 +71,13 @@ impl WlRegistry for Registry {
             RegistryGlobals::COMPOSITOR => {
                 client.insert(id.id, Compositor::new(id.id).into_dispatcher())
             }
-            RegistryGlobals::SHM => client.insert(id.id, Shm::new(id.id).into_dispatcher()),
+            RegistryGlobals::SHM => {
+                let shm = Shm::new(id.id);
+
+                shm.advertise_formats(client).await?;
+
+                client.insert(id.id, shm.into_dispatcher())
+            }
             RegistryGlobals::WM_BASE => client.insert(id.id, WmBase::new(id.id).into_dispatcher()),
             _ => return Err(Error::NotFound),
         }
