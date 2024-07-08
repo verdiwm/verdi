@@ -29,11 +29,11 @@ impl WlShm for Shm {
         &self,
         client: &mut Client,
         id: ObjectId,
-        _fd: OwnedFd,
-        _size: i32,
+        fd: OwnedFd,
+        size: i32,
     ) -> Result<()> {
         // let shm_pool = ShmPool::new(client, id, fd, size)?;
-        let shm_pool = ShmPool::new(id)?;
+        let shm_pool = ShmPool::new(id, fd, size)?;
 
         client.insert(id, shm_pool.into_dispatcher());
 

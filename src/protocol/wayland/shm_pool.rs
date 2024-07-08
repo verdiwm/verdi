@@ -1,9 +1,8 @@
-// use std::{io, ptr::null_mut};
+use std::{io, ptr::null_mut};
 
 use async_trait::async_trait;
-// use rustix::{
-//     mm::{mmap, MapFlags, ProtFlags},
-// };
+use rustix::fd::OwnedFd;
+use rustix::mm::{mmap, MapFlags, ProtFlags};
 
 use crate::{
     protocol::wayland::shm::Format,
@@ -19,21 +18,21 @@ pub struct ShmPool {
 }
 
 impl ShmPool {
-    pub fn new(id: ObjectId) -> Result<Self>
+    pub fn new(id: ObjectId, fd: OwnedFd, size: i32) -> Result<Self>
     where
         Self: Sized,
     {
-        // let map = unsafe {
-        //     mmap(
-        //         null_mut(),
-        //         size as usize,
-        //         ProtFlags::READ | ProtFlags::WRITE,
-        //         MapFlags::SHARED,
-        //         fd,
-        //         0,
-        //     )
-        //     .map_err(io::Error::from)?
-        // };
+        let map = unsafe {
+            mmap(
+                null_mut(),
+                size as usize,
+                ProtFlags::READ | ProtFlags::WRITE,
+                MapFlags::SHARED,
+                fd,
+                0,
+            )
+            .map_err(io::Error::from)?
+        };
 
         Ok(Self { id })
     }
