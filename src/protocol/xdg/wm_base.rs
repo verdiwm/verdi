@@ -9,11 +9,13 @@ pub use crate::protocol::interfaces::xdg_shell::xdg_wm_base::*;
 #[derive(Debug)]
 pub struct WmBase;
 
-impl XdgWmBase for WmBase {
-    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+impl WmBase {
+    pub fn new() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
         Arc::new(Box::new(Self {}))
     }
+}
 
+impl XdgWmBase for WmBase {
     async fn r#destroy(client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }

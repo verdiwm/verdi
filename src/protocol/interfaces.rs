@@ -63,7 +63,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"The sync request asks the server to emit the 'done' event"#]
             #[doc = r#"on the returned wl_callback object.  Since requests are"#]
             #[doc = r#"handled in-order and events are delivered in-order, this can"#]
@@ -172,7 +171,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Binds a new, client-created object to the server using the"#]
             #[doc = r#"specified name as the identifier."#]
             async fn r#bind(
@@ -244,7 +242,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Notify the client when the related request is done."#]
             async fn r#done(
                 dispatcher_id: crate::wire::ObjectId,
@@ -297,7 +294,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Ask the compositor to create a new surface."#]
             async fn r#create_surface(
                 client: &mut crate::Client,
@@ -352,7 +348,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Create a wl_buffer object from the pool."#]
             #[doc = r#""#]
             #[doc = r#"The buffer is created offset bytes into the pool and has"#]
@@ -836,7 +831,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Create a new wl_shm_pool object."#]
             #[doc = r#""#]
             #[doc = r#"The pool can be used to create shared memory based buffer"#]
@@ -903,7 +897,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Destroy a buffer. If and how you need to release the backing"#]
             #[doc = r#"storage is defined by the buffer factory interface."#]
             #[doc = r#""#]
@@ -1010,7 +1003,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Indicate that the client can accept the given mime type, or"#]
             #[doc = r#"NULL for not accepted."#]
             #[doc = r#""#]
@@ -1242,7 +1234,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"This request adds a mime type to the set of mime types"#]
             #[doc = r#"advertised to targets.  Can be called several times to offer"#]
             #[doc = r#"multiple types."#]
@@ -1470,7 +1461,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"This request asks the compositor to start a drag-and-drop"#]
             #[doc = r#"operation on behalf of the client."#]
             #[doc = r#""#]
@@ -1738,7 +1728,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Create a new data source."#]
             async fn r#create_data_source(
                 client: &mut crate::Client,
@@ -1803,7 +1792,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Create a shell surface for an existing surface. This gives"#]
             #[doc = r#"the wl_surface the role of a shell surface. If the wl_surface"#]
             #[doc = r#"already has another role, it raises a protocol error."#]
@@ -2001,7 +1989,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"A client must respond to a ping event with a pong request or"#]
             #[doc = r#"the client may be deemed unresponsive."#]
             async fn r#pong(client: &mut crate::Client, r#serial: u32) -> crate::Result<()>;
@@ -2362,7 +2349,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Deletes the surface and invalidates its object ID."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Set a buffer as the content of this surface."#]
@@ -2862,7 +2848,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"The ID provided will be initialized to the wl_pointer interface"#]
             #[doc = r#"for this seat."#]
             #[doc = r#""#]
@@ -3131,7 +3116,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Set the pointer surface, i.e., the surface that contains the"#]
             #[doc = r#"pointer image (cursor). This request gives the surface the role"#]
             #[doc = r#"of a cursor. If the surface already has another role, it raises"#]
@@ -3635,7 +3619,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             async fn r#release(client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"This event provides a file descriptor to the client which can be"#]
             #[doc = r#"memory-mapped in read-only mode to provide a keyboard mapping"#]
@@ -3842,7 +3825,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             async fn r#release(client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"A new touch point has appeared on the surface. This touch point is"#]
             #[doc = r#"assigned a unique ID. Future events from this touch point reference"#]
@@ -4155,7 +4137,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the output object anymore."#]
             async fn r#release(client: &mut crate::Client) -> crate::Result<()>;
@@ -4420,7 +4401,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Destroy the region.  This will invalidate the object ID."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Add the specified rectangle to the region."#]
@@ -4512,7 +4492,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Informs the server that the client will not be using this"#]
             #[doc = r#"protocol object anymore. This does not affect any other"#]
             #[doc = r#"objects, wl_subsurface objects included."#]
@@ -4661,7 +4640,6 @@ pub mod wayland {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"The sub-surface interface is removed from the wl_surface object"#]
             #[doc = r#"that was turned into a sub-surface with a"#]
             #[doc = r#"wl_subcompositor.get_subsurface request. The wl_surface's association"#]
@@ -4860,7 +4838,6 @@ pub mod linux_dmabuf_v1 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Objects created through this interface, especially wl_buffers, will"#]
             #[doc = r#"remain valid."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -5078,7 +5055,6 @@ pub mod linux_dmabuf_v1 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Cleans up the temporary data sent to the server for dmabuf-based"#]
             #[doc = r#"wl_buffer creation."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -5298,7 +5274,6 @@ pub mod linux_dmabuf_v1 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the wp_linux_dmabuf_feedback object anymore."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -5570,7 +5545,6 @@ pub mod presentation_time {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Informs the server that the client will no longer be using"#]
             #[doc = r#"this protocol object. Existing objects created by this object"#]
             #[doc = r#"are not affected."#]
@@ -5668,7 +5642,6 @@ pub mod presentation_time {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"As presentation can be synchronized to only one output at a"#]
             #[doc = r#"time, this event tells which output it was. This event is only"#]
             #[doc = r#"sent prior to the presented event."#]
@@ -5882,7 +5855,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Get the wp_tablet_seat object for the given seat. This object"#]
             #[doc = r#"provides access to all graphics tablets in this seat."#]
             async fn r#get_tablet_seat(
@@ -5914,7 +5886,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Destroy the wp_tablet_seat object. Objects created from this"#]
             #[doc = r#"object are unaffected and should be destroyed separately."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -6148,7 +6119,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Sets the surface of the cursor used for this tool on the given"#]
             #[doc = r#"tablet. This request only takes effect if the tool is in proximity"#]
             #[doc = r#"of one of the requesting client's surfaces or the surface parameter"#]
@@ -6628,7 +6598,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"This destroys the client's resource for this tablet object."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"A descriptive name for the tablet device."#]
@@ -6788,7 +6757,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Request that the compositor use the provided feedback string"#]
             #[doc = r#"associated with this ring. This request should be issued immediately"#]
             #[doc = r#"after a wp_tablet_pad_group.mode_switch event from the corresponding"#]
@@ -6960,7 +6928,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Requests the compositor to use the provided feedback string"#]
             #[doc = r#"associated with this strip. This request should be issued immediately"#]
             #[doc = r#"after a wp_tablet_pad_group.mode_switch event from the corresponding"#]
@@ -7118,7 +7085,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Destroy the wp_tablet_pad_group object. Objects created from this object"#]
             #[doc = r#"are unaffected and should be destroyed separately."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -7344,7 +7310,6 @@ pub mod tablet_v2 {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Requests the compositor to use the provided feedback string"#]
             #[doc = r#"associated with this button. This request should be issued immediately"#]
             #[doc = r#"after a wp_tablet_pad_group.mode_switch event from the corresponding"#]
@@ -7582,7 +7547,6 @@ pub mod viewporter {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Informs the server that the client will not be using this"#]
             #[doc = r#"protocol object anymore. This does not affect any other objects,"#]
             #[doc = r#"wp_viewport objects included."#]
@@ -7710,7 +7674,6 @@ pub mod viewporter {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"The associated wl_surface's crop and scale state is removed."#]
             #[doc = r#"The change is applied on the next wl_surface.commit."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -7835,7 +7798,6 @@ pub mod xdg_shell {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Destroy this xdg_wm_base object."#]
             #[doc = r#""#]
             #[doc = r#"Destroying a bound xdg_wm_base object while there are surfaces"#]
@@ -8079,7 +8041,6 @@ pub mod xdg_shell {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Notify the compositor that the xdg_positioner will no longer be used."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
             #[doc = r#"Set the size of the surface that is to be positioned with the positioner"#]
@@ -8326,7 +8287,6 @@ pub mod xdg_shell {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"Destroy the xdg_surface object. An xdg_surface must only be destroyed"#]
             #[doc = r#"after its role object has been destroyed, otherwise"#]
             #[doc = r#"a defunct_role_object error is raised."#]
@@ -8717,7 +8677,6 @@ pub mod xdg_shell {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"This request destroys the role surface and unmaps the surface;"#]
             #[doc = r#"see "Unmapping" behavior in interface section for details."#]
             async fn r#destroy(client: &mut crate::Client) -> crate::Result<()>;
@@ -9233,7 +9192,6 @@ pub mod xdg_shell {
                     _ => Err(crate::error::Error::UnknownOpcode),
                 }
             }
-            fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;
             #[doc = r#"This destroys the popup. Explicitly destroying the xdg_popup"#]
             #[doc = r#"object will also dismiss the popup, and unmap the surface."#]
             #[doc = r#""#]

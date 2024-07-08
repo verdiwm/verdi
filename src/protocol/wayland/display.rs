@@ -16,6 +16,12 @@ pub use crate::protocol::interfaces::wayland::wl_display::*;
 #[derive(Debug)]
 pub struct Display;
 
+impl Display {
+    pub fn new() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        Arc::new(Box::new(Self {}))
+    }
+}
+
 impl WlDisplay for Display {
     async fn sync(client: &mut Client, callback: ObjectId) -> Result<()> {
         let serial = client.next_event_serial();
@@ -26,11 +32,10 @@ impl WlDisplay for Display {
     }
 
     async fn get_registry(client: &mut Client, registry_id: ObjectId) -> Result<()> {
-        Registry::new(client, registry_id).await
-    }
+        let registry = Registry::new(client, registry_id).await?;
+        client.insert(registry_id, registry);
 
-    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        Arc::new(Box::new(Self {}))
+        Ok(())
     }
 }
 

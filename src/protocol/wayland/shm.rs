@@ -1,8 +1,10 @@
-use std::sync::Arc;
+use std::{os::fd::RawFd, sync::Arc};
 
 use async_trait::async_trait;
+use rustix::fd::OwnedFd;
 
 use crate::{
+    protocol::wayland::shm_pool::ShmPool,
     wire::{Message, ObjectId},
     Client, Dispatcher, Result,
 };
@@ -12,22 +14,25 @@ pub use crate::protocol::interfaces::wayland::wl_shm::*;
 #[derive(Debug)]
 pub struct Shm;
 
+impl Shm {
+    pub fn new() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        Arc::new(Box::new(Self {}))
+    }
+}
+
 impl WlShm for Shm {
     async fn r#create_pool(
-        _client: &mut Client,
-        _id: ObjectId,
-        _fd: std::os::unix::prelude::RawFd,
-        _size: i32,
+        client: &mut Client,
+        id: ObjectId,
+        fd: OwnedFd,
+        size: i32,
     ) -> Result<()> {
+        // ShmPool::new(client, id, fd, size).await
         todo!()
     }
 
     async fn r#release(_client: &mut Client) -> Result<()> {
         todo!()
-    }
-
-    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        Arc::new(Box::new(Self {}))
     }
 }
 

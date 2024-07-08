@@ -30,17 +30,13 @@ pub struct Registry;
 impl WlRegistry for Registry {
     async fn r#bind(client: &mut Client, name: u32, id: NewId) -> Result<()> {
         match name {
-            RegistryGlobals::COMPOSITOR => client.insert(id.id, Compositor::create_dispatcher()),
-            RegistryGlobals::SHM => client.insert(id.id, Shm::create_dispatcher()),
-            RegistryGlobals::WM_BASE => client.insert(id.id, WmBase::create_dispatcher()),
+            RegistryGlobals::COMPOSITOR => client.insert(id.id, Compositor::new()),
+            RegistryGlobals::SHM => client.insert(id.id, Shm::new()),
+            RegistryGlobals::WM_BASE => client.insert(id.id, WmBase::new()),
             _ => return Err(Error::NotFound),
         }
 
         Ok(())
-    }
-
-    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        Arc::new(Box::new(Self {}))
     }
 }
 
@@ -52,9 +48,10 @@ impl Dispatcher for Registry {
 }
 
 impl Registry {
-    pub async fn new(client: &mut Client, id: ObjectId) -> Result<()> {
-        client.insert(id, Self::create_dispatcher());
-
+    pub async fn new(
+        client: &mut Client,
+        id: ObjectId,
+    ) -> Result<Arc<Box<dyn Dispatcher + Send + Sync>>> {
         Registry::global(
             id,
             client,
@@ -82,6 +79,6 @@ impl Registry {
         )
         .await?;
 
-        Ok(())
+        Ok(Arc::new(Box::new(Self {})))
     }
 }

@@ -412,11 +412,6 @@ fn main() -> Result<()> {
                 "_ => Err(crate::error::Error::UnknownOpcode) }} }}"
             )?;
 
-            writeln!(
-                &mut generated_path,
-                "fn create_dispatcher() -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>;"
-            )?;
-
             for request in &interface.requests {
                 let mut args = "client: &mut crate::Client,".to_string();
 

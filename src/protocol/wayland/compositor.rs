@@ -12,6 +12,12 @@ pub use crate::protocol::interfaces::wayland::wl_compositor::*;
 #[derive(Debug)]
 pub struct Compositor;
 
+impl Compositor {
+    pub fn new() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
+        Arc::new(Box::new(Self {}))
+    }
+}
+
 impl WlCompositor for Compositor {
     async fn r#create_surface(_client: &mut Client, _id: ObjectId) -> Result<()> {
         todo!()
@@ -19,10 +25,6 @@ impl WlCompositor for Compositor {
 
     async fn r#create_region(_client: &mut Client, _id: ObjectId) -> Result<()> {
         todo!()
-    }
-
-    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        Arc::new(Box::new(Self {}))
     }
 }
 

@@ -9,11 +9,7 @@ pub use crate::protocol::interfaces::wayland::wl_callback::*;
 #[derive(Debug)]
 pub struct Callback;
 
-impl WlCallback for Callback {
-    fn create_dispatcher() -> Arc<Box<dyn Dispatcher + Send + Sync>> {
-        Arc::new(Box::new(Self {}))
-    }
-}
+impl WlCallback for Callback {}
 
 #[async_trait]
 impl Dispatcher for Callback {
