@@ -401,7 +401,7 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    r#"{opcode} => {{tracing::debug!("{interface_name} -> {name}");  Self::r#{name}({args}).await}}"#,
+                    r#"{opcode} => {{tracing::debug!("{interface_name}.{name}");  Self::r#{name}({args}).await}}"#,
                     name = request.name.to_snek_case(),
                     interface_name = interface.name
                 )?;
@@ -486,7 +486,7 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    r#"tracing::debug!("{interface_name} -> {name}");
+                    r#"tracing::debug!("-> {interface_name}.{name}");
                     let (payload,fds) = crate::wire::PayloadBuilder::new()
                     {build_args}
                     .build();"#,
