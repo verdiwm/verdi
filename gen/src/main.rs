@@ -195,7 +195,7 @@ impl Arg {
                 }
             }
             ArgType::Array => "array",
-            ArgType::Fd => "int",
+            ArgType::Fd => "fd",
         }
     }
 }
@@ -487,7 +487,7 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"tracing::debug!("{interface_name} -> {name}");
-                    let payload = crate::wire::PayloadBuilder::new()
+                    let (payload,fds) = crate::wire::PayloadBuilder::new()
                     {build_args}
                     .build();"#,
                     name = event.name.to_snek_case(),
@@ -497,7 +497,7 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"client
-                .send_message(crate::wire::Message::new(dispatcher_id, {opcode}, payload))
+                .send_message(crate::wire::Message::new(dispatcher_id, {opcode}, payload, fds))
                 .await
                 .map_err(crate::error::Error::IoError)"#
                 )?;

@@ -34,16 +34,24 @@ impl MessageCodec {
         Self {}
     }
 
-    fn decode(&mut self, src: &mut BytesMut) -> std::result::Result<Option<Message>, DecodeError> {
+    fn decode(
+        &mut self,
+        src: &mut BytesMut,
+        fds: &mut Vec<RawFd>,
+    ) -> std::result::Result<Option<Message>, DecodeError> {
         if src.is_empty() {
             return Ok(None);
         }
 
-        Message::from_bytes(src).map(Option::Some)
+        Message::from_bytes(src, fds).map(Option::Some)
     }
 
-    fn decode_eof(&mut self, buf: &mut BytesMut) -> Result<Option<Message>, DecodeError> {
-        match self.decode(buf)? {
+    fn decode_eof(
+        &mut self,
+        buf: &mut BytesMut,
+        fds: &mut Vec<RawFd>,
+    ) -> Result<Option<Message>, DecodeError> {
+        match self.decode(buf, fds)? {
             Some(frame) => Ok(Some(frame)),
             None => {
                 if buf.is_empty() {
@@ -110,11 +118,14 @@ impl Stream for Socket {
                 // pausing or framing
                 if state.eof {
                     // pausing
-                    let frame = pinned.codec.decode_eof(&mut state.buffer).map_err(|err| {
-                        trace!("Got an error, going to errored state");
-                        state.has_errored = true;
-                        err
-                    })?;
+                    let frame = pinned
+                        .codec
+                        .decode_eof(&mut state.buffer, &mut state.fds)
+                        .map_err(|err| {
+                            trace!("Got an error, going to errored state");
+                            state.has_errored = true;
+                            err
+                        })?;
                     if frame.is_none() {
                         state.is_readable = false; // prepare pausing -> paused
                     }
@@ -125,11 +136,15 @@ impl Stream for Socket {
                 // framing
                 trace!("attempting to decode a frame");
 
-                if let Some(frame) = pinned.codec.decode(&mut state.buffer).map_err(|op| {
-                    trace!("Got an error, going to errored state");
-                    state.has_errored = true;
-                    op
-                })? {
+                if let Some(frame) = pinned
+                    .codec
+                    .decode(&mut state.buffer, &mut state.fds)
+                    .map_err(|op| {
+                        trace!("Got an error, going to errored state");
+                        state.has_errored = true;
+                        op
+                    })?
+                {
                     trace!("frame decoded from buffer");
                     // implicit framing -> framing
                     return Poll::Ready(Some(Ok(frame)));
@@ -145,11 +160,12 @@ impl Stream for Socket {
             state.buffer.reserve(1);
             #[allow(clippy::blocks_in_conditions)]
             let bytect =
-                match Self::poll_read_buf(pinned.stream, cx, &mut state.buffer).map_err(|err| {
-                    trace!("Got an error, going to errored state");
-                    state.has_errored = true;
-                    err
-                })? {
+                match Self::poll_read_buf(pinned.stream, cx, &mut state.buffer, &mut state.fds)
+                    .map_err(|err| {
+                        trace!("Got an error, going to errored state");
+                        state.has_errored = true;
+                        err
+                    })? {
                     Poll::Ready(ct) => ct,
                     // implicit reading -> reading or implicit paused -> paused
                     Poll::Pending => return Poll::Pending,
@@ -191,7 +207,7 @@ impl Sink<Message> for Socket {
     fn start_send(self: std::pin::Pin<&mut Self>, message: Message) -> Result<(), Self::Error> {
         let mut pinned = self.project();
 
-        message.to_bytes(&mut pinned.output_buffer);
+        message.to_bytes(&mut pinned.output_buffer, &mut pinned.output_fds);
 
         Ok(())
     }
@@ -265,6 +281,7 @@ impl Socket {
         stream: &mut AsyncFd<UnixStream>,
         cx: &mut Context<'_>,
         buf: &mut B,
+        fds: &mut Vec<RawFd>,
     ) -> Poll<io::Result<usize>> {
         if !buf.has_remaining_mut() {
             return Poll::Ready(Ok(0));
@@ -278,7 +295,7 @@ impl Socket {
             let dst = unsafe { &mut *(dst as *mut _ as *mut [MaybeUninit<u8>]) };
             let mut buf = ReadBuf::uninit(dst);
             let ptr = buf.filled().as_ptr();
-            ready!(Self::poll_read(stream, cx, &mut buf)?);
+            ready!(Self::poll_read(stream, cx, &mut buf, fds)?);
 
             // Ensure the pointer does not change from under us
             assert_eq!(ptr, buf.filled().as_ptr());
@@ -298,11 +315,13 @@ impl Socket {
         stream: &mut AsyncFd<UnixStream>,
         cx: &mut Context<'_>,
         buf: &mut ReadBuf<'_>,
+        fds: &mut Vec<RawFd>,
     ) -> Poll<io::Result<()>> {
         loop {
             let mut guard = ready!(stream.poll_read_ready(cx))?;
 
-            let mut ancillary = SocketAncillary::new(&mut []);
+            let mut temp_buf = [0; 128];
+            let mut ancillary = SocketAncillary::new(&mut temp_buf);
 
             let unfilled = buf.initialize_unfilled();
 
@@ -312,6 +331,15 @@ impl Socket {
                     .recv_vectored_with_ancillary(&mut [IoSliceMut::new(unfilled)], &mut ancillary)
             }) {
                 Ok(Ok(len)) => {
+                    for ancillary_result in ancillary.messages() {
+                        if let AncillaryData::ScmRights(scm_rights) = ancillary_result.unwrap() {
+                            for fd in scm_rights {
+                                println!("receive file descriptor: {fd}");
+                                fds.push(fd);
+                            }
+                        }
+                    }
+
                     buf.advance(len);
                     return Poll::Ready(Ok(()));
                 }

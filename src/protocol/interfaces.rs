@@ -107,13 +107,13 @@ pub mod wayland {
                 r#message: String,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_display -> error");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(object_id))
                     .put_uint(code)
                     .put_string(Some(message))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -128,9 +128,9 @@ pub mod wayland {
                 r#id: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_display -> delete_id");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(id).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(id).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -193,13 +193,13 @@ pub mod wayland {
                 r#version: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_registry -> global");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(name)
                     .put_string(Some(interface))
                     .put_uint(version)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -219,9 +219,9 @@ pub mod wayland {
                 r#name: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_registry -> global_remove");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(name).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(name).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -252,11 +252,11 @@ pub mod wayland {
                 r#callback_data: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_callback -> done");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(callback_data)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -824,7 +824,7 @@ pub mod wayland {
                             message
                                 .object()?
                                 .ok_or(crate::wire::DecodeError::MalformedPayload)?,
-                            message.int()?,
+                            message.fd()?,
                             message.int()?,
                         )
                         .await
@@ -862,11 +862,11 @@ pub mod wayland {
                 r#format: Format,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_shm -> format");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(format as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -926,9 +926,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_buffer -> release");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -986,7 +986,7 @@ pub mod wayland {
                             message
                                 .string()?
                                 .ok_or(crate::wire::DecodeError::MalformedPayload)?,
-                            message.int()?,
+                            message.fd()?,
                         )
                         .await
                     }
@@ -1111,11 +1111,11 @@ pub mod wayland {
                 r#mime_type: String,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_offer -> offer");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(mime_type))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1129,11 +1129,11 @@ pub mod wayland {
                 r#source_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_offer -> source_actions");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(source_actions.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1178,11 +1178,11 @@ pub mod wayland {
                 r#dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_offer -> action");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(dnd_action.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1276,11 +1276,11 @@ pub mod wayland {
                 r#mime_type: Option<String>,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_source -> target");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(mime_type)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1294,12 +1294,12 @@ pub mod wayland {
                 r#fd: std::os::fd::RawFd,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_source -> send");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(mime_type))
-                    .put_int(fd)
+                    .put_fd(fd)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1328,9 +1328,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_source -> cancelled");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1348,9 +1348,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_source -> dnd_drop_performed");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1365,9 +1365,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_source -> dnd_finished");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1402,11 +1402,11 @@ pub mod wayland {
                 r#dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_source -> action");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(dnd_action.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1535,11 +1535,11 @@ pub mod wayland {
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_device -> data_offer");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1557,7 +1557,7 @@ pub mod wayland {
                 r#id: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_device -> enter");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .put_fixed(x)
@@ -1565,7 +1565,7 @@ pub mod wayland {
                     .put_object(id)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1577,9 +1577,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_device -> leave");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1595,13 +1595,13 @@ pub mod wayland {
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_device -> motion");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_fixed(x)
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1623,9 +1623,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_device -> drop");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1647,9 +1647,9 @@ pub mod wayland {
                 r#id: Option<crate::wire::ObjectId>,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_data_device -> selection");
-                let payload = crate::wire::PayloadBuilder::new().put_object(id).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_object(id).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2156,9 +2156,9 @@ pub mod wayland {
                 r#serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_shell_surface -> ping");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2187,13 +2187,13 @@ pub mod wayland {
                 r#height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_shell_surface -> configure");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(edges.bits())
                     .put_int(width)
                     .put_int(height)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2205,9 +2205,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_shell_surface -> popup_done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2698,11 +2698,11 @@ pub mod wayland {
                 r#output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_surface -> enter");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2721,11 +2721,11 @@ pub mod wayland {
                 r#output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_surface -> leave");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2747,9 +2747,9 @@ pub mod wayland {
                 r#factor: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_surface -> preferred_buffer_scale");
-                let payload = crate::wire::PayloadBuilder::new().put_int(factor).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2768,11 +2768,11 @@ pub mod wayland {
                 r#transform: super::wl_output::Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_surface -> preferred_buffer_transform");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(transform as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2932,11 +2932,11 @@ pub mod wayland {
                 r#capabilities: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_seat -> capabilities");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(capabilities.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2962,11 +2962,11 @@ pub mod wayland {
                 r#name: String,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_seat -> name");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3193,14 +3193,14 @@ pub mod wayland {
                 r#surface_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> enter");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .put_fixed(surface_x)
                     .put_fixed(surface_y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3216,12 +3216,12 @@ pub mod wayland {
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> leave");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3236,13 +3236,13 @@ pub mod wayland {
                 r#surface_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> motion");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_fixed(surface_x)
                     .put_fixed(surface_y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3269,14 +3269,14 @@ pub mod wayland {
                 r#state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> button");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_uint(button)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3304,13 +3304,13 @@ pub mod wayland {
                 r#value: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(axis as u32)
                     .put_fixed(value)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3353,9 +3353,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> frame");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3390,11 +3390,11 @@ pub mod wayland {
                 r#axis_source: AxisSource,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_source");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis_source as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3419,12 +3419,12 @@ pub mod wayland {
                 r#axis: Axis,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_stop");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(axis as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 7, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 7, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3465,12 +3465,12 @@ pub mod wayland {
                 r#discrete: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_discrete");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_int(discrete)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 8, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 8, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3502,12 +3502,12 @@ pub mod wayland {
                 r#value120: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_value120");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_int(value120)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 9, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 9, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3553,12 +3553,12 @@ pub mod wayland {
                 r#direction: AxisRelativeDirection,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_pointer -> axis_relative_direction");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_uint(direction as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 10, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 10, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3651,13 +3651,13 @@ pub mod wayland {
                 r#size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> keymap");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(format as u32)
-                    .put_int(fd)
+                    .put_fd(fd)
                     .put_uint(size)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3679,13 +3679,13 @@ pub mod wayland {
                 r#keys: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> enter");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .put_array(keys)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3706,12 +3706,12 @@ pub mod wayland {
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> leave");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3742,14 +3742,14 @@ pub mod wayland {
                 r#state: KeyState,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> key");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_uint(key)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3776,7 +3776,7 @@ pub mod wayland {
                 r#group: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> modifiers");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(mods_depressed)
                     .put_uint(mods_latched)
@@ -3784,7 +3784,7 @@ pub mod wayland {
                     .put_uint(group)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3807,12 +3807,12 @@ pub mod wayland {
                 r#delay: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_keyboard -> repeat_info");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(rate)
                     .put_int(delay)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3859,7 +3859,7 @@ pub mod wayland {
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_touch -> down");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_object(Some(surface))
@@ -3868,7 +3868,7 @@ pub mod wayland {
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3883,13 +3883,13 @@ pub mod wayland {
                 r#id: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_touch -> up");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_int(id)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3903,14 +3903,14 @@ pub mod wayland {
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_touch -> motion");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_int(id)
                     .put_fixed(x)
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3927,9 +3927,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_touch -> frame");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3946,9 +3946,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_touch -> cancel");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3985,13 +3985,13 @@ pub mod wayland {
                 r#minor: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_touch -> shape");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(id)
                     .put_fixed(major)
                     .put_fixed(minor)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4025,12 +4025,12 @@ pub mod wayland {
                 r#orientation: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_touch -> orientation");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(id)
                     .put_fixed(orientation)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4192,7 +4192,7 @@ pub mod wayland {
                 r#transform: Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> geometry");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(x)
                     .put_int(y)
                     .put_int(physical_width)
@@ -4203,7 +4203,7 @@ pub mod wayland {
                     .put_uint(transform as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4249,14 +4249,14 @@ pub mod wayland {
                 r#refresh: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> mode");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(flags.bits())
                     .put_int(width)
                     .put_int(height)
                     .put_int(refresh)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4270,9 +4270,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4300,9 +4300,9 @@ pub mod wayland {
                 r#factor: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> scale");
-                let payload = crate::wire::PayloadBuilder::new().put_int(factor).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4340,11 +4340,11 @@ pub mod wayland {
                 r#name: String,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> name");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4368,11 +4368,11 @@ pub mod wayland {
                 r#description: String,
             ) -> crate::Result<()> {
                 tracing::debug!("wl_output -> description");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(description))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4908,9 +4908,9 @@ pub mod linux_dmabuf_v1 {
                 r#format: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_v1 -> format");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(format).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(format).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4945,13 +4945,13 @@ pub mod linux_dmabuf_v1 {
                 r#modifier_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_v1 -> modifier");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(format)
                     .put_uint(modifier_hi)
                     .put_uint(modifier_lo)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5041,7 +5041,7 @@ pub mod linux_dmabuf_v1 {
                         tracing::debug!("zwp_linux_buffer_params_v1 -> add");
                         Self::r#add(
                             client,
-                            message.int()?,
+                            message.fd()?,
                             message.uint()?,
                             message.uint()?,
                             message.uint()?,
@@ -5218,11 +5218,11 @@ pub mod linux_dmabuf_v1 {
                 r#buffer: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_buffer_params_v1 -> created");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(buffer))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5237,9 +5237,9 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_buffer_params_v1 -> failed");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5312,9 +5312,9 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5339,12 +5339,12 @@ pub mod linux_dmabuf_v1 {
                 r#size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> format_table");
-                let payload = crate::wire::PayloadBuilder::new()
-                    .put_int(fd)
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                    .put_fd(fd)
                     .put_uint(size)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5377,9 +5377,9 @@ pub mod linux_dmabuf_v1 {
                 r#device: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> main_device");
-                let payload = crate::wire::PayloadBuilder::new().put_array(device).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5392,9 +5392,9 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5430,9 +5430,9 @@ pub mod linux_dmabuf_v1 {
                 r#device: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_target_device");
-                let payload = crate::wire::PayloadBuilder::new().put_array(device).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5466,11 +5466,11 @@ pub mod linux_dmabuf_v1 {
                 r#indices: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_formats");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_array(indices)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5488,11 +5488,11 @@ pub mod linux_dmabuf_v1 {
                 r#flags: TrancheFlags,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_linux_dmabuf_feedback_v1 -> tranche_flags");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(flags.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5622,9 +5622,9 @@ pub mod presentation_time {
                 r#clk_id: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("wp_presentation -> clock_id");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(clk_id).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(clk_id).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5683,11 +5683,11 @@ pub mod presentation_time {
                 r#output: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("wp_presentation_feedback -> sync_output");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5744,7 +5744,7 @@ pub mod presentation_time {
                 r#flags: Kind,
             ) -> crate::Result<()> {
                 tracing::debug!("wp_presentation_feedback -> presented");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(tv_sec_hi)
                     .put_uint(tv_sec_lo)
                     .put_uint(tv_nsec)
@@ -5754,7 +5754,7 @@ pub mod presentation_time {
                     .put_uint(flags.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5764,9 +5764,9 @@ pub mod presentation_time {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("wp_presentation_feedback -> discarded");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5928,11 +5928,11 @@ pub mod tablet_v2 {
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_seat_v2 -> tablet_added");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5946,11 +5946,11 @@ pub mod tablet_v2 {
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_seat_v2 -> tool_added");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5970,11 +5970,11 @@ pub mod tablet_v2 {
                 r#id: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_seat_v2 -> pad_added");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6199,11 +6199,11 @@ pub mod tablet_v2 {
                 r#tool_type: Type,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> type");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(tool_type as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6229,12 +6229,12 @@ pub mod tablet_v2 {
                 r#hardware_serial_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> hardware_serial");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(hardware_serial_hi)
                     .put_uint(hardware_serial_lo)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6255,12 +6255,12 @@ pub mod tablet_v2 {
                 r#hardware_id_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> hardware_id_wacom");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(hardware_id_hi)
                     .put_uint(hardware_id_lo)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6277,11 +6277,11 @@ pub mod tablet_v2 {
                 r#capability: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> capability");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(capability as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6293,9 +6293,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6318,9 +6318,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> removed");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6341,13 +6341,13 @@ pub mod tablet_v2 {
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> proximity_in");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(tablet))
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6368,9 +6368,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> proximity_out");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 7, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 7, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6392,9 +6392,9 @@ pub mod tablet_v2 {
                 r#serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> down");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 8, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 8, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6419,9 +6419,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> up");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 9, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 9, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6433,12 +6433,12 @@ pub mod tablet_v2 {
                 r#y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> motion");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(x)
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 10, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 10, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6453,11 +6453,11 @@ pub mod tablet_v2 {
                 r#pressure: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> pressure");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(pressure)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 11, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 11, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6472,11 +6472,11 @@ pub mod tablet_v2 {
                 r#distance: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> distance");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(distance)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 12, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 12, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6491,12 +6491,12 @@ pub mod tablet_v2 {
                 r#tilt_y: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> tilt");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(tilt_x)
                     .put_fixed(tilt_y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 13, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 13, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6509,11 +6509,11 @@ pub mod tablet_v2 {
                 r#degrees: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> rotation");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 14, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 14, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6528,9 +6528,9 @@ pub mod tablet_v2 {
                 r#position: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> slider");
-                let payload = crate::wire::PayloadBuilder::new().put_int(position).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(position).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 15, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 15, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6553,12 +6553,12 @@ pub mod tablet_v2 {
                 r#clicks: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> wheel");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .put_int(clicks)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 16, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 16, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6576,13 +6576,13 @@ pub mod tablet_v2 {
                 r#state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> button");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(button)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 17, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 17, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6596,9 +6596,9 @@ pub mod tablet_v2 {
                 r#time: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_tool_v2 -> frame");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(time).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 18, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 18, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6643,11 +6643,11 @@ pub mod tablet_v2 {
                 r#name: String,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_v2 -> name");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6665,12 +6665,12 @@ pub mod tablet_v2 {
                 r#pid: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_v2 -> id");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(vid)
                     .put_uint(pid)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6694,11 +6694,11 @@ pub mod tablet_v2 {
                 r#path: String,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_v2 -> path");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(path))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6711,9 +6711,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_v2 -> done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6727,9 +6727,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_v2 -> removed");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6833,11 +6833,11 @@ pub mod tablet_v2 {
                 r#source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_ring_v2 -> source");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(source as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6851,11 +6851,11 @@ pub mod tablet_v2 {
                 r#degrees: crate::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_ring_v2 -> angle");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6874,9 +6874,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_ring_v2 -> stop");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6899,9 +6899,9 @@ pub mod tablet_v2 {
                 r#time: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_ring_v2 -> frame");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(time).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7005,11 +7005,11 @@ pub mod tablet_v2 {
                 r#source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_strip_v2 -> source");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(source as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7024,11 +7024,11 @@ pub mod tablet_v2 {
                 r#position: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_strip_v2 -> position");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(position)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7047,9 +7047,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_strip_v2 -> stop");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7073,9 +7073,9 @@ pub mod tablet_v2 {
                 r#time: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_strip_v2 -> frame");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(time).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7140,11 +7140,11 @@ pub mod tablet_v2 {
                 r#buttons: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_group_v2 -> buttons");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_array(buttons)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7159,11 +7159,11 @@ pub mod tablet_v2 {
                 r#ring: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_group_v2 -> ring");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(ring))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7178,11 +7178,11 @@ pub mod tablet_v2 {
                 r#strip: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_group_v2 -> strip");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(strip))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7204,9 +7204,9 @@ pub mod tablet_v2 {
                 r#modes: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_group_v2 -> modes");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(modes).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(modes).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7219,9 +7219,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_group_v2 -> done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7260,13 +7260,13 @@ pub mod tablet_v2 {
                 r#mode: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_group_v2 -> mode_switch");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(serial)
                     .put_uint(mode)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7389,11 +7389,11 @@ pub mod tablet_v2 {
                 r#pad_group: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> group");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_object(Some(pad_group))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7413,11 +7413,11 @@ pub mod tablet_v2 {
                 r#path: String,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> path");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_string(Some(path))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7433,9 +7433,9 @@ pub mod tablet_v2 {
                 r#buttons: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> buttons");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(buttons).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(buttons).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7447,9 +7447,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7462,13 +7462,13 @@ pub mod tablet_v2 {
                 r#state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> button");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(button)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7481,13 +7481,13 @@ pub mod tablet_v2 {
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> enter");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(tablet))
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7500,12 +7500,12 @@ pub mod tablet_v2 {
                 r#surface: crate::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> leave");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7520,9 +7520,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("zwp_tablet_pad_v2 -> removed");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 7, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 7, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7890,9 +7890,9 @@ pub mod xdg_shell {
                 r#serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_wm_base -> ping");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8457,9 +8457,9 @@ pub mod xdg_shell {
                 r#serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_surface -> configure");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9058,13 +9058,13 @@ pub mod xdg_shell {
                 r#states: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_toplevel -> configure");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(width)
                     .put_int(height)
                     .put_array(states)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9081,9 +9081,9 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_toplevel -> close");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9109,12 +9109,12 @@ pub mod xdg_shell {
                 r#height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_toplevel -> configure_bounds");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(width)
                     .put_int(height)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9144,11 +9144,11 @@ pub mod xdg_shell {
                 r#capabilities: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_toplevel -> wm_capabilities");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_array(capabilities)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9331,14 +9331,14 @@ pub mod xdg_shell {
                 r#height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_popup -> configure");
-                let payload = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = crate::wire::PayloadBuilder::new()
                     .put_int(x)
                     .put_int(y)
                     .put_int(width)
                     .put_int(height)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9350,9 +9350,9 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_popup -> popup_done");
-                let payload = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9377,9 +9377,9 @@ pub mod xdg_shell {
                 r#token: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("xdg_popup -> repositioned");
-                let payload = crate::wire::PayloadBuilder::new().put_uint(token).build();
+                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(token).build();
                 client
-                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload))
+                    .send_message(crate::wire::Message::new(dispatcher_id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
