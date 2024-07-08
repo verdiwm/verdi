@@ -36,10 +36,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_display";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -177,10 +173,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_registry";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -269,10 +261,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_callback";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -315,10 +303,6 @@ pub mod wayland {
         pub trait r#WlCompositor: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_compositor";
             const VERSION: u32 = 6;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -383,10 +367,6 @@ pub mod wayland {
         pub trait r#WlShmPool: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_shm_pool";
             const VERSION: u32 = 2;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -890,10 +870,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_shm";
             const VERSION: u32 = 2;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -984,10 +960,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_buffer";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -1073,10 +1045,6 @@ pub mod wayland {
         pub trait r#WlDataOffer: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_data_offer";
             const VERSION: u32 = 3;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -1338,10 +1306,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_data_source";
             const VERSION: u32 = 3;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -1573,10 +1537,6 @@ pub mod wayland {
         pub trait r#WlDataDevice: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_data_device";
             const VERSION: u32 = 3;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -1851,10 +1811,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_data_device_manager";
             const VERSION: u32 = 3;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -1941,10 +1897,6 @@ pub mod wayland {
         pub trait r#WlShell: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_shell";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -2072,10 +2024,6 @@ pub mod wayland {
         pub trait r#WlShellSurface: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_shell_surface";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -2484,10 +2432,6 @@ pub mod wayland {
         pub trait r#WlSurface: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_surface";
             const VERSION: u32 = 6;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -3044,10 +2988,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_seat";
             const VERSION: u32 = 9;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -3348,10 +3288,6 @@ pub mod wayland {
         pub trait r#WlPointer: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_pointer";
             const VERSION: u32 = 9;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -3876,10 +3812,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_keyboard";
             const VERSION: u32 = 9;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -4096,10 +4028,6 @@ pub mod wayland {
         pub trait r#WlTouch: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_touch";
             const VERSION: u32 = 9;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -4418,10 +4346,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_output";
             const VERSION: u32 = 4;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -4672,10 +4596,6 @@ pub mod wayland {
             const INTERFACE: &'static str = "wl_region";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -4785,10 +4705,6 @@ pub mod wayland {
         pub trait r#WlSubcompositor: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_subcompositor";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -4933,10 +4849,6 @@ pub mod wayland {
         pub trait r#WlSubsurface: crate::Dispatcher {
             const INTERFACE: &'static str = "wl_subsurface";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -5149,10 +5061,6 @@ pub mod linux_dmabuf_v1 {
         pub trait r#ZwpLinuxDmabufV1: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_linux_dmabuf_v1";
             const VERSION: u32 = 5;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -5379,10 +5287,6 @@ pub mod linux_dmabuf_v1 {
         pub trait r#ZwpLinuxBufferParamsV1: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_linux_buffer_params_v1";
             const VERSION: u32 = 5;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -5652,10 +5556,6 @@ pub mod linux_dmabuf_v1 {
             const INTERFACE: &'static str = "zwp_linux_dmabuf_feedback_v1";
             const VERSION: u32 = 5;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -5919,10 +5819,6 @@ pub mod presentation_time {
             const INTERFACE: &'static str = "wp_presentation";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -6048,10 +5944,6 @@ pub mod presentation_time {
         pub trait r#WpPresentationFeedback: crate::Dispatcher {
             const INTERFACE: &'static str = "wp_presentation_feedback";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -6257,10 +6149,6 @@ pub mod tablet_v2 {
             const INTERFACE: &'static str = "zwp_tablet_manager_v2";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -6316,10 +6204,6 @@ pub mod tablet_v2 {
         pub trait r#ZwpTabletSeatV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_seat_v2";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -6553,10 +6437,6 @@ pub mod tablet_v2 {
         pub trait r#ZwpTabletToolV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_tool_v2";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -7040,10 +6920,6 @@ pub mod tablet_v2 {
             const INTERFACE: &'static str = "zwp_tablet_v2";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -7196,10 +7072,6 @@ pub mod tablet_v2 {
         pub trait r#ZwpTabletPadRingV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_pad_ring_v2";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -7377,10 +7249,6 @@ pub mod tablet_v2 {
             const INTERFACE: &'static str = "zwp_tablet_pad_strip_v2";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -7553,10 +7421,6 @@ pub mod tablet_v2 {
         pub trait r#ZwpTabletPadGroupV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_pad_group_v2";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -7774,10 +7638,6 @@ pub mod tablet_v2 {
         pub trait r#ZwpTabletPadV2: crate::Dispatcher {
             const INTERFACE: &'static str = "zwp_tablet_pad_v2";
             const VERSION: u32 = 1;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -8021,10 +7881,6 @@ pub mod viewporter {
             const INTERFACE: &'static str = "wp_viewporter";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -8162,10 +8018,6 @@ pub mod viewporter {
             const INTERFACE: &'static str = "wp_viewport";
             const VERSION: u32 = 1;
 
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
-
             fn get_id(&self) -> crate::wire::ObjectId;
 
             fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
@@ -8291,10 +8143,6 @@ pub mod xdg_shell {
         pub trait r#XdgWmBase: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_wm_base";
             const VERSION: u32 = 6;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -8531,10 +8379,6 @@ pub mod xdg_shell {
         pub trait r#XdgPositioner: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_positioner";
             const VERSION: u32 = 6;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -8809,10 +8653,6 @@ pub mod xdg_shell {
         pub trait r#XdgSurface: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_surface";
             const VERSION: u32 = 6;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -9169,10 +9009,6 @@ pub mod xdg_shell {
         pub trait r#XdgToplevel: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_toplevel";
             const VERSION: u32 = 6;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
@@ -9776,10 +9612,6 @@ pub mod xdg_shell {
         pub trait r#XdgPopup: crate::Dispatcher {
             const INTERFACE: &'static str = "xdg_popup";
             const VERSION: u32 = 6;
-
-            fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-            where
-                Self: Sized;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 

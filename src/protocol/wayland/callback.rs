@@ -12,14 +12,13 @@ pub struct Callback {
     id: ObjectId,
 }
 
-impl WlCallback for Callback {
-    fn new(id: ObjectId) -> Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Self { id })
+impl Callback {
+    pub fn new(id: ObjectId) -> Self {
+        Self { id }
     }
+}
 
+impl WlCallback for Callback {
     fn get_id(&self) -> ObjectId {
         self.id
     }

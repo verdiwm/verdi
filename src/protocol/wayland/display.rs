@@ -16,22 +16,21 @@ pub struct Display {
     id: ObjectId,
 }
 
-impl WlDisplay for Display {
-    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Self { id })
+impl Display {
+    pub fn new(id: ObjectId) -> Self {
+        Self { id }
     }
+}
 
-    fn get_id(&self) -> crate::wire::ObjectId {
+impl WlDisplay for Display {
+    fn get_id(&self) -> ObjectId {
         self.id
     }
 
     async fn sync(&self, client: &mut Client, callback: ObjectId) -> Result<()> {
         let serial = client.next_event_serial();
 
-        let callback = Callback::new(callback)?;
+        let callback = Callback::new(callback);
 
         callback.done(client, serial).await?;
 
@@ -39,7 +38,7 @@ impl WlDisplay for Display {
     }
 
     async fn get_registry(&self, client: &mut Client, registry_id: ObjectId) -> Result<()> {
-        let registry = Registry::new(registry_id)?;
+        let registry = Registry::new(registry_id);
 
         registry.advertise_globals(client).await?;
 

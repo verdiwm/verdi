@@ -371,10 +371,6 @@ fn main() -> Result<()> {
                     const INTERFACE: &'static str = "{name}";
                     const VERSION: u32 = {version};
 
-                    fn new(id: crate::wire::ObjectId) -> crate::Result<Self>
-                    where
-                        Self: Sized;
-
                     fn get_id(&self) -> crate::wire::ObjectId;
 
                     fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
