@@ -3,7 +3,7 @@
 use anyhow::Result as AnyResult;
 use async_trait::async_trait;
 use error::Error;
-use futures_util::{stream, SinkExt};
+use futures_util::SinkExt;
 use socket::Socket;
 use std::{collections::HashMap, io, path::Path, sync::Arc};
 use tokio::net::{UnixListener, UnixStream};
