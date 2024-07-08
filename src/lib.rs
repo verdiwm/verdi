@@ -4,18 +4,16 @@ use anyhow::Result as AnyResult;
 use async_trait::async_trait;
 use error::Error;
 use futures_util::SinkExt;
-use socket::Socket;
 use std::{collections::HashMap, io, path::Path, sync::Arc};
 use tokio::net::{UnixListener, UnixStream};
 use tokio_stream::StreamExt;
 
 pub mod error;
 pub mod protocol;
-pub mod socket;
 pub mod wire;
 
 use protocol::wayland::display::{Display, WlDisplay};
-use wire::{DecodeError, Message, ObjectId};
+use wire::{DecodeError, Message, ObjectId, Socket};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
 

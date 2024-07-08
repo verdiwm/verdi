@@ -15,7 +15,7 @@ use pin_project_lite::pin_project;
 use tokio::io::{unix::AsyncFd, ReadBuf};
 use tracing::trace;
 
-use crate::wire::{DecodeError, Message};
+use super::{DecodeError, Message};
 
 pin_project! {
     pub struct Socket {
@@ -27,9 +27,10 @@ pin_project! {
 }
 
 #[derive(Debug)]
-pub struct MessageCodec;
+struct MessageCodec;
+
 impl MessageCodec {
-    pub const fn new() -> Self {
+    const fn new() -> Self {
         Self {}
     }
 
