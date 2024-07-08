@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{
+    protocol::xdg::surface::{Surface, XdgSurface},
     wire::{Message, ObjectId},
     Client, Dispatcher, Result,
 };
@@ -37,11 +38,13 @@ impl XdgWmBase for WmBase {
 
     async fn get_xdg_surface(
         &self,
-        _client: &mut crate::Client,
-        _id: ObjectId,
-        _surface: ObjectId,
-    ) -> crate::Result<()> {
-        todo!()
+        client: &mut crate::Client,
+        id: ObjectId,
+        surface: ObjectId,
+    ) -> Result<()> {
+        client.insert(id, Surface::new(id, surface).into_dispatcher());
+
+        Ok(())
     }
 
     async fn pong(&self, _client: &mut crate::Client, _serial: u32) -> crate::Result<()> {
