@@ -158,7 +158,7 @@ mod tests {
             object_id: unsafe { ObjectId::from_raw(10) },
             opcode: 0,
             payload: Bytes::copy_from_slice(b"\x03\0\0\0"),
-            fds: Vec::new(),
+            fds: vec![10, 20, 0, 33, 48, 17],
         };
 
         let mut bytes = BytesMut::new();
