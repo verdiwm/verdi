@@ -1,4 +1,3 @@
-use arbitrary::Arbitrary;
 use std::num::NonZeroU32;
 
 pub struct Fixed(u32);
@@ -17,7 +16,8 @@ impl Fixed {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+#[cfg_attr(feature = "fuzz", derive(arbitrary::Arbitrary))]
 #[repr(transparent)]
 pub struct ObjectId(NonZeroU32);
 

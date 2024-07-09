@@ -1,12 +1,12 @@
 use std::os::fd::RawFd;
 
-use arbitrary::Arbitrary;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use rustix::fd::{FromRawFd, OwnedFd};
 
 use super::{DecodeError, Fixed, NewId, ObjectId};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "fuzz", derive(arbitrary::Arbitrary))]
 pub struct Message {
     pub object_id: ObjectId,
     pub opcode: u16,

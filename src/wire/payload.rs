@@ -1,12 +1,12 @@
 use std::os::fd::RawFd;
 
-use arbitrary::Arbitrary;
 use bytes::{BufMut, Bytes, BytesMut};
 use rustix::fd::AsRawFd;
 
 use super::{Fixed, NewId, ObjectId};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "fuzz", derive(arbitrary::Arbitrary))]
 pub struct PayloadBuilder {
     payload: BytesMut,
     fds: Vec<RawFd>,
