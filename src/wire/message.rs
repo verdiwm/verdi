@@ -30,7 +30,7 @@ impl Message {
         buf.put_u32_ne((((self.payload.len() + 8) as u32) << 16) | self.opcode as u32);
         buf.put_slice(&self.payload);
 
-        fds.copy_from_slice(&self.fds);
+        fds.extend_from_slice(&self.fds);
     }
 
     pub fn from_bytes(bytes: &mut BytesMut, fds: &mut Vec<RawFd>) -> Result<Self, DecodeError> {
