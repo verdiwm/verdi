@@ -8,11 +8,13 @@ edition = "2021"
 cargo-fuzz = true
 
 [dependencies]
+arbitrary = { version = "1.3.2", features = ["derive"] }
 bytes = "1.6.0"
 libfuzzer-sys = "0.4"
 
 [dependencies.verdi]
 path = ".."
+features = ["fuzz"]
 
 [[bin]]
 name = "message_from_bytes"

@@ -1,11 +1,19 @@
 #![no_main]
+use arbitrary::Arbitrary;
 use bytes::BytesMut;
 use libfuzzer_sys::fuzz_target;
-use verdi::message::Message;
+use std::os::fd::RawFd;
+use verdi::wire::Message;
 
-fuzz_target!(|data: &[u8]| {
-    let mut bytes = BytesMut::new();
-    bytes.extend_from_slice(data);
+#[derive(Debug, Arbitrary)]
+struct Data {
+    bytes: BytesMut,
+    fds: Vec<RawFd>,
+}
 
-    let _ = Message::from_bytes(&mut bytes);
+fuzz_target!(|data: Data| {
+    let mut bytes = data.bytes;
+    let mut fds = data.fds;
+
+    let _ = Message::from_bytes(&mut bytes, &mut fds);
 });
