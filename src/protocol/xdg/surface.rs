@@ -21,10 +21,6 @@ impl Surface {
 }
 
 impl XdgSurface for Surface {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }

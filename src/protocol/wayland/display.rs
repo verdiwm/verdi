@@ -23,10 +23,6 @@ impl Display {
 }
 
 impl WlDisplay for Display {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn sync(&self, client: &mut Client, callback: ObjectId) -> Result<()> {
         let serial = client.next_event_serial();
 

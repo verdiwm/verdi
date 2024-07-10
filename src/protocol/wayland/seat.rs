@@ -19,10 +19,6 @@ impl Seat {
 }
 
 impl WlSeat for Seat {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn get_pointer(
         &self,
         _client: &mut crate::Client,

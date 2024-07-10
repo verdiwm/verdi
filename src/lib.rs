@@ -43,8 +43,8 @@ impl Client {
         prev
     }
 
-    pub fn insert(&mut self, id: ObjectId, object: Arc<dyn Dispatcher + Send + Sync>) {
-        self.store.insert(id, object)
+    pub fn insert(&mut self, object: Arc<Object>) {
+        self.store.insert(object)
     }
 
     pub async fn handle_message(&mut self, message: &mut Message) -> Result<()> {
@@ -62,8 +62,19 @@ impl Client {
     }
 }
 
+pub struct Object {
+    pub id: ObjectId,
+    dispatcher: Box<dyn Dispatcher>,
+}
+
+impl Object {
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        self.dispatcher.dispatch(self.id, client, message).await
+    }
+}
+
 struct Store {
-    objects: HashMap<ObjectId, Arc<dyn Dispatcher + Send + Sync>>,
+    objects: HashMap<ObjectId, Arc<Object>>,
 }
 
 impl Store {
@@ -73,18 +84,23 @@ impl Store {
         }
     }
     // FIXME: handle possible error if id already exists
-    fn insert(&mut self, id: ObjectId, object: Arc<dyn Dispatcher + Send + Sync>) {
-        self.objects.insert(id, object);
+    fn insert(&mut self, object: Arc<Object>) {
+        self.objects.insert(object.id, object);
     }
 
-    fn get(&self, id: &ObjectId) -> Option<Arc<dyn Dispatcher + Send + Sync>> {
+    fn get(&self, id: &ObjectId) -> Option<Arc<Object>> {
         self.objects.get(id).map(|id| id.clone())
     }
 }
 
 #[async_trait]
 pub trait Dispatcher: DowncastSync {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
+    async fn dispatch(
+        &self,
+        object_id: ObjectId,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()>;
 }
 
 impl_downcast!(sync Dispatcher);

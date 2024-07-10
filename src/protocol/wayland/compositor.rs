@@ -20,10 +20,6 @@ impl Compositor {
 }
 
 impl WlCompositor for Compositor {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn create_surface(&self, client: &mut Client, id: ObjectId) -> Result<()> {
         client.insert(id, Surface::new(id).into_dispatcher());
 
@@ -37,7 +33,12 @@ impl WlCompositor for Compositor {
 
 #[async_trait]
 impl Dispatcher for Compositor {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        self.handle_request(client, message).await
+    async fn dispatch(
+        &self,
+        object_id: ObjectId,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()> {
+        self.handle_request(object_id, client, message).await
     }
 }

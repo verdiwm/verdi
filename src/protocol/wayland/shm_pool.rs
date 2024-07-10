@@ -59,10 +59,6 @@ impl ShmPool {
 }
 
 impl WlShmPool for ShmPool {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn create_buffer(
         &self,
         _client: &mut crate::Client,

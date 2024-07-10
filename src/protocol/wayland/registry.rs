@@ -72,10 +72,6 @@ impl Registry {
 }
 
 impl WlRegistry for Registry {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn bind(&self, client: &mut Client, name: u32, id: NewId) -> Result<()> {
         match name {
             RegistryGlobals::COMPOSITOR => {

@@ -28,10 +28,6 @@ impl Shm {
 }
 
 impl WlShm for Shm {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn create_pool(
         &self,
         client: &mut Client,
