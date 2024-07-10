@@ -1,14 +1,12 @@
-use async_trait::async_trait;
-
 use crate::{
     protocol::xdg::toplevel::{Toplevel, XdgToplevel},
-    wire::{Message, ObjectId},
-    Client, Dispatcher, Object, Result,
+    wire::ObjectId,
+    Dispatcher, Object, Result,
 };
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_surface::*;
 
-#[derive(Debug)]
+#[derive(Debug, Dispatcher)]
 pub struct Surface {
     wl_surface: ObjectId,
 }
@@ -65,17 +63,5 @@ impl XdgSurface for Surface {
         _serial: u32,
     ) -> crate::Result<()> {
         todo!()
-    }
-}
-
-#[async_trait]
-impl Dispatcher for Surface {
-    async fn dispatch(
-        &self,
-        object: &Object,
-        client: &mut Client,
-        message: &mut Message,
-    ) -> Result<()> {
-        self.handle_request(object, client, message).await
     }
 }

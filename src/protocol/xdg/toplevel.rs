@@ -1,10 +1,8 @@
-use async_trait::async_trait;
-
-use crate::{wire::Message, Client, Dispatcher, Object, Result};
+use crate::{Dispatcher, Object, Result};
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_toplevel::*;
 
-#[derive(Debug)]
+#[derive(Debug, Dispatcher)]
 pub struct Toplevel;
 
 impl Toplevel {
@@ -141,17 +139,5 @@ impl XdgToplevel for Toplevel {
         _client: &mut crate::Client,
     ) -> crate::Result<()> {
         todo!()
-    }
-}
-
-#[async_trait]
-impl Dispatcher for Toplevel {
-    async fn dispatch(
-        &self,
-        object: &Object,
-        client: &mut Client,
-        message: &mut Message,
-    ) -> Result<()> {
-        self.handle_request(object, client, message).await
     }
 }

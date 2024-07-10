@@ -1,6 +1,5 @@
 use std::{io, ptr::null_mut};
 
-use async_trait::async_trait;
 use rustix::{
     fd::OwnedFd,
     mm::{mmap, mremap, MapFlags, MremapFlags, ProtFlags},
@@ -8,11 +7,11 @@ use rustix::{
 use tokio::sync::RwLock;
 
 use crate::Object;
-use crate::{protocol::wayland::shm::Format, wire::Message, Client, Dispatcher, Result};
+use crate::{protocol::wayland::shm::Format, Dispatcher, Result};
 
 pub use crate::protocol::interfaces::wayland::wl_shm_pool::*;
 
-#[derive(Debug)]
+#[derive(Debug, Dispatcher)]
 pub struct ShmPool {
     _fd: OwnedFd,
     map: RwLock<Map>,
@@ -93,17 +92,5 @@ impl WlShmPool for ShmPool {
         write_guard.mem = mem.cast();
 
         Ok(())
-    }
-}
-
-#[async_trait]
-impl Dispatcher for ShmPool {
-    async fn dispatch(
-        &self,
-        object: &Object,
-        client: &mut Client,
-        message: &mut Message,
-    ) -> Result<()> {
-        self.handle_request(object, client, message).await
     }
 }
