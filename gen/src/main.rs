@@ -380,16 +380,16 @@ fn main() -> Result<()> {
             writeln!(
                 &mut generated_path,
                 r#"pub trait {trait_name}: crate::Dispatcher {{
-                    const INTERFACE: &'static str = "{name}";
+                    const INTERFACE: &str = "{name}";
                     const VERSION: u32 = {version};
 
                     fn get_id(&self) -> crate::wire::ObjectId;
 
-                    fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+                    fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
                     where
-                        Self: Sized + Send + Sync + 'static,
+                        Self: Sized,
                     {{
-                        std::sync::Arc::new(Box::new(self))
+                        std::sync::Arc::new(self)
                     }}
                     
                     async fn handle_request(&self, client: &mut crate::Client, message: &mut crate::wire::Message) -> crate::Result<()> {{

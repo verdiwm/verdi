@@ -33,16 +33,16 @@ pub mod wayland {
         #[doc = r#"The core global object.  This is a special singleton object.  It"#]
         #[doc = r#"is used for internal Wayland protocol features."#]
         pub trait WlDisplay: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_display";
+            const INTERFACE: &str = "wl_display";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -166,16 +166,16 @@ pub mod wayland {
         #[doc = r#"emit events to the client and lets the client invoke requests on"#]
         #[doc = r#"the object."#]
         pub trait WlRegistry: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_registry";
+            const INTERFACE: &str = "wl_registry";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -253,16 +253,16 @@ pub mod wayland {
         #[doc = r#"Note, because wl_callback objects are created from multiple independent"#]
         #[doc = r#"factory interfaces, the wl_callback interface is frozen at version 1."#]
         pub trait WlCallback: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_callback";
+            const INTERFACE: &str = "wl_callback";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -296,16 +296,16 @@ pub mod wayland {
         #[doc = r#"compositor is in charge of combining the contents of multiple"#]
         #[doc = r#"surfaces into one displayable output."#]
         pub trait WlCompositor: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_compositor";
+            const INTERFACE: &str = "wl_compositor";
             const VERSION: u32 = 6;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -360,16 +360,16 @@ pub mod wayland {
         #[doc = r#"setup/teardown overhead and is useful when interactively resizing"#]
         #[doc = r#"a surface or for many small buffers."#]
         pub trait WlShmPool: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_shm_pool";
+            const INTERFACE: &str = "wl_shm_pool";
             const VERSION: u32 = 2;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -862,16 +862,16 @@ pub mod wayland {
         #[doc = r#"are emitted to inform clients about the valid pixel formats"#]
         #[doc = r#"that can be used for buffers."#]
         pub trait WlShm: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_shm";
+            const INTERFACE: &str = "wl_shm";
             const VERSION: u32 = 2;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -952,16 +952,16 @@ pub mod wayland {
         #[doc = r#"Note, because wl_buffer objects are created from multiple independent"#]
         #[doc = r#"factory interfaces, the wl_buffer interface is frozen at version 1."#]
         pub trait WlBuffer: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_buffer";
+            const INTERFACE: &str = "wl_buffer";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -1038,16 +1038,16 @@ pub mod wayland {
         #[doc = r#"converted to and provides the mechanism for transferring the"#]
         #[doc = r#"data directly from the source client."#]
         pub trait WlDataOffer: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_data_offer";
+            const INTERFACE: &str = "wl_data_offer";
             const VERSION: u32 = 3;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -1298,16 +1298,16 @@ pub mod wayland {
         #[doc = r#"provides a way to describe the offered data and a way to respond"#]
         #[doc = r#"to requests to transfer the data."#]
         pub trait WlDataSource: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_data_source";
+            const INTERFACE: &str = "wl_data_source";
             const VERSION: u32 = 3;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -1525,16 +1525,16 @@ pub mod wayland {
         #[doc = r#"A wl_data_device provides access to inter-client data transfer"#]
         #[doc = r#"mechanisms such as copy-and-paste and drag-and-drop."#]
         pub trait WlDataDevice: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_data_device";
+            const INTERFACE: &str = "wl_data_device";
             const VERSION: u32 = 3;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -1798,16 +1798,16 @@ pub mod wayland {
         #[doc = r#"functioning properly. See wl_data_source.set_actions,"#]
         #[doc = r#"wl_data_offer.accept and wl_data_offer.finish for details."#]
         pub trait WlDataDeviceManager: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_data_device_manager";
+            const INTERFACE: &str = "wl_data_device_manager";
             const VERSION: u32 = 3;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -1885,16 +1885,16 @@ pub mod wayland {
         #[doc = r#"For desktop-style user interfaces, use xdg_shell. Compositors and clients"#]
         #[doc = r#"should not implement this interface."#]
         pub trait WlShell: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_shell";
+            const INTERFACE: &str = "wl_shell";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -2012,16 +2012,16 @@ pub mod wayland {
         #[doc = r#"wl_shell_surface_destroy() must be called before destroying"#]
         #[doc = r#"the wl_surface object."#]
         pub trait WlShellSurface: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_shell_surface";
+            const INTERFACE: &str = "wl_shell_surface";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -2420,16 +2420,16 @@ pub mod wayland {
         #[doc = r#"a cursor (cursor is a different role than sub-surface, and role"#]
         #[doc = r#"switching is not allowed)."#]
         pub trait WlSurface: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_surface";
+            const INTERFACE: &str = "wl_surface";
             const VERSION: u32 = 6;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -2975,16 +2975,16 @@ pub mod wayland {
         #[doc = r#"device is hot plugged.  A seat typically has a pointer and"#]
         #[doc = r#"maintains a keyboard focus and a pointer focus."#]
         pub trait WlSeat: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_seat";
+            const INTERFACE: &str = "wl_seat";
             const VERSION: u32 = 9;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -3272,16 +3272,16 @@ pub mod wayland {
         #[doc = r#"and button and axis events for button presses, button releases"#]
         #[doc = r#"and scrolling."#]
         pub trait WlPointer: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_pointer";
+            const INTERFACE: &str = "wl_pointer";
             const VERSION: u32 = 9;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -3795,16 +3795,16 @@ pub mod wayland {
         #[doc = r#"By default, the active surface is null, the keys currently logically down"#]
         #[doc = r#"are empty, the active modifiers and the active group are 0."#]
         pub trait WlKeyboard: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_keyboard";
+            const INTERFACE: &str = "wl_keyboard";
             const VERSION: u32 = 9;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -4012,16 +4012,16 @@ pub mod wayland {
         #[doc = r#"and ending with an up event. Events relating to the same"#]
         #[doc = r#"contact point can be identified by the ID of the sequence."#]
         pub trait WlTouch: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_touch";
+            const INTERFACE: &str = "wl_touch";
             const VERSION: u32 = 9;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -4329,16 +4329,16 @@ pub mod wayland {
         #[doc = r#"displays part of the compositor space.  This object is published"#]
         #[doc = r#"as global during start up, or when a monitor is hotplugged."#]
         pub trait WlOutput: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_output";
+            const INTERFACE: &str = "wl_output";
             const VERSION: u32 = 4;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -4571,16 +4571,16 @@ pub mod wayland {
         #[doc = r#"Region objects are used to describe the opaque and input"#]
         #[doc = r#"regions of a surface."#]
         pub trait WlRegion: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_region";
+            const INTERFACE: &str = "wl_region";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -4681,16 +4681,16 @@ pub mod wayland {
         #[doc = r#"objects. This should allow the compositor to pass YUV video buffer"#]
         #[doc = r#"processing to dedicated overlay hardware when possible."#]
         pub trait WlSubcompositor: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_subcompositor";
+            const INTERFACE: &str = "wl_subcompositor";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -4825,16 +4825,16 @@ pub mod wayland {
         #[doc = r#"The wl_surface.offset request is ignored: clients must use set_position"#]
         #[doc = r#"instead to move the sub-surface."#]
         pub trait WlSubsurface: crate::Dispatcher {
-            const INTERFACE: &'static str = "wl_subsurface";
+            const INTERFACE: &str = "wl_subsurface";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -5037,16 +5037,16 @@ pub mod linux_dmabuf_v1 {
         #[doc = r#"wait and signal fences implicitly passed via the DMA-BUF's reservation"#]
         #[doc = r#"mechanism."#]
         pub trait ZwpLinuxDmabufV1: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_linux_dmabuf_v1";
+            const INTERFACE: &str = "zwp_linux_dmabuf_v1";
             const VERSION: u32 = 5;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -5259,16 +5259,16 @@ pub mod linux_dmabuf_v1 {
         #[doc = r#"All planes required by the format must be given exactly once, but can"#]
         #[doc = r#"be given in any order. Each plane index can be set only once."#]
         pub trait ZwpLinuxBufferParamsV1: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_linux_buffer_params_v1";
+            const INTERFACE: &str = "zwp_linux_buffer_params_v1";
             const VERSION: u32 = 5;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -5527,16 +5527,16 @@ pub mod linux_dmabuf_v1 {
         #[doc = r#"event, tranche_formats events and then a tranche_done event), then one"#]
         #[doc = r#"done event."#]
         pub trait ZwpLinuxDmabufFeedbackV1: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_linux_dmabuf_feedback_v1";
+            const INTERFACE: &str = "zwp_linux_dmabuf_feedback_v1";
             const VERSION: u32 = 5;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -5790,16 +5790,16 @@ pub mod presentation_time {
         #[doc = r#"display update time and the update's target time, especially"#]
         #[doc = r#"when the compositor misses its target vertical blanking period."#]
         pub trait WpPresentation: crate::Dispatcher {
-            const INTERFACE: &'static str = "wp_presentation";
+            const INTERFACE: &str = "wp_presentation";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -5912,16 +5912,16 @@ pub mod presentation_time {
         #[doc = r#"Once a presentation_feedback object has delivered a 'presented'"#]
         #[doc = r#"or 'discarded' event it is automatically destroyed."#]
         pub trait WpPresentationFeedback: crate::Dispatcher {
-            const INTERFACE: &'static str = "wp_presentation_feedback";
+            const INTERFACE: &str = "wp_presentation_feedback";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -6116,16 +6116,16 @@ pub mod tablet_v2 {
         #[doc = r#"system. All tablets are associated with a seat, to get access to the"#]
         #[doc = r#"actual tablets, use wp_tablet_manager.get_tablet_seat."#]
         pub trait ZwpTabletManagerV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_manager_v2";
+            const INTERFACE: &str = "zwp_tablet_manager_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -6172,16 +6172,16 @@ pub mod tablet_v2 {
         #[doc = r#"seat. After binding to this interface, the compositor sends a set of"#]
         #[doc = r#"wp_tablet_seat.tablet_added and wp_tablet_seat.tool_added events."#]
         pub trait ZwpTabletSeatV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_seat_v2";
+            const INTERFACE: &str = "zwp_tablet_seat_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -6405,16 +6405,16 @@ pub mod tablet_v2 {
         #[doc = r#"Any events received before a wp_tablet_tool.frame event should be"#]
         #[doc = r#"considered part of the same hardware state change."#]
         pub trait ZwpTabletToolV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_tool_v2";
+            const INTERFACE: &str = "zwp_tablet_tool_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -6883,16 +6883,16 @@ pub mod tablet_v2 {
         #[doc = r#"wp_tablet_seat.tablet_added event. This initial event sequence is"#]
         #[doc = r#"terminated by a wp_tablet.done event."#]
         pub trait ZwpTabletV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_v2";
+            const INTERFACE: &str = "zwp_tablet_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -7028,16 +7028,16 @@ pub mod tablet_v2 {
         #[doc = r#"Events on a ring are logically grouped by the wl_tablet_pad_ring.frame"#]
         #[doc = r#"event."#]
         pub trait ZwpTabletPadRingV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_pad_ring_v2";
+            const INTERFACE: &str = "zwp_tablet_pad_ring_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -7204,16 +7204,16 @@ pub mod tablet_v2 {
         #[doc = r#"Events on a strip are logically grouped by the wl_tablet_pad_strip.frame"#]
         #[doc = r#"event."#]
         pub trait ZwpTabletPadStripV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_pad_strip_v2";
+            const INTERFACE: &str = "zwp_tablet_pad_strip_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -7377,16 +7377,16 @@ pub mod tablet_v2 {
         #[doc = r#"actions, and/or issue the respective .set_feedback requests to notify the"#]
         #[doc = r#"compositor. See the wp_tablet_pad_group.mode_switch event for more details."#]
         pub trait ZwpTabletPadGroupV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_pad_group_v2";
+            const INTERFACE: &str = "zwp_tablet_pad_group_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -7594,16 +7594,16 @@ pub mod tablet_v2 {
         #[doc = r#"actions to a single pad feature. Only one mode can be active per group,"#]
         #[doc = r#"although different groups may have different active modes."#]
         pub trait ZwpTabletPadV2: crate::Dispatcher {
-            const INTERFACE: &'static str = "zwp_tablet_pad_v2";
+            const INTERFACE: &str = "zwp_tablet_pad_v2";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -7828,16 +7828,16 @@ pub mod viewporter {
         #[doc = r#"disconnecting the direct relationship between the buffer and the"#]
         #[doc = r#"surface size."#]
         pub trait WpViewporter: crate::Dispatcher {
-            const INTERFACE: &'static str = "wp_viewporter";
+            const INTERFACE: &str = "wp_viewporter";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -7965,16 +7965,16 @@ pub mod viewporter {
         #[doc = r#"state is removed from the wl_surface. The change will be applied"#]
         #[doc = r#"on the next wl_surface.commit."#]
         pub trait WpViewport: crate::Dispatcher {
-            const INTERFACE: &'static str = "wp_viewport";
+            const INTERFACE: &str = "wp_viewport";
             const VERSION: u32 = 1;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -8091,16 +8091,16 @@ pub mod xdg_shell {
         #[doc = r#"create windows that can be dragged, resized, maximized, etc, as well as"#]
         #[doc = r#"creating transient windows such as popup menus."#]
         pub trait XdgWmBase: crate::Dispatcher {
-            const INTERFACE: &'static str = "xdg_wm_base";
+            const INTERFACE: &str = "xdg_wm_base";
             const VERSION: u32 = 6;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -8327,16 +8327,16 @@ pub mod xdg_shell {
         #[doc = r#"set_anchor_rect. Passing an incomplete xdg_positioner object when"#]
         #[doc = r#"positioning a surface raises an invalid_positioner error."#]
         pub trait XdgPositioner: crate::Dispatcher {
-            const INTERFACE: &'static str = "xdg_positioner";
+            const INTERFACE: &str = "xdg_positioner";
             const VERSION: u32 = 6;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -8599,16 +8599,16 @@ pub mod xdg_shell {
         #[doc = r#"has not been destroyed, i.e. the client must perform the initial commit"#]
         #[doc = r#"again before attaching a buffer."#]
         pub trait XdgSurface: crate::Dispatcher {
-            const INTERFACE: &'static str = "xdg_surface";
+            const INTERFACE: &str = "xdg_surface";
             const VERSION: u32 = 6;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -8955,16 +8955,16 @@ pub mod xdg_shell {
         #[doc = r#""#]
         #[doc = r#"Attaching a null buffer to a toplevel unmaps the surface."#]
         pub trait XdgToplevel: crate::Dispatcher {
-            const INTERFACE: &'static str = "xdg_toplevel";
+            const INTERFACE: &str = "xdg_toplevel";
             const VERSION: u32 = 6;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(
@@ -9558,16 +9558,16 @@ pub mod xdg_shell {
         #[doc = r#"The client must call wl_surface.commit on the corresponding wl_surface"#]
         #[doc = r#"for the xdg_popup state to take effect."#]
         pub trait XdgPopup: crate::Dispatcher {
-            const INTERFACE: &'static str = "xdg_popup";
+            const INTERFACE: &str = "xdg_popup";
             const VERSION: u32 = 6;
 
             fn get_id(&self) -> crate::wire::ObjectId;
 
-            fn into_dispatcher(self) -> std::sync::Arc<Box<dyn crate::Dispatcher + Send + Sync>>
+            fn into_dispatcher(self) -> std::sync::Arc<dyn crate::Dispatcher>
             where
-                Self: Sized + Send + Sync + 'static,
+                Self: Sized,
             {
-                std::sync::Arc::new(Box::new(self))
+                std::sync::Arc::new(self)
             }
 
             async fn handle_request(

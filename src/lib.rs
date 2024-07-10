@@ -1,6 +1,7 @@
 #![feature(unix_socket_ancillary_data)]
 
 use async_trait::async_trait;
+use downcast_rs::{impl_downcast, DowncastSync};
 use error::Error;
 use futures_util::SinkExt;
 use std::{collections::HashMap, io, sync::Arc};
@@ -42,7 +43,7 @@ impl Client {
         prev
     }
 
-    pub fn insert(&mut self, id: ObjectId, object: Arc<Box<dyn Dispatcher + Send + Sync>>) {
+    pub fn insert(&mut self, id: ObjectId, object: Arc<dyn Dispatcher + Send + Sync>) {
         self.store.insert(id, object)
     }
 
@@ -62,7 +63,7 @@ impl Client {
 }
 
 struct Store {
-    objects: HashMap<ObjectId, Arc<Box<dyn Dispatcher + Send + Sync>>>,
+    objects: HashMap<ObjectId, Arc<dyn Dispatcher + Send + Sync>>,
 }
 
 impl Store {
@@ -72,16 +73,18 @@ impl Store {
         }
     }
     // FIXME: handle possible error if id already exists
-    fn insert(&mut self, id: ObjectId, object: Arc<Box<dyn Dispatcher + Send + Sync>>) {
+    fn insert(&mut self, id: ObjectId, object: Arc<dyn Dispatcher + Send + Sync>) {
         self.objects.insert(id, object);
     }
 
-    fn get(&self, id: &ObjectId) -> Option<Arc<Box<dyn Dispatcher + Send + Sync>>> {
+    fn get(&self, id: &ObjectId) -> Option<Arc<dyn Dispatcher + Send + Sync>> {
         self.objects.get(id).map(|id| id.clone())
     }
 }
 
 #[async_trait]
-pub trait Dispatcher {
+pub trait Dispatcher: DowncastSync {
     async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
 }
+
+impl_downcast!(sync Dispatcher);
