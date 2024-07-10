@@ -1,14 +1,12 @@
-use async_trait::async_trait;
-
 use crate::{
     protocol::xdg::surface::{Surface, XdgSurface},
-    wire::{Message, ObjectId},
-    Client, Dispatcher, Object, Result,
+    wire::ObjectId,
+    Dispatcher, Object, Result,
 };
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_wm_base::*;
 
-#[derive(Debug)]
+#[derive(Debug, Dispatcher)]
 pub struct WmBase;
 
 impl WmBase {
@@ -50,17 +48,5 @@ impl XdgWmBase for WmBase {
         _serial: u32,
     ) -> crate::Result<()> {
         todo!()
-    }
-}
-
-#[async_trait]
-impl Dispatcher for WmBase {
-    async fn dispatch(
-        &self,
-        object: &Object,
-        client: &mut Client,
-        message: &mut Message,
-    ) -> Result<()> {
-        self.handle_request(object, client, message).await
     }
 }

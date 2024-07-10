@@ -16,6 +16,8 @@ use wire::{DecodeError, Message, ObjectId, Socket};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
 
+pub(crate) use verdi_macros::Dispatcher;
+
 pub struct Client {
     socket: Socket,
     store: Store,

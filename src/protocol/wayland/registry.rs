@@ -1,5 +1,3 @@
-use async_trait::async_trait;
-
 use crate::{
     protocol::{
         wayland::{
@@ -9,7 +7,7 @@ use crate::{
         },
         xdg::wm_base::{WmBase, XdgWmBase},
     },
-    wire::{Message, NewId},
+    wire::NewId,
     Client, Dispatcher, Error, Object, Result,
 };
 
@@ -24,7 +22,7 @@ impl RegistryGlobals {
     pub const SEAT: u32 = 3;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Dispatcher)]
 pub struct Registry;
 
 impl Registry {
@@ -100,17 +98,5 @@ impl WlRegistry for Registry {
         }
 
         Ok(())
-    }
-}
-
-#[async_trait]
-impl Dispatcher for Registry {
-    async fn dispatch(
-        &self,
-        object: &Object,
-        client: &mut Client,
-        message: &mut Message,
-    ) -> Result<()> {
-        self.handle_request(object, client, message).await
     }
 }

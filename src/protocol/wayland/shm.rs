@@ -1,15 +1,14 @@
-use async_trait::async_trait;
 use rustix::fd::OwnedFd;
 
 use crate::{
     protocol::wayland::shm_pool::{ShmPool, WlShmPool},
-    wire::{Message, ObjectId},
+    wire::ObjectId,
     Client, Dispatcher, Object, Result,
 };
 
 pub use crate::protocol::interfaces::wayland::wl_shm::*;
 
-#[derive(Debug)]
+#[derive(Debug, Dispatcher)]
 pub struct Shm;
 
 impl Shm {
@@ -41,17 +40,5 @@ impl WlShm for Shm {
 
     async fn release(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         todo!()
-    }
-}
-
-#[async_trait]
-impl Dispatcher for Shm {
-    async fn dispatch(
-        &self,
-        object: &Object,
-        client: &mut Client,
-        message: &mut Message,
-    ) -> Result<()> {
-        self.handle_request(object, client, message).await
     }
 }

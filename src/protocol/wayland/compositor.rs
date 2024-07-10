@@ -1,14 +1,12 @@
-use async_trait::async_trait;
-
 use crate::{
     protocol::wayland::surface::{Surface, WlSurface},
-    wire::{Message, ObjectId},
+    wire::ObjectId,
     Client, Dispatcher, Object, Result,
 };
 
 pub use crate::protocol::interfaces::wayland::wl_compositor::*;
 
-#[derive(Debug)]
+#[derive(Debug, Dispatcher)]
 pub struct Compositor;
 
 impl Compositor {
@@ -36,17 +34,5 @@ impl WlCompositor for Compositor {
         _id: ObjectId,
     ) -> Result<()> {
         todo!()
-    }
-}
-
-#[async_trait]
-impl Dispatcher for Compositor {
-    async fn dispatch(
-        &self,
-        object: &Object,
-        client: &mut Client,
-        message: &mut Message,
-    ) -> Result<()> {
-        self.handle_request(object, client, message).await
     }
 }
