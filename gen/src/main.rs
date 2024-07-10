@@ -315,6 +315,15 @@ fn main() -> Result<()> {
                             }}
                         }}"#
                     )?;
+
+                    // writeln!(
+                    //     &mut generated_path,
+                    //     r#"impl std::fmt::Display for {name} {{
+                    //         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {{
+                    //             write!(f, "{{}}", *self as u32)
+                    //         }}
+                    //     }}"#
+                    // )?;
                 } else {
                     let mut variants = String::new();
 
@@ -425,7 +434,7 @@ fn main() -> Result<()> {
 
                 writeln!(
                     &mut generated_path,
-                    r#"{opcode} => {{tracing::debug!("{interface_name}.{og_name}");  self.{name}({args}).await}}"#,
+                    r#"{opcode} => {{tracing::debug!("{interface_name}#{{}}.{og_name}()", object.id);  self.{name}({args}).await}}"#,
                     og_name = request.name.to_snek_case(),
                     interface_name = interface.name
                 )?;
@@ -476,6 +485,8 @@ fn main() -> Result<()> {
                 let mut args =
                     "&self, _object: &crate::Object, client: &mut crate::Client,".to_string();
                 let mut build_args = String::new();
+                let mut tracing_args = String::new();
+                let mut num_tracing_args = 0usize;
 
                 for arg in &event.args {
                     let mut ty = arg.to_rust_type().to_string();
@@ -511,6 +522,8 @@ fn main() -> Result<()> {
 
                     args.push_str(&format!("{name}: {ty},",));
                     build_args.push_str(&format!(".put_{build_ty}({build_name})",));
+                    tracing_args.push_str(&format!("{name},"));
+                    num_tracing_args += 1;
                 }
 
                 for line in event.description.lines() {
@@ -528,14 +541,21 @@ fn main() -> Result<()> {
                     "async fn {name}({args}) -> crate::Result<()> {{",
                 )?;
 
+                let mut tracing_brackets = String::new();
+                (0..num_tracing_args).for_each(|_| tracing_brackets.push_str("{}, "));
+
+                let tracing_brackets = tracing_brackets
+                    .strip_suffix(", ")
+                    .unwrap_or(&tracing_brackets);
+
                 writeln!(
                     &mut generated_path,
-                    r#"tracing::debug!("-> {interface_name}.{og_name}");
+                    r#"tracing::debug!("-> {interface_name}#{{}}.{og_name}()", _object.id);
                     let (payload,fds) = crate::wire::PayloadBuilder::new()
                     {build_args}
                     .build();"#,
                     og_name = event.name.to_snek_case(),
-                    interface_name = interface.name
+                    interface_name = interface.name,
                 )?;
 
                 writeln!(

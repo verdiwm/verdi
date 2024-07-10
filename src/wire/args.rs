@@ -1,6 +1,12 @@
-use std::num::NonZeroU32;
+use std::{fmt, num::NonZeroU32};
 
 pub struct Fixed(u32);
+
+impl fmt::Display for Fixed {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 impl Fixed {
     pub const unsafe fn from_raw(raw: u32) -> Self {
