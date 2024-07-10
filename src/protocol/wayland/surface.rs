@@ -1,9 +1,6 @@
 use async_trait::async_trait;
 
-use crate::{
-    wire::{Message, ObjectId},
-    Client, Dispatcher, Result,
-};
+use crate::{wire::Message, Client, Dispatcher, Object, Result};
 
 pub use crate::protocol::interfaces::wayland::wl_surface::*;
 
@@ -33,30 +30,25 @@ impl DoubleBuffer {
 
 #[derive(Debug)]
 pub struct Surface {
-    id: ObjectId,
     state: DoubleBuffer,
 }
 
 impl Surface {
-    pub fn new(id: ObjectId) -> Self {
+    pub fn new() -> Self {
         Self {
-            id,
             state: DoubleBuffer::new(),
         }
     }
 }
 
 impl WlSurface for Surface {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
-    async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
     async fn attach(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _buffer: Option<crate::wire::ObjectId>,
         _x: i32,
@@ -67,6 +59,7 @@ impl WlSurface for Surface {
 
     async fn damage(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _x: i32,
         _y: i32,
@@ -78,6 +71,7 @@ impl WlSurface for Surface {
 
     async fn frame(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _callback: crate::wire::ObjectId,
     ) -> crate::Result<()> {
@@ -86,6 +80,7 @@ impl WlSurface for Surface {
 
     async fn set_opaque_region(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _region: Option<crate::wire::ObjectId>,
     ) -> crate::Result<()> {
@@ -94,13 +89,14 @@ impl WlSurface for Surface {
 
     async fn set_input_region(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _region: Option<crate::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn commit(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn commit(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
         // FIXME: commit state
 
         Ok(())
@@ -108,6 +104,7 @@ impl WlSurface for Surface {
 
     async fn set_buffer_transform(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _transform: crate::protocol::interfaces::wayland::wl_output::Transform,
     ) -> crate::Result<()> {
@@ -116,6 +113,7 @@ impl WlSurface for Surface {
 
     async fn set_buffer_scale(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _scale: i32,
     ) -> crate::Result<()> {
@@ -124,6 +122,7 @@ impl WlSurface for Surface {
 
     async fn damage_buffer(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _x: i32,
         _y: i32,
@@ -133,14 +132,25 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn offset(&self, _client: &mut crate::Client, _x: i32, _y: i32) -> crate::Result<()> {
+    async fn offset(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+        _x: i32,
+        _y: i32,
+    ) -> crate::Result<()> {
         todo!()
     }
 }
 
 #[async_trait]
 impl Dispatcher for Surface {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        self.handle_request(client, message).await
+    async fn dispatch(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()> {
+        self.handle_request(object, client, message).await
     }
 }

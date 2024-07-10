@@ -22,6 +22,8 @@ impl Fixed {
 pub struct ObjectId(NonZeroU32);
 
 impl ObjectId {
+    pub const DISPLAY: Self = unsafe { Self::from_raw(1) };
+
     pub const fn as_raw(&self) -> u32 {
         self.0.get()
     }
@@ -44,5 +46,5 @@ impl std::fmt::Display for ObjectId {
 pub struct NewId {
     pub interface: String,
     pub version: u32,
-    pub id: ObjectId,
+    pub object_id: ObjectId,
 }

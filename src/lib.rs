@@ -24,16 +24,13 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(stream: UnixStream) -> Self {
-        // let fd = stream.as_fd().as_raw_fd();
-
-        Self {
-            // stream: Framed::new(stream, MessageCodec::new(fd)),
-            socket: Socket::new(stream.into_std().unwrap()),
+    pub fn new(stream: UnixStream) -> Result<Self> {
+        Ok(Self {
+            socket: Socket::new(stream.into_std()?),
             _next_id: 0xff000000,
             store: Store::new(),
             event_serial: 0,
-        }
+        })
     }
 
     pub fn next_event_serial(&mut self) -> u32 {
@@ -43,8 +40,8 @@ impl Client {
         prev
     }
 
-    pub fn insert(&mut self, id: ObjectId, object: Arc<dyn Dispatcher + Send + Sync>) {
-        self.store.insert(id, object)
+    pub fn insert(&mut self, object: Object) {
+        self.store.insert(object)
     }
 
     pub async fn handle_message(&mut self, message: &mut Message) -> Result<()> {
@@ -62,8 +59,31 @@ impl Client {
     }
 }
 
+#[derive(Clone)]
+pub struct Object {
+    pub id: ObjectId,
+    dispatcher: Arc<dyn Dispatcher>,
+}
+
+impl Object {
+    pub fn new<D: Dispatcher>(id: ObjectId, dispatcher: D) -> Self {
+        Self {
+            id,
+            dispatcher: Arc::new(dispatcher),
+        }
+    }
+
+    pub fn as_dispatcher<D: Dispatcher>(&self) -> Result<&D> {
+        self.dispatcher.downcast_ref().ok_or(Error::Internal)
+    }
+
+    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
+        self.dispatcher.dispatch(self, client, message).await
+    }
+}
+
 struct Store {
-    objects: HashMap<ObjectId, Arc<dyn Dispatcher + Send + Sync>>,
+    objects: HashMap<ObjectId, Object>,
 }
 
 impl Store {
@@ -73,18 +93,23 @@ impl Store {
         }
     }
     // FIXME: handle possible error if id already exists
-    fn insert(&mut self, id: ObjectId, object: Arc<dyn Dispatcher + Send + Sync>) {
-        self.objects.insert(id, object);
+    fn insert(&mut self, object: Object) {
+        self.objects.insert(object.id, object);
     }
 
-    fn get(&self, id: &ObjectId) -> Option<Arc<dyn Dispatcher + Send + Sync>> {
+    fn get(&self, id: &ObjectId) -> Option<Object> {
         self.objects.get(id).map(|id| id.clone())
     }
 }
 
 #[async_trait]
 pub trait Dispatcher: DowncastSync {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()>;
+    async fn dispatch(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()>;
 }
 
 impl_downcast!(sync Dispatcher);

@@ -9,8 +9,8 @@ use crate::{
         },
         xdg::wm_base::{WmBase, XdgWmBase},
     },
-    wire::{Message, NewId, ObjectId},
-    Client, Dispatcher, Error, Result,
+    wire::{Message, NewId},
+    Client, Dispatcher, Error, Object, Result,
 };
 
 pub use crate::protocol::interfaces::wayland::wl_registry::*;
@@ -25,17 +25,16 @@ impl RegistryGlobals {
 }
 
 #[derive(Debug)]
-pub struct Registry {
-    id: ObjectId,
-}
+pub struct Registry;
 
 impl Registry {
-    pub fn new(id: ObjectId) -> Self {
-        Self { id }
+    pub fn new() -> Self {
+        Self
     }
 
-    pub async fn advertise_globals(&self, client: &mut Client) -> Result<()> {
+    pub async fn advertise_globals(&self, object: &Object, client: &mut Client) -> Result<()> {
         self.global(
+            object,
             client,
             RegistryGlobals::COMPOSITOR,
             Compositor::INTERFACE.to_string(),
@@ -44,6 +43,7 @@ impl Registry {
         .await?;
 
         self.global(
+            object,
             client,
             RegistryGlobals::SHM,
             Shm::INTERFACE.to_string(),
@@ -52,6 +52,7 @@ impl Registry {
         .await?;
 
         self.global(
+            object,
             client,
             RegistryGlobals::WM_BASE,
             WmBase::INTERFACE.to_string(),
@@ -60,6 +61,7 @@ impl Registry {
         .await?;
 
         self.global(
+            object,
             client,
             RegistryGlobals::SEAT,
             Seat::INTERFACE.to_string(),
@@ -72,24 +74,28 @@ impl Registry {
 }
 
 impl WlRegistry for Registry {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
-    async fn bind(&self, client: &mut Client, name: u32, id: NewId) -> Result<()> {
+    async fn bind(
+        &self,
+        _object: &Object,
+        client: &mut Client,
+        name: u32,
+        new_id: NewId,
+    ) -> Result<()> {
         match name {
             RegistryGlobals::COMPOSITOR => {
-                client.insert(id.id, Compositor::new(id.id).into_dispatcher())
+                client.insert(Compositor::new().into_object(new_id.object_id))
             }
             RegistryGlobals::SHM => {
-                let shm = Shm::new(id.id);
+                let shm = Shm::new().into_object(new_id.object_id);
 
-                shm.advertise_formats(client).await?;
+                shm.as_dispatcher::<Shm>()?
+                    .advertise_formats(&shm, client)
+                    .await?;
 
-                client.insert(id.id, shm.into_dispatcher())
+                client.insert(shm);
             }
-            RegistryGlobals::WM_BASE => client.insert(id.id, WmBase::new(id.id).into_dispatcher()),
-            RegistryGlobals::SEAT => client.insert(id.id, Seat::new(id.id).into_dispatcher()),
+            RegistryGlobals::WM_BASE => client.insert(WmBase::new().into_object(new_id.object_id)),
+            RegistryGlobals::SEAT => client.insert(Seat::new().into_object(new_id.object_id)),
             _ => return Err(Error::NotFound),
         }
 
@@ -99,7 +105,12 @@ impl WlRegistry for Registry {
 
 #[async_trait]
 impl Dispatcher for Registry {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        self.handle_request(client, message).await
+    async fn dispatch(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()> {
+        self.handle_request(object, client, message).await
     }
 }

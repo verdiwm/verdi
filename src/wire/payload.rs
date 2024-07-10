@@ -77,7 +77,7 @@ impl PayloadBuilder {
     pub fn put_new_id(self, new_id: NewId) -> Self {
         self.put_string(Some(new_id.interface))
             .put_uint(new_id.version)
-            .put_object(Some(new_id.id))
+            .put_object(Some(new_id.object_id))
     }
 
     pub fn put_array<T: AsRef<[u8]>>(mut self, array: T) -> Self {
