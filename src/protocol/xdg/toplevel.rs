@@ -1,47 +1,49 @@
 use async_trait::async_trait;
 
-use crate::{
-    wire::{Message, ObjectId},
-    Client, Dispatcher, Result,
-};
+use crate::{wire::Message, Client, Dispatcher, Object, Result};
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_toplevel::*;
 
 #[derive(Debug)]
-pub struct Toplevel {
-    id: ObjectId,
-}
+pub struct Toplevel;
 
 impl Toplevel {
-    pub fn new(id: ObjectId) -> Self {
-        Self { id }
+    pub fn new() -> Self {
+        Self
     }
 }
 
 impl XdgToplevel for Toplevel {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
-    async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
     async fn set_parent(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _parent: Option<crate::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn set_title(&self, _client: &mut crate::Client, _title: String) -> crate::Result<()> {
+    async fn set_title(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+        _title: String,
+    ) -> crate::Result<()> {
         // FIXME: change  state
 
         Ok(())
     }
 
-    async fn set_app_id(&self, _client: &mut crate::Client, _app_id: String) -> crate::Result<()> {
+    async fn set_app_id(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+        _app_id: String,
+    ) -> crate::Result<()> {
         // FIXME: change  state
 
         Ok(())
@@ -49,6 +51,7 @@ impl XdgToplevel for Toplevel {
 
     async fn show_window_menu(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _seat: crate::wire::ObjectId,
         _serial: u32,
@@ -60,6 +63,7 @@ impl XdgToplevel for Toplevel {
 
     async fn r#move(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _seat: crate::wire::ObjectId,
         _serial: u32,
@@ -69,6 +73,7 @@ impl XdgToplevel for Toplevel {
 
     async fn resize(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _seat: crate::wire::ObjectId,
         _serial: u32,
@@ -79,6 +84,7 @@ impl XdgToplevel for Toplevel {
 
     async fn set_max_size(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _width: i32,
         _height: i32,
@@ -88,6 +94,7 @@ impl XdgToplevel for Toplevel {
 
     async fn set_min_size(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _width: i32,
         _height: i32,
@@ -95,34 +102,56 @@ impl XdgToplevel for Toplevel {
         todo!()
     }
 
-    async fn set_maximized(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn set_maximized(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+    ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn unset_maximized(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn unset_maximized(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+    ) -> crate::Result<()> {
         todo!()
     }
 
     async fn set_fullscreen(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _output: Option<crate::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn unset_fullscreen(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn unset_fullscreen(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+    ) -> crate::Result<()> {
         todo!()
     }
 
-    async fn set_minimized(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn set_minimized(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+    ) -> crate::Result<()> {
         todo!()
     }
 }
 
 #[async_trait]
 impl Dispatcher for Toplevel {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        self.handle_request(client, message).await
+    async fn dispatch(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()> {
+        self.handle_request(object, client, message).await
     }
 }

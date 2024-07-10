@@ -111,12 +111,12 @@ impl Message {
     pub fn new_id(&mut self) -> Result<NewId, DecodeError> {
         let interface = self.string()?.ok_or(DecodeError::MalformedPayload)?;
         let version = self.uint()?;
-        let id = self.object()?.ok_or(DecodeError::MalformedPayload)?;
+        let object_id = self.object()?.ok_or(DecodeError::MalformedPayload)?;
 
         Ok(NewId {
             interface,
             version,
-            id,
+            object_id,
         })
     }
 

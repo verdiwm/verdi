@@ -32,11 +32,10 @@ impl Verdi {
     pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
         match self.listener.accept().await {
             Ok((stream, _addr)) => {
-                let mut client = Client::new(stream);
+                // FIXME: handle error instead of unwraping
+                let mut client = Client::new(stream).unwrap();
 
-                let id = unsafe { ObjectId::from_raw(1) };
-
-                client.insert(id, Display::new(id).into_dispatcher());
+                client.insert(Display::new().into_object(ObjectId::DISPLAY));
 
                 Some(Ok(client))
             }

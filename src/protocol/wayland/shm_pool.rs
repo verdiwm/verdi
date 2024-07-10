@@ -1,21 +1,19 @@
 use std::{io, ptr::null_mut};
 
 use async_trait::async_trait;
-use rustix::fd::OwnedFd;
-use rustix::mm::{mmap, mremap, MapFlags, MremapFlags, ProtFlags};
+use rustix::{
+    fd::OwnedFd,
+    mm::{mmap, mremap, MapFlags, MremapFlags, ProtFlags},
+};
 use tokio::sync::RwLock;
 
-use crate::{
-    protocol::wayland::shm::Format,
-    wire::{Message, ObjectId},
-    Client, Dispatcher, Result,
-};
+use crate::Object;
+use crate::{protocol::wayland::shm::Format, wire::Message, Client, Dispatcher, Result};
 
 pub use crate::protocol::interfaces::wayland::wl_shm_pool::*;
 
 #[derive(Debug)]
 pub struct ShmPool {
-    id: ObjectId,
     _fd: OwnedFd,
     map: RwLock<Map>,
 }
@@ -31,10 +29,7 @@ struct Map {
 }
 
 impl ShmPool {
-    pub fn new(id: ObjectId, fd: OwnedFd, size: i32) -> Result<Self>
-    where
-        Self: Sized,
-    {
+    pub fn new(fd: OwnedFd, size: i32) -> Result<Self> {
         // FIXME: error handling when converting size
         let size = size as usize;
         let mem = unsafe {
@@ -51,7 +46,6 @@ impl ShmPool {
         .cast();
 
         Ok(Self {
-            id,
             _fd: fd,
             map: RwLock::new(Map { size, mem }),
         })
@@ -59,12 +53,9 @@ impl ShmPool {
 }
 
 impl WlShmPool for ShmPool {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
     async fn create_buffer(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _id: crate::wire::ObjectId,
         _offset: i32,
@@ -76,11 +67,11 @@ impl WlShmPool for ShmPool {
         todo!()
     }
 
-    async fn destroy(&self, _client: &mut crate::Client) -> Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> Result<()> {
         todo!()
     }
 
-    async fn resize(&self, _client: &mut crate::Client, size: i32) -> Result<()> {
+    async fn resize(&self, _object: &Object, _client: &mut crate::Client, size: i32) -> Result<()> {
         let mut write_guard = self.map.write().await;
         let old_size = write_guard.size;
         let new_size = size as usize;
@@ -107,7 +98,12 @@ impl WlShmPool for ShmPool {
 
 #[async_trait]
 impl Dispatcher for ShmPool {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        self.handle_request(client, message).await
+    async fn dispatch(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()> {
+        self.handle_request(object, client, message).await
     }
 }

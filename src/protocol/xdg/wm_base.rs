@@ -3,33 +3,28 @@ use async_trait::async_trait;
 use crate::{
     protocol::xdg::surface::{Surface, XdgSurface},
     wire::{Message, ObjectId},
-    Client, Dispatcher, Result,
+    Client, Dispatcher, Object, Result,
 };
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_wm_base::*;
 
 #[derive(Debug)]
-pub struct WmBase {
-    id: ObjectId,
-}
+pub struct WmBase;
 
 impl WmBase {
-    pub fn new(id: ObjectId) -> Self {
-        Self { id }
+    pub fn new() -> Self {
+        Self
     }
 }
 
 impl XdgWmBase for WmBase {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
-    async fn destroy(&self, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
         todo!()
     }
 
     async fn create_positioner(
         &self,
+        _object: &Object,
         _client: &mut crate::Client,
         _id: ObjectId,
     ) -> crate::Result<()> {
@@ -38,23 +33,34 @@ impl XdgWmBase for WmBase {
 
     async fn get_xdg_surface(
         &self,
+        _object: &Object,
         client: &mut crate::Client,
         id: ObjectId,
         surface: ObjectId,
     ) -> Result<()> {
-        client.insert(id, Surface::new(id, surface).into_dispatcher());
+        client.insert(Surface::new(surface).into_object(id));
 
         Ok(())
     }
 
-    async fn pong(&self, _client: &mut crate::Client, _serial: u32) -> crate::Result<()> {
+    async fn pong(
+        &self,
+        _object: &Object,
+        _client: &mut crate::Client,
+        _serial: u32,
+    ) -> crate::Result<()> {
         todo!()
     }
 }
 
 #[async_trait]
 impl Dispatcher for WmBase {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        self.handle_request(client, message).await
+    async fn dispatch(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()> {
+        self.handle_request(object, client, message).await
     }
 }

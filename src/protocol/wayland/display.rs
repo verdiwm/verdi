@@ -6,43 +6,53 @@ use crate::{
         registry::{Registry, WlRegistry},
     },
     wire::{Message, ObjectId},
-    Client, Dispatcher, Result,
+    Client, Dispatcher, Object, Result,
 };
 
 pub use crate::protocol::interfaces::wayland::wl_display::*;
 
 #[derive(Debug)]
-pub struct Display {
-    id: ObjectId,
-}
+pub struct Display;
 
 impl Display {
-    pub fn new(id: ObjectId) -> Self {
-        Self { id }
+    pub fn new() -> Self {
+        Self
     }
 }
 
 impl WlDisplay for Display {
-    fn get_id(&self) -> ObjectId {
-        self.id
-    }
-
-    async fn sync(&self, client: &mut Client, callback: ObjectId) -> Result<()> {
+    async fn sync(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        callback_id: ObjectId,
+    ) -> Result<()> {
         let serial = client.next_event_serial();
 
-        let callback = Callback::new(callback);
+        let callback = Callback::new().into_object(callback_id);
 
-        callback.done(client, serial).await?;
+        callback
+            .as_dispatcher::<Callback>()?
+            .done(&callback, client, serial)
+            .await?;
 
-        self.delete_id(client, callback.get_id().as_raw()).await
+        self.delete_id(object, client, callback_id.as_raw()).await
     }
 
-    async fn get_registry(&self, client: &mut Client, registry_id: ObjectId) -> Result<()> {
-        let registry = Registry::new(registry_id);
+    async fn get_registry(
+        &self,
+        _object: &Object,
+        client: &mut Client,
+        registry_id: ObjectId,
+    ) -> Result<()> {
+        let registry = Registry::new().into_object(registry_id);
 
-        registry.advertise_globals(client).await?;
+        registry
+            .as_dispatcher::<Registry>()?
+            .advertise_globals(&registry, client)
+            .await?;
 
-        client.insert(registry_id, registry.into_dispatcher());
+        client.insert(registry);
 
         Ok(())
     }
@@ -50,7 +60,12 @@ impl WlDisplay for Display {
 
 #[async_trait]
 impl Dispatcher for Display {
-    async fn dispatch(&self, client: &mut Client, message: &mut Message) -> Result<()> {
-        self.handle_request(client, message).await
+    async fn dispatch(
+        &self,
+        object: &Object,
+        client: &mut Client,
+        message: &mut Message,
+    ) -> Result<()> {
+        self.handle_request(object, client, message).await
     }
 }
