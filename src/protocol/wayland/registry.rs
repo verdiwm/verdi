@@ -2,6 +2,7 @@ use crate::{
     protocol::{
         wayland::{
             compositor::{Compositor, WlCompositor},
+            output::{Output, WlOutput},
             seat::{Seat, WlSeat},
             shm::{Shm, WlShm},
         },
@@ -20,6 +21,7 @@ impl RegistryGlobals {
     pub const SHM: u32 = 1;
     pub const WM_BASE: u32 = 2;
     pub const SEAT: u32 = 3;
+    pub const OUTPUT: u32 = 4;
 }
 
 #[derive(Debug, Dispatcher)]
@@ -67,6 +69,15 @@ impl Registry {
         )
         .await?;
 
+        self.global(
+            object,
+            client,
+            RegistryGlobals::OUTPUT,
+            Output::INTERFACE.to_string(),
+            Output::VERSION,
+        )
+        .await?;
+
         Ok(())
     }
 }
@@ -94,6 +105,7 @@ impl WlRegistry for Registry {
             }
             RegistryGlobals::WM_BASE => client.insert(WmBase::new().into_object(new_id.object_id)),
             RegistryGlobals::SEAT => client.insert(Seat::new().into_object(new_id.object_id)),
+            RegistryGlobals::OUTPUT => client.insert(Output::new().into_object(new_id.object_id)),
             _ => return Err(Error::NotFound),
         }
 

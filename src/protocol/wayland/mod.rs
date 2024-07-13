@@ -6,3 +6,4 @@ pub mod seat;
 pub mod shm;
 pub mod shm_pool;
 pub mod surface;
+pub mod output;
