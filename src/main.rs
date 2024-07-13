@@ -1,6 +1,8 @@
+use std::{fs, io, path::Path, process::exit, sync::Arc};
+
 use anyhow::{Context, Result as AnyResult};
 use clap::Parser;
-use std::{fs, io, path::Path, process::exit, sync::Arc};
+use serde::{Deserialize, Serialize};
 use tokio::{net::UnixListener, task::JoinSet};
 use tracing::{error, info};
 
@@ -12,14 +14,6 @@ use verdi::{
 };
 
 const SOCKET_PATH: &str = "verdi.sock";
-
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Optional path to config file
-    #[arg(short, long)]
-    config: Option<String>,
-}
 
 #[derive(Debug)]
 pub struct Verdi {
@@ -73,10 +67,27 @@ fn register_ctrl_c_handler() {
     });
 }
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Optional path to config file
+    #[arg(short, long)]
+    config: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Config {}
+
 fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
 
     let args = Args::parse();
+
+    // FIXME: Try to look into XDG_CONFIG_HOME and have some defaults
+    let config = fs::read(args.config.expect("Missing config"))?;
+    let config: Config = toml_edit::de::from_slice(&config)?;
+
+    dbg!(config);
 
     // Create the tokio runtime manually instead of using a macro for better controll
     let runtime = tokio::runtime::Builder::new_multi_thread()
