@@ -2,6 +2,7 @@ use std::{fs, io, path::Path, process::exit, sync::Arc};
 
 use anyhow::{Context, Result as AnyResult};
 use clap::Parser;
+use rustix::process::geteuid;
 use serde::{Deserialize, Serialize};
 use tokio::{net::UnixListener, task::JoinSet};
 use tracing::{error, info};
@@ -80,6 +81,11 @@ pub struct Config {}
 
 fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
+
+    if geteuid().is_root() {
+        error!("Tried running as root");
+        exit(1)
+    }
 
     let args = Args::parse();
 
