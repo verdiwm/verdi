@@ -1,4 +1,5 @@
 use anyhow::{Context, Result as AnyResult};
+use clap::Parser;
 use std::{fs, io, path::Path, process::exit, sync::Arc};
 use tokio::{net::UnixListener, task::JoinSet};
 use tracing::{error, info};
@@ -11,6 +12,14 @@ use verdi::{
 };
 
 const SOCKET_PATH: &str = "verdi.sock";
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Optional path to config file
+    #[arg(short, long)]
+    config: Option<String>,
+}
 
 #[derive(Debug)]
 pub struct Verdi {
@@ -66,6 +75,8 @@ fn register_ctrl_c_handler() {
 
 fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
+
+    let args = Args::parse();
 
     // Create the tokio runtime manually instead of using a macro for better controll
     let runtime = tokio::runtime::Builder::new_multi_thread()
