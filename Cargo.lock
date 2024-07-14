@@ -204,6 +204,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "79296716171880943b8470b5f8d03aa55eb2e645a4874bdbb28adb49162e012c"
 
 [[package]]
+name = "bytemuck"
+version = "1.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b236fc92302c97ed75b38da1f4917b5cdda4984745740f153a5d3059e48d725e"
+dependencies = [
+ "bytemuck_derive",
+]
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ee891b04274a59bd38b412188e24b849617b2e45a0fd8d057deb63e7403761b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.71",
+]
+
+[[package]]
 name = "bytes"
 version = "1.6.0"
 source = "git+https://github.com/morr0ne/bytes?branch=arbitrary#7f264e3ffb1b626932bd42da521755acf6e89982"
@@ -355,6 +375,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "diretto"
+version = "0.0.2"
+source = "git+https://github.com/verdiwm/diretto.git#b53b34bb6b01769387e2ae970f0ed8ad2997fc6f"
+dependencies = [
+ "linux-raw-sys 0.6.4",
+ "rustix",
+ "tracing",
+]
+
+[[package]]
 name = "document-features"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -451,6 +481,17 @@ dependencies = [
  "heck",
  "quick-xml",
  "serde",
+]
+
+[[package]]
+name = "getrandom"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "wasi",
 ]
 
 [[package]]
@@ -673,6 +714,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 
 [[package]]
+name = "linux-raw-sys"
+version = "0.6.4"
+source = "git+https://github.com/morr0ne/linux-raw-sys.git?branch=drm#5f79dcaf9d97f8afd38006c0ffaceaab46bca6b9"
+
+[[package]]
 name = "litrs"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -756,8 +802,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e536ae46fcab0876853bd4a632ede5df4b1c2527a58f6c5a4150fe86be858231"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#fb8ec86a4e9dcbdf0f9d0769c9e0c1a1a65b5173"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -890,6 +935,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
+name = "ppv-lite86"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
+
+[[package]]
 name = "presser"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -930,10 +981,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
+dependencies = [
+ "libc",
+ "rand_chacha",
+ "rand_core",
+]
+
+[[package]]
+name = "rand_chacha"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
+dependencies = [
+ "ppv-lite86",
+ "rand_core",
+]
+
+[[package]]
+name = "rand_core"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
+dependencies = [
+ "getrandom",
+]
+
+[[package]]
 name = "raw-window-handle"
 version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
+source = "git+https://github.com/morr0ne/raw-window-handle?branch=drm-connector#10eb23b1558ff972f39fdda258711b52665e9b7d"
 
 [[package]]
 name = "redox_syscall"
@@ -1015,7 +1095,7 @@ dependencies = [
  "bitflags 2.6.0",
  "errno",
  "libc",
- "linux-raw-sys",
+ "linux-raw-sys 0.4.14",
  "windows-sys 0.52.0",
 ]
 
@@ -1340,11 +1420,15 @@ dependencies = [
  "arbitrary",
  "async-trait",
  "bitflags 2.6.0",
+ "bytemuck",
  "bytes",
  "clap",
+ "diretto",
  "downcast-rs",
  "futures-util",
  "pin-project-lite",
+ "rand",
+ "raw-window-handle",
  "rustix",
  "serde",
  "thiserror",
@@ -1455,9 +1539,8 @@ dependencies = [
 
 [[package]]
 name = "wgpu"
-version = "0.20.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90e37c7b9921b75dfd26dd973fdcbce36f13dfa6e2dc82aece584e0ed48c355c"
+version = "0.20.2"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#fb8ec86a4e9dcbdf0f9d0769c9e0c1a1a65b5173"
 dependencies = [
  "arrayvec",
  "cfg-if",
@@ -1481,8 +1564,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d50819ab545b867d8a454d1d756b90cd5f15da1f2943334ca314af10583c9d39"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#fb8ec86a4e9dcbdf0f9d0769c9e0c1a1a65b5173"
 dependencies = [
  "arrayvec",
  "bit-vec",
@@ -1508,8 +1590,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "172e490a87295564f3fcc0f165798d87386f6231b04d4548bca458cbbfd63222"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#fb8ec86a4e9dcbdf0f9d0769c9e0c1a1a65b5173"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -1549,8 +1630,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1353d9a46bff7f955a680577f34c69122628cc2076e1d6f3a9be6ef00ae793ef"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#fb8ec86a4e9dcbdf0f9d0769c9e0c1a1a65b5173"
 dependencies = [
  "bitflags 2.6.0",
  "js-sys",
