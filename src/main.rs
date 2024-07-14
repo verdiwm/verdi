@@ -1,11 +1,25 @@
 use std::{fs, io, path::Path, process::exit, sync::Arc};
 
-use anyhow::{Context, Result as AnyResult};
+use anyhow::{bail, Context, Result as AnyResult};
 use clap::Parser;
-use rustix::process::geteuid;
+use diretto::{Connector, Device as DrmDevice};
+use raw_window_handle::{DisplayHandle, DrmDisplayHandle, DrmWindowHandle, WindowHandle};
+use rustix::{
+    fd::{AsFd, AsRawFd},
+    process::geteuid,
+};
 use serde::{Deserialize, Serialize};
-use tokio::{net::UnixListener, task::JoinSet};
-use tracing::{error, info};
+use tokio::{
+    net::UnixListener,
+    sync::mpsc::{self, UnboundedReceiver, UnboundedSender},
+    task::JoinSet,
+};
+use tokio_stream::{wrappers::UnboundedReceiverStream, StreamExt};
+use tracing::{debug, error, info};
+use wgpu::{
+    Backends, Device, Instance as WpguInstance, InstanceDescriptor, Queue, Surface,
+    SurfaceTargetUnsafe,
+};
 
 use verdi::{
     error::Error,
@@ -14,39 +28,13 @@ use verdi::{
     Client,
 };
 
+mod context;
+mod state;
+
+use context::WgpuContext;
+use state::State;
+
 const SOCKET_PATH: &str = "verdi.sock";
-
-#[derive(Debug)]
-pub struct Verdi {
-    _state: Arc<State>,
-    listener: UnixListener,
-}
-
-#[derive(Debug)]
-struct State {}
-
-impl Verdi {
-    pub fn new<P: AsRef<Path>>(path: P) -> AnyResult<Self> {
-        Ok(Self {
-            _state: Arc::new(State {}),
-            listener: UnixListener::bind(path)?,
-        })
-    }
-
-    pub async fn new_client(&self) -> Option<Result<Client, io::Error>> {
-        match self.listener.accept().await {
-            Ok((stream, _addr)) => {
-                // FIXME: handle error instead of unwraping
-                let mut client = Client::new(stream).unwrap();
-
-                client.insert(Display::new().into_object(ObjectId::DISPLAY));
-
-                Some(Ok(client))
-            }
-            Err(err) => Some(Err(err)),
-        }
-    }
-}
 
 /// Register a ctrl+c handler that ensures the socket is removed
 fn register_ctrl_c_handler() {
@@ -84,7 +72,7 @@ fn main() -> AnyResult<()> {
 
     if geteuid().is_root() {
         error!("Tried running as root");
-        exit(1)
+        bail!("")
     }
 
     let args = Args::parse();
@@ -104,35 +92,92 @@ fn main() -> AnyResult<()> {
     runtime.block_on(async move {
         register_ctrl_c_handler();
 
-        let verdi = Verdi::new(SOCKET_PATH)?;
+        let mut verdi = Verdi::new(SOCKET_PATH).await?;
 
-        let mut set: JoinSet<Result<(), Error>> = JoinSet::new();
-
-        while let Some(client) = verdi.new_client().await {
-            info!("Got client");
-
-            match client {
-                Ok(mut client) => {
-                    set.spawn(async move {
-                        while let Some(mut message) = client.next_message().await? {
-                            match client.handle_message(&mut message).await {
-                                Ok(_) => {}
-                                Err(err) => {
-                                    error!("Error while handling message: {err}");
-                                    return Err(err);
-                                }
-                            }
-                        }
-
-                        Ok(())
-                    });
-                }
-                Err(_) => error!("Client failed to connect"),
+        while let Some(event) = verdi.next_event().await {
+            dbg!(&event);
+            match event {
+                Event::NewClient(client) => verdi.spawn_client(client)?,
+                _ => {}
             }
         }
+
+        // let state = verdi.state.clone();
+
+        // tokio::spawn(async move {
+        //     loop {
+        //         state.render().unwrap();
+        //     }
+        // });
 
         anyhow::Ok(())
     })?;
 
     Ok(())
+}
+
+pub struct Verdi {
+    // state: Arc<State<'s>>,
+    // listener: UnixListener,
+    event_listener: UnboundedReceiverStream<Event>,
+    clients: JoinSet<Result<(), Error>>,
+}
+
+#[derive(Debug)]
+pub enum Event {
+    NewClient(Client),
+    SessionPaused,
+    SessionResumed,
+}
+
+impl Verdi {
+    pub async fn new<P: AsRef<Path>>(path: P) -> AnyResult<Self> {
+        let (sender, receiver) = mpsc::unbounded_channel::<Event>();
+
+        let listener = UnixListener::bind(path)?;
+
+        tokio::spawn(async move {
+            loop {
+                match listener.accept().await {
+                    Ok((stream, _addr)) => {
+                        // FIXME: handle errors instead of unwraping
+                        let mut client = Client::new(stream).unwrap();
+
+                        client.insert(Display::new().into_object(ObjectId::DISPLAY));
+
+                        sender.send(Event::NewClient(client)).unwrap();
+                    }
+                    Err(err) => {}
+                }
+            }
+        });
+
+        Ok(Self {
+            // state: Arc::new(State::new().await?),
+            event_listener: UnboundedReceiverStream::new(receiver),
+            clients: JoinSet::new(),
+        })
+    }
+
+    pub async fn next_event(&mut self) -> Option<Event> {
+        self.event_listener.next().await
+    }
+
+    pub fn spawn_client(&mut self, mut client: Client) -> Result<(), Error> {
+        self.clients.spawn(async move {
+            while let Some(mut message) = client.next_message().await? {
+                match client.handle_message(&mut message).await {
+                    Ok(_) => {}
+                    Err(err) => {
+                        error!("Error while handling message: {err}");
+                        return Err(err);
+                    }
+                }
+            }
+
+            Ok(())
+        });
+
+        Ok(())
+    }
 }
