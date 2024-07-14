@@ -1,6 +1,7 @@
 #![feature(unix_socket_ancillary_data)]
 
 use async_trait::async_trait;
+use core::fmt;
 use downcast_rs::{impl_downcast, DowncastSync};
 use error::Error;
 use futures_util::SinkExt;
@@ -23,6 +24,12 @@ pub struct Client {
     store: Store,
     _next_id: usize,
     event_serial: u32,
+}
+
+impl fmt::Debug for Client {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Client").finish()
+    }
 }
 
 impl Client {
