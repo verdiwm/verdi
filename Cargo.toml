@@ -41,6 +41,7 @@ diretto = { git = "https://github.com/verdiwm/diretto.git", version = "0.0.2" }
 raw-window-handle = "0.6.2"
 rand = "0.8.5"
 bytemuck = { version = "1.16.1", features = ["derive"] }
+libseat = "0.2.1"
 
 [features]
 fuzz = ["dep:arbitrary", "bytes/arbitrary"]
