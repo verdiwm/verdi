@@ -1,25 +1,13 @@
-use std::{fs, io, path::Path, process::exit, sync::Arc};
+use std::{fs, path::Path, process::exit};
 
 use anyhow::{bail, Context, Result as AnyResult};
 use clap::Parser;
-use diretto::{Connector, Device as DrmDevice};
-use raw_window_handle::{DisplayHandle, DrmDisplayHandle, DrmWindowHandle, WindowHandle};
-use rustix::{
-    fd::{AsFd, AsRawFd},
-    process::geteuid,
-};
+use futures_util::StreamExt;
+use reconciler::EventListener;
+use rustix::process::geteuid;
 use serde::{Deserialize, Serialize};
-use tokio::{
-    net::UnixListener,
-    sync::mpsc::{self, UnboundedReceiver, UnboundedSender},
-    task::JoinSet,
-};
-use tokio_stream::{wrappers::UnboundedReceiverStream, StreamExt};
-use tracing::{debug, error, info};
-use wgpu::{
-    Backends, Device, Instance as WpguInstance, InstanceDescriptor, Queue, Surface,
-    SurfaceTargetUnsafe,
-};
+use tokio::{net::UnixListener, task::JoinSet};
+use tracing::error;
 
 use verdi::{
     error::Error,
@@ -31,8 +19,8 @@ use verdi::{
 mod context;
 mod state;
 
-use context::WgpuContext;
-use state::State;
+// use context::WgpuContext;
+// use state::State;
 
 const SOCKET_PATH: &str = "verdi.sock";
 
@@ -119,7 +107,7 @@ fn main() -> AnyResult<()> {
 pub struct Verdi {
     // state: Arc<State<'s>>,
     // listener: UnixListener,
-    event_listener: UnboundedReceiverStream<Event>,
+    event_listener: EventListener<Event>,
     clients: JoinSet<Result<(), Error>>,
 }
 
@@ -132,11 +120,11 @@ pub enum Event {
 
 impl Verdi {
     pub async fn new<P: AsRef<Path>>(path: P) -> AnyResult<Self> {
-        let (sender, receiver) = mpsc::unbounded_channel::<Event>();
+        let mut event_listener = EventListener::new();
 
         let listener = UnixListener::bind(path)?;
 
-        tokio::spawn(async move {
+        let client_loop = async_stream::stream! {
             loop {
                 match listener.accept().await {
                     Ok((stream, _addr)) => {
@@ -145,16 +133,18 @@ impl Verdi {
 
                         client.insert(Display::new().into_object(ObjectId::DISPLAY));
 
-                        sender.send(Event::NewClient(client)).unwrap();
+                        yield Event::NewClient(client)
                     }
-                    Err(err) => {}
+                    Err(_err) => {error!("Client failed to connect")}
                 }
             }
-        });
+        };
+
+        event_listener.add_listener(client_loop);
 
         Ok(Self {
             // state: Arc::new(State::new().await?),
-            event_listener: UnboundedReceiverStream::new(receiver),
+            event_listener,
             clients: JoinSet::new(),
         })
     }
