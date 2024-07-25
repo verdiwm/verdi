@@ -25,8 +25,8 @@ bytes = "1.6.0"
 futures-util = { version = "0.3.30", default-features = false, features = ["sink"] }
 pin-project-lite = "0.2.14"
 rustix = { version = "0.38.34", features = ["fs", "mm", "process"] }
-thiserror = "1.0.61"
-tokio = { version = "1.38.0", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "tracing"] }
+thiserror = "1.0.63"
+tokio = { version = "1.39.1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "tracing"] }
 tokio-stream = { version = "0.1.15", features = ["net"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "tracing-log"] }
@@ -34,15 +34,16 @@ wgpu = { version = "0.20.1", default-features = false, features = ["wgsl"] }
 arbitrary = { version = "1.3.2", features = ["derive"], optional = true }
 downcast-rs = "1.2.1"
 verdi-macros = { version = "0.1.0", path = "macros" }
-clap = { version = "4.5.9", features = ["derive"] }
+clap = { version = "4.5.10", features = ["derive"] }
 toml_edit = { version = "0.22.15", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 diretto = { git = "https://github.com/verdiwm/diretto.git", version = "0.0.2" }
 raw-window-handle = "0.6.2"
 rand = "0.8.5"
 bytemuck = { version = "1.16.1", features = ["derive"] }
-reconciler = "0.0.1"
+reconciler = { version = "0.0.2", path = "../reconciler" }
 async-stream = "0.3.5"
+colpetto = { version = "0.0.2", path = "../colpetto" }
 
 [features]
 fuzz = ["dep:arbitrary", "bytes/arbitrary"]
