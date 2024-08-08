@@ -1,8 +1,9 @@
 use crate::{
     protocol::xdg::surface::{Surface, XdgSurface},
-    wire::ObjectId,
     Dispatcher, Object, Result,
 };
+
+use waynest::wire::ObjectId;
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_wm_base::*;
 

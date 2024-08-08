@@ -8,9 +8,10 @@ use crate::{
         },
         xdg::wm_base::{WmBase, XdgWmBase},
     },
-    wire::NewId,
     Client, Dispatcher, Error, Object, Result,
 };
+
+use waynest::wire::NewId;
 
 pub use crate::protocol::interfaces::wayland::wl_registry::*;
 

@@ -1,8 +1,9 @@
 use crate::{
     protocol::wayland::surface::{Surface, WlSurface},
-    wire::ObjectId,
     Client, Dispatcher, Object, Result,
 };
+
+use waynest::wire::ObjectId;
 
 pub use crate::protocol::interfaces::wayland::wl_compositor::*;
 

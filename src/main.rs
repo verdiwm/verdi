@@ -1,8 +1,9 @@
-use std::{fs, path::Path, process::exit};
+use std::{ffi::CString, fs, path::Path, process::exit};
 
 use anyhow::{bail, Context, Result as AnyResult};
 use clap::Parser;
-use futures_util::StreamExt;
+use colpetto::Libinput;
+use futures_util::TryStreamExt;
 use reconciler::EventListener;
 use rustix::process::geteuid;
 use serde::{Deserialize, Serialize};
@@ -12,9 +13,10 @@ use tracing::error;
 use verdi::{
     error::Error,
     protocol::wayland::display::{Display, WlDisplay},
-    wire::ObjectId,
     Client,
 };
+
+use waynest::wire::ObjectId;
 
 mod context;
 mod state;
@@ -58,10 +60,10 @@ pub struct Config {}
 fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
 
-    if geteuid().is_root() {
-        error!("Tried running as root");
-        bail!("")
-    }
+    // if geteuid().is_root() {
+    //     error!("Tried running as root");
+    //     bail!("")
+    // }
 
     let args = Args::parse();
 
@@ -82,10 +84,13 @@ fn main() -> AnyResult<()> {
 
         let mut verdi = Verdi::new(SOCKET_PATH).await?;
 
-        while let Some(event) = verdi.next_event().await {
+        while let Some(event) = verdi.next_event().await? {
             dbg!(&event);
             match event {
                 Event::NewClient(client) => verdi.spawn_client(client)?,
+                Event::Input(colpetto::Event::Keyboard(_)) => {
+                    break;
+                }
                 _ => {}
             }
         }
@@ -107,7 +112,7 @@ fn main() -> AnyResult<()> {
 pub struct Verdi {
     // state: Arc<State<'s>>,
     // listener: UnixListener,
-    event_listener: EventListener<Event>,
+    event_listener: EventListener<Result<Event, Error>>,
     clients: JoinSet<Result<(), Error>>,
 }
 
@@ -116,6 +121,7 @@ pub enum Event {
     NewClient(Client),
     SessionPaused,
     SessionResumed,
+    Input(colpetto::Event),
 }
 
 impl Verdi {
@@ -133,7 +139,7 @@ impl Verdi {
 
                         client.insert(Display::new().into_object(ObjectId::DISPLAY));
 
-                        yield Event::NewClient(client)
+                        yield Ok(Event::NewClient(client))
                     }
                     Err(_err) => {error!("Client failed to connect")}
                 }
@@ -142,6 +148,11 @@ impl Verdi {
 
         event_listener.add_listener(client_loop);
 
+        // let libinput = Libinput::new()?;
+        // libinput.assign_seat(CString::new("seat0").unwrap().as_c_str())?;
+
+        // event_listener.add_listener(libinput.map_err(Error::Input).map_ok(Event::Input));
+
         Ok(Self {
             // state: Arc::new(State::new().await?),
             event_listener,
@@ -149,8 +160,8 @@ impl Verdi {
         })
     }
 
-    pub async fn next_event(&mut self) -> Option<Event> {
-        self.event_listener.next().await
+    pub async fn next_event(&mut self) -> Result<Option<Event>, Error> {
+        self.event_listener.try_next().await
     }
 
     pub fn spawn_client(&mut self, mut client: Client) -> Result<(), Error> {

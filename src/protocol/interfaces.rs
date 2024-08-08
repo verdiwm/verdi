@@ -18,7 +18,7 @@ pub mod wayland {
             Implementation = 3,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -26,7 +26,7 @@ pub mod wayland {
                     1 => Ok(Self::InvalidMethod),
                     2 => Ok(Self::NoMemory),
                     3 => Ok(Self::Implementation),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -47,7 +47,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -57,7 +57,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -68,7 +68,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -90,7 +90,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                sync: crate::wire::ObjectId,
+                sync: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request creates a registry object that allows the client"#]
             #[doc = r#"to list and bind the global objects available from the"#]
@@ -105,7 +105,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_registry: crate::wire::ObjectId,
+                get_registry: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The error event is sent out when a fatal (non-recoverable)"#]
             #[doc = r#"error has occurred.  The object_id argument is the object"#]
@@ -118,18 +118,18 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                object_id: crate::wire::ObjectId,
+                object_id: waynest::wire::ObjectId,
                 code: u32,
                 message: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_display#{}.error()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(object_id))
                     .put_uint(code)
                     .put_string(Some(message))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -145,9 +145,9 @@ pub mod wayland {
                 id: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_display#{}.delete_id()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(id).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_uint(id).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -189,7 +189,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -207,7 +207,7 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 bind: u32,
-                bind: crate::wire::NewId,
+                bind: waynest::wire::NewId,
             ) -> crate::Result<()>;
             #[doc = r#"Notify the client of global objects."#]
             #[doc = r#""#]
@@ -223,13 +223,13 @@ pub mod wayland {
                 version: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_registry#{}.global()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(name)
                     .put_string(Some(interface))
                     .put_uint(version)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -250,9 +250,9 @@ pub mod wayland {
                 name: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_registry#{}.global_remove()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(name).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_uint(name).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -279,7 +279,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -293,11 +293,11 @@ pub mod wayland {
                 callback_data: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_callback#{}.done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(callback_data)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -322,7 +322,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -332,7 +332,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -343,7 +343,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -355,14 +355,14 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_surface: crate::wire::ObjectId,
+                create_surface: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Ask the compositor to create a new region."#]
             async fn create_region(
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_region: crate::wire::ObjectId,
+                create_region: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -389,7 +389,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -399,7 +399,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.int()?,
                             message.int()?,
                             message.int()?,
@@ -434,7 +434,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_buffer: crate::wire::ObjectId,
+                create_buffer: waynest::wire::ObjectId,
                 create_buffer: i32,
                 create_buffer: i32,
                 create_buffer: i32,
@@ -483,14 +483,14 @@ pub mod wayland {
             InvalidFd = 2,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::InvalidFormat),
                     1 => Ok(Self::InvalidStride),
                     2 => Ok(Self::InvalidFd),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -746,7 +746,7 @@ pub mod wayland {
             P030 = 0x30333050,
         }
         impl TryFrom<u32> for Format {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -873,7 +873,7 @@ pub mod wayland {
                     0x59555641 => Ok(Self::Avuy8888),
                     0x59555658 => Ok(Self::Xvuy8888),
                     0x30333050 => Ok(Self::P030),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -901,7 +901,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -911,7 +911,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.fd()?,
                             message.int()?,
                         )
@@ -933,7 +933,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_pool: crate::wire::ObjectId,
+                create_pool: waynest::wire::ObjectId,
                 create_pool: rustix::fd::OwnedFd,
                 create_pool: i32,
             ) -> crate::Result<()>;
@@ -956,11 +956,11 @@ pub mod wayland {
                 format: Format,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_shm#{}.format()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(format as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -997,7 +997,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -1034,9 +1034,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_buffer#{}.release()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1057,7 +1057,7 @@ pub mod wayland {
             InvalidOffer = 3,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -1065,7 +1065,7 @@ pub mod wayland {
                     1 => Ok(Self::InvalidActionMask),
                     2 => Ok(Self::InvalidAction),
                     3 => Ok(Self::InvalidOffer),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -1090,7 +1090,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -1105,7 +1105,7 @@ pub mod wayland {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.fd()?,
                         )
                         .await
@@ -1246,11 +1246,11 @@ pub mod wayland {
                 mime_type: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_offer#{}.offer()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(mime_type))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1265,11 +1265,11 @@ pub mod wayland {
                 source_actions: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_offer#{}.source_actions()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(source_actions.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1315,11 +1315,11 @@ pub mod wayland {
                 dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_offer#{}.action()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(dnd_action.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1336,13 +1336,13 @@ pub mod wayland {
             InvalidSource = 1,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::InvalidActionMask),
                     1 => Ok(Self::InvalidSource),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -1365,7 +1365,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -1375,7 +1375,7 @@ pub mod wayland {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -1436,11 +1436,11 @@ pub mod wayland {
                 mime_type: Option<String>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source#{}.target()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(mime_type)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1455,12 +1455,12 @@ pub mod wayland {
                 fd: rustix::fd::OwnedFd,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source#{}.send()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(mime_type))
                     .put_fd(fd)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1490,9 +1490,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source#{}.cancelled()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1511,9 +1511,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source#{}.dnd_drop_performed()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1529,9 +1529,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source#{}.dnd_finished()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1567,11 +1567,11 @@ pub mod wayland {
                 dnd_action: super::wl_data_device_manager::DndAction,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_source#{}.action()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(dnd_action.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1588,13 +1588,13 @@ pub mod wayland {
             UsedSource = 1,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Role),
                     1 => Ok(Self::UsedSource),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -1618,7 +1618,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -1629,7 +1629,7 @@ pub mod wayland {
                             message.object()?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.object()?,
                             message.uint()?,
                         )
@@ -1680,9 +1680,9 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                start_drag: Option<crate::wire::ObjectId>,
-                start_drag: crate::wire::ObjectId,
-                start_drag: Option<crate::wire::ObjectId>,
+                start_drag: Option<waynest::wire::ObjectId>,
+                start_drag: waynest::wire::ObjectId,
+                start_drag: Option<waynest::wire::ObjectId>,
                 start_drag: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This request asks the compositor to set the selection"#]
@@ -1697,7 +1697,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_selection: Option<crate::wire::ObjectId>,
+                set_selection: Option<waynest::wire::ObjectId>,
                 set_selection: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This request destroys the data device."#]
@@ -1717,14 +1717,14 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                id: crate::wire::ObjectId,
+                id: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device#{}.data_offer()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1737,13 +1737,13 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                surface: crate::wire::ObjectId,
-                x: crate::wire::Fixed,
-                y: crate::wire::Fixed,
-                id: Option<crate::wire::ObjectId>,
+                surface: waynest::wire::ObjectId,
+                x: waynest::wire::Fixed,
+                y: waynest::wire::Fixed,
+                id: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device#{}.enter()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .put_fixed(x)
@@ -1751,7 +1751,7 @@ pub mod wayland {
                     .put_object(id)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1764,9 +1764,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device#{}.leave()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1779,17 +1779,17 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 time: u32,
-                x: crate::wire::Fixed,
-                y: crate::wire::Fixed,
+                x: waynest::wire::Fixed,
+                y: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device#{}.motion()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_fixed(x)
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1812,9 +1812,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device#{}.drop()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1834,12 +1834,12 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                id: Option<crate::wire::ObjectId>,
+                id: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_data_device#{}.selection()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_object(id).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_object(id).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -1878,10 +1878,10 @@ pub mod wayland {
         const Ask = 4;}
                                 }
         impl TryFrom<u32> for DndAction {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"The wl_data_device_manager is a singleton global object that"#]
@@ -1909,7 +1909,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -1922,7 +1922,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -1933,10 +1933,10 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -1948,15 +1948,15 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_data_source: crate::wire::ObjectId,
+                create_data_source: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Create a new data device for a given seat."#]
             async fn get_data_device(
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_data_device: crate::wire::ObjectId,
-                get_data_device: crate::wire::ObjectId,
+                get_data_device: waynest::wire::ObjectId,
+                get_data_device: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -1969,12 +1969,12 @@ pub mod wayland {
             Role = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Role),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -2002,7 +2002,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -2012,10 +2012,10 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -2031,8 +2031,8 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_shell_surface: crate::wire::ObjectId,
-                get_shell_surface: crate::wire::ObjectId,
+                get_shell_surface: waynest::wire::ObjectId,
+                get_shell_surface: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -2055,10 +2055,10 @@ pub mod wayland {
         const BottomRight = 10;}
                                 }
         impl TryFrom<u32> for Resize {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"These flags specify details of the expected behaviour"#]
@@ -2069,10 +2069,10 @@ pub mod wayland {
         const Inactive = 0x1;}
                                 }
         impl TryFrom<u32> for Transient {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"Hints to indicate to the compositor how to deal with a conflict"#]
@@ -2092,7 +2092,7 @@ pub mod wayland {
             Fill = 3,
         }
         impl TryFrom<u32> for FullscreenMethod {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -2100,7 +2100,7 @@ pub mod wayland {
                     1 => Ok(Self::Scale),
                     2 => Ok(Self::Driver),
                     3 => Ok(Self::Fill),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -2130,7 +2130,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -2144,7 +2144,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                         )
                         .await
@@ -2156,7 +2156,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                             message.uint()?.try_into()?,
                         )
@@ -2173,7 +2173,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.int()?,
                             message.int()?,
                             message.uint()?.try_into()?,
@@ -2198,11 +2198,11 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.int()?,
                             message.int()?,
                             message.uint()?.try_into()?,
@@ -2220,7 +2220,7 @@ pub mod wayland {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -2231,7 +2231,7 @@ pub mod wayland {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -2255,7 +2255,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                r#move: crate::wire::ObjectId,
+                r#move: waynest::wire::ObjectId,
                 r#move: u32,
             ) -> crate::Result<()>;
             #[doc = r#"Start a pointer-driven resizing of the surface."#]
@@ -2267,7 +2267,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                resize: crate::wire::ObjectId,
+                resize: waynest::wire::ObjectId,
                 resize: u32,
                 resize: Resize,
             ) -> crate::Result<()>;
@@ -2290,7 +2290,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_transient: crate::wire::ObjectId,
+                set_transient: waynest::wire::ObjectId,
                 set_transient: i32,
                 set_transient: i32,
                 set_transient: Transient,
@@ -2334,7 +2334,7 @@ pub mod wayland {
                 client: &mut crate::Client,
                 set_fullscreen: FullscreenMethod,
                 set_fullscreen: u32,
-                set_fullscreen: Option<crate::wire::ObjectId>,
+                set_fullscreen: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Map the surface as a popup."#]
             #[doc = r#""#]
@@ -2359,9 +2359,9 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_popup: crate::wire::ObjectId,
+                set_popup: waynest::wire::ObjectId,
                 set_popup: u32,
-                set_popup: crate::wire::ObjectId,
+                set_popup: waynest::wire::ObjectId,
                 set_popup: i32,
                 set_popup: i32,
                 set_popup: Transient,
@@ -2388,7 +2388,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_maximized: Option<crate::wire::ObjectId>,
+                set_maximized: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Set a short title for the surface."#]
             #[doc = r#""#]
@@ -2424,9 +2424,11 @@ pub mod wayland {
                 serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_shell_surface#{}.ping()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_uint(serial)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2456,13 +2458,13 @@ pub mod wayland {
                 height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_shell_surface#{}.configure()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(edges.bits())
                     .put_int(width)
                     .put_int(height)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2475,9 +2477,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_shell_surface#{}.popup_done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -2501,7 +2503,7 @@ pub mod wayland {
             DefunctRoleObject = 4,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -2510,7 +2512,7 @@ pub mod wayland {
                     2 => Ok(Self::InvalidSize),
                     3 => Ok(Self::InvalidOffset),
                     4 => Ok(Self::DefunctRoleObject),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -2571,7 +2573,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -2608,7 +2610,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -2729,7 +2731,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                attach: Option<crate::wire::ObjectId>,
+                attach: Option<waynest::wire::ObjectId>,
                 attach: i32,
                 attach: i32,
             ) -> crate::Result<()>;
@@ -2799,7 +2801,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                frame: crate::wire::ObjectId,
+                frame: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request sets the region of the surface that contains"#]
             #[doc = r#"opaque content."#]
@@ -2829,7 +2831,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_opaque_region: Option<crate::wire::ObjectId>,
+                set_opaque_region: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"This request sets the region of the surface that can receive"#]
             #[doc = r#"pointer and touch events."#]
@@ -2857,7 +2859,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_input_region: Option<crate::wire::ObjectId>,
+                set_input_region: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Surface state (input, opaque, and damage regions, attached buffers,"#]
             #[doc = r#"etc.) is double-buffered. Protocol requests modify the pending state,"#]
@@ -3018,14 +3020,14 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                output: crate::wire::ObjectId,
+                output: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface#{}.enter()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3042,14 +3044,14 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                output: crate::wire::ObjectId,
+                output: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface#{}.leave()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3072,9 +3074,9 @@ pub mod wayland {
                 factor: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface#{}.preferred_buffer_scale()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_int(factor).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3094,11 +3096,11 @@ pub mod wayland {
                 transform: super::wl_output::Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_surface#{}.preferred_buffer_transform()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(transform as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3115,10 +3117,10 @@ pub mod wayland {
         const Touch = 4;}
                                 }
         impl TryFrom<u32> for Capability {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"These errors can be emitted in response to wl_seat requests."#]
@@ -3130,12 +3132,12 @@ pub mod wayland {
             MissingCapability = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::MissingCapability),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -3158,7 +3160,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -3168,7 +3170,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -3179,7 +3181,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -3190,7 +3192,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -3213,7 +3215,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_pointer: crate::wire::ObjectId,
+                get_pointer: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The ID provided will be initialized to the wl_keyboard interface"#]
             #[doc = r#"for this seat."#]
@@ -3227,7 +3229,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_keyboard: crate::wire::ObjectId,
+                get_keyboard: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The ID provided will be initialized to the wl_touch interface"#]
             #[doc = r#"for this seat."#]
@@ -3241,7 +3243,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_touch: crate::wire::ObjectId,
+                get_touch: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Using this request a client can tell the server that it is not going to"#]
             #[doc = r#"use the seat object anymore."#]
@@ -3281,11 +3283,11 @@ pub mod wayland {
                 capabilities: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_seat#{}.capabilities()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(capabilities.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3312,11 +3314,11 @@ pub mod wayland {
                 name: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_seat#{}.name()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3331,12 +3333,12 @@ pub mod wayland {
             Role = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Role),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -3352,13 +3354,13 @@ pub mod wayland {
             Pressed = 1,
         }
         impl TryFrom<u32> for ButtonState {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Released),
                     1 => Ok(Self::Pressed),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -3373,13 +3375,13 @@ pub mod wayland {
             HorizontalScroll = 1,
         }
         impl TryFrom<u32> for Axis {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::VerticalScroll),
                     1 => Ok(Self::HorizontalScroll),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -3413,7 +3415,7 @@ pub mod wayland {
             WheelTilt = 3,
         }
         impl TryFrom<u32> for AxisSource {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -3421,7 +3423,7 @@ pub mod wayland {
                     1 => Ok(Self::Finger),
                     2 => Ok(Self::Continuous),
                     3 => Ok(Self::WheelTilt),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -3437,13 +3439,13 @@ pub mod wayland {
             Inverted = 1,
         }
         impl TryFrom<u32> for AxisRelativeDirection {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Identical),
                     1 => Ok(Self::Inverted),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -3470,7 +3472,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -3530,7 +3532,7 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 set_cursor: u32,
-                set_cursor: Option<crate::wire::ObjectId>,
+                set_cursor: Option<waynest::wire::ObjectId>,
                 set_cursor: i32,
                 set_cursor: i32,
             ) -> crate::Result<()>;
@@ -3555,19 +3557,19 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                surface: crate::wire::ObjectId,
-                surface_x: crate::wire::Fixed,
-                surface_y: crate::wire::Fixed,
+                surface: waynest::wire::ObjectId,
+                surface_x: waynest::wire::Fixed,
+                surface_y: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.enter()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .put_fixed(surface_x)
                     .put_fixed(surface_y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3581,15 +3583,15 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                surface: crate::wire::ObjectId,
+                surface: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.leave()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3601,17 +3603,17 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 time: u32,
-                surface_x: crate::wire::Fixed,
-                surface_y: crate::wire::Fixed,
+                surface_x: waynest::wire::Fixed,
+                surface_y: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.motion()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_fixed(surface_x)
                     .put_fixed(surface_y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3639,14 +3641,14 @@ pub mod wayland {
                 state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.button()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_uint(button)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3672,16 +3674,16 @@ pub mod wayland {
                 client: &mut crate::Client,
                 time: u32,
                 axis: Axis,
-                value: crate::wire::Fixed,
+                value: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.axis()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(axis as u32)
                     .put_fixed(value)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3725,9 +3727,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.frame()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3763,11 +3765,11 @@ pub mod wayland {
                 axis_source: AxisSource,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.axis_source()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(axis_source as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 6, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3793,12 +3795,12 @@ pub mod wayland {
                 axis: Axis,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.axis_stop()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(axis as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 7, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 7, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3840,12 +3842,12 @@ pub mod wayland {
                 discrete: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.axis_discrete()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_int(discrete)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 8, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 8, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3878,12 +3880,12 @@ pub mod wayland {
                 value120: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.axis_value120()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_int(value120)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 9, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 9, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3930,12 +3932,12 @@ pub mod wayland {
                 direction: AxisRelativeDirection,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_pointer#{}.axis_relative_direction()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(axis as u32)
                     .put_uint(direction as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 10, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 10, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -3954,13 +3956,13 @@ pub mod wayland {
             XkbV1 = 1,
         }
         impl TryFrom<u32> for KeymapFormat {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::NoKeymap),
                     1 => Ok(Self::XkbV1),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -3975,13 +3977,13 @@ pub mod wayland {
             Pressed = 1,
         }
         impl TryFrom<u32> for KeyState {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Released),
                     1 => Ok(Self::Pressed),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -4012,7 +4014,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -4042,13 +4044,13 @@ pub mod wayland {
                 size: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard#{}.keymap()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(format as u32)
                     .put_fd(fd)
                     .put_uint(size)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4067,17 +4069,17 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                surface: crate::wire::ObjectId,
+                surface: waynest::wire::ObjectId,
                 keys: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard#{}.enter()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .put_array(keys)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4096,15 +4098,15 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                surface: crate::wire::ObjectId,
+                surface: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard#{}.leave()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4136,14 +4138,14 @@ pub mod wayland {
                 state: KeyState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard#{}.key()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_uint(key)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4171,7 +4173,7 @@ pub mod wayland {
                 group: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard#{}.modifiers()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(mods_depressed)
                     .put_uint(mods_latched)
@@ -4179,7 +4181,7 @@ pub mod wayland {
                     .put_uint(group)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4203,12 +4205,12 @@ pub mod wayland {
                 delay: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_keyboard#{}.repeat_info()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_int(rate)
                     .put_int(delay)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4238,7 +4240,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -4263,13 +4265,13 @@ pub mod wayland {
                 client: &mut crate::Client,
                 serial: u32,
                 time: u32,
-                surface: crate::wire::ObjectId,
+                surface: waynest::wire::ObjectId,
                 id: i32,
-                x: crate::wire::Fixed,
-                y: crate::wire::Fixed,
+                x: waynest::wire::Fixed,
+                y: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch#{}.down()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_object(Some(surface))
@@ -4278,7 +4280,7 @@ pub mod wayland {
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4294,13 +4296,13 @@ pub mod wayland {
                 id: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch#{}.up()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(time)
                     .put_int(id)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4311,18 +4313,18 @@ pub mod wayland {
                 client: &mut crate::Client,
                 time: u32,
                 id: i32,
-                x: crate::wire::Fixed,
-                y: crate::wire::Fixed,
+                x: waynest::wire::Fixed,
+                y: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch#{}.motion()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_int(id)
                     .put_fixed(x)
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4340,9 +4342,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch#{}.frame()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4360,9 +4362,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch#{}.cancel()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4396,17 +4398,17 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 id: i32,
-                major: crate::wire::Fixed,
-                minor: crate::wire::Fixed,
+                major: waynest::wire::Fixed,
+                minor: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch#{}.shape()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_int(id)
                     .put_fixed(major)
                     .put_fixed(minor)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4438,15 +4440,15 @@ pub mod wayland {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 id: i32,
-                orientation: crate::wire::Fixed,
+                orientation: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_touch#{}.orientation()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_int(id)
                     .put_fixed(orientation)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 6, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4473,7 +4475,7 @@ pub mod wayland {
             VerticalBgr = 5,
         }
         impl TryFrom<u32> for Subpixel {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -4483,7 +4485,7 @@ pub mod wayland {
                     3 => Ok(Self::HorizontalBgr),
                     4 => Ok(Self::VerticalRgb),
                     5 => Ok(Self::VerticalBgr),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -4519,7 +4521,7 @@ pub mod wayland {
             Flipped270 = 7,
         }
         impl TryFrom<u32> for Transform {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -4531,7 +4533,7 @@ pub mod wayland {
                     5 => Ok(Self::Flipped90),
                     6 => Ok(Self::Flipped180),
                     7 => Ok(Self::Flipped270),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -4544,10 +4546,10 @@ pub mod wayland {
         const Preferred = 0x2;}
                                 }
         impl TryFrom<u32> for Mode {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"An output describes part of the compositor geometry.  The"#]
@@ -4571,7 +4573,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -4622,7 +4624,7 @@ pub mod wayland {
                 transform: Transform,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output#{}.geometry()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_int(x)
                     .put_int(y)
                     .put_int(physical_width)
@@ -4633,7 +4635,7 @@ pub mod wayland {
                     .put_uint(transform as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4680,14 +4682,14 @@ pub mod wayland {
                 refresh: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output#{}.mode()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(flags.bits())
                     .put_int(width)
                     .put_int(height)
                     .put_int(refresh)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4702,9 +4704,9 @@ pub mod wayland {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output#{}.done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4733,9 +4735,9 @@ pub mod wayland {
                 factor: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output#{}.scale()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(factor).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_int(factor).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4774,11 +4776,11 @@ pub mod wayland {
                 name: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output#{}.name()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4803,11 +4805,11 @@ pub mod wayland {
                 description: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wl_output#{}.description()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(description))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -4833,7 +4835,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -4906,13 +4908,13 @@ pub mod wayland {
             BadParent = 1,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::BadSurface),
                     1 => Ok(Self::BadParent),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -4950,7 +4952,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -4964,13 +4966,13 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -5008,9 +5010,9 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_subsurface: crate::wire::ObjectId,
-                get_subsurface: crate::wire::ObjectId,
-                get_subsurface: crate::wire::ObjectId,
+                get_subsurface: waynest::wire::ObjectId,
+                get_subsurface: waynest::wire::ObjectId,
+                get_subsurface: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -5023,12 +5025,12 @@ pub mod wayland {
             BadSurface = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::BadSurface),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -5099,7 +5101,7 @@ pub mod wayland {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -5118,7 +5120,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -5129,7 +5131,7 @@ pub mod wayland {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -5191,7 +5193,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                place_above: crate::wire::ObjectId,
+                place_above: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The sub-surface is placed just below the reference surface."#]
             #[doc = r#"See wl_subsurface.place_above."#]
@@ -5199,7 +5201,7 @@ pub mod wayland {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                place_below: crate::wire::ObjectId,
+                place_below: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Change the commit behaviour of the sub-surface to synchronized"#]
             #[doc = r#"mode, also described as the parent dependent mode."#]
@@ -5327,7 +5329,7 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -5341,7 +5343,7 @@ pub mod linux_dmabuf_v1 {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -5352,7 +5354,7 @@ pub mod linux_dmabuf_v1 {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -5363,10 +5365,10 @@ pub mod linux_dmabuf_v1 {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -5388,7 +5390,7 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_params: crate::wire::ObjectId,
+                create_params: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request creates a new wp_linux_dmabuf_feedback object not bound"#]
             #[doc = r#"to a particular surface. This object will deliver feedback about dmabuf"#]
@@ -5398,7 +5400,7 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_default_feedback: crate::wire::ObjectId,
+                get_default_feedback: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This request creates a new wp_linux_dmabuf_feedback object for the"#]
             #[doc = r#"specified wl_surface. This object will deliver feedback about dmabuf"#]
@@ -5410,8 +5412,8 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_surface_feedback: crate::wire::ObjectId,
-                get_surface_feedback: crate::wire::ObjectId,
+                get_surface_feedback: waynest::wire::ObjectId,
+                get_surface_feedback: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This event advertises one buffer format that the server supports."#]
             #[doc = r#"All the supported formats are advertised once when the client"#]
@@ -5431,9 +5433,11 @@ pub mod linux_dmabuf_v1 {
                 format: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_v1#{}.format()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(format).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_uint(format)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5469,13 +5473,13 @@ pub mod linux_dmabuf_v1 {
                 modifier_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_v1#{}.modifier()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(format)
                     .put_uint(modifier_hi)
                     .put_uint(modifier_lo)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5505,7 +5509,7 @@ pub mod linux_dmabuf_v1 {
             InvalidWlBuffer = 7,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -5517,7 +5521,7 @@ pub mod linux_dmabuf_v1 {
                     5 => Ok(Self::InvalidDimensions),
                     6 => Ok(Self::OutOfBounds),
                     7 => Ok(Self::InvalidWlBuffer),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -5529,10 +5533,10 @@ pub mod linux_dmabuf_v1 {
         const BottomFirst = 4;}
                                 }
         impl TryFrom<u32> for Flags {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"This temporary object is a collection of dmabufs and other"#]
@@ -5564,7 +5568,7 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -5604,7 +5608,7 @@ pub mod linux_dmabuf_v1 {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.int()?,
                             message.int()?,
                             message.uint()?,
@@ -5747,7 +5751,7 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_immed: crate::wire::ObjectId,
+                create_immed: waynest::wire::ObjectId,
                 create_immed: i32,
                 create_immed: i32,
                 create_immed: u32,
@@ -5762,14 +5766,14 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                buffer: crate::wire::ObjectId,
+                buffer: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_buffer_params_v1#{}.created()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(buffer))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5785,9 +5789,9 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_buffer_params_v1#{}.failed()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5800,10 +5804,10 @@ pub mod linux_dmabuf_v1 {
         const Scanout = 1;}
                                 }
         impl TryFrom<u32> for TrancheFlags {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"This object advertises dmabuf parameters feedback. This includes the"#]
@@ -5846,7 +5850,7 @@ pub mod linux_dmabuf_v1 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -5874,9 +5878,9 @@ pub mod linux_dmabuf_v1 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_linux_dmabuf_feedback_v1#{}.done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5905,12 +5909,12 @@ pub mod linux_dmabuf_v1 {
                     "-> zwp_linux_dmabuf_feedback_v1#{}.format_table()",
                     _object.id
                 );
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_fd(fd)
                     .put_uint(size)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5947,9 +5951,11 @@ pub mod linux_dmabuf_v1 {
                     "-> zwp_linux_dmabuf_feedback_v1#{}.main_device()",
                     _object.id
                 );
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_array(device)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -5966,9 +5972,9 @@ pub mod linux_dmabuf_v1 {
                     "-> zwp_linux_dmabuf_feedback_v1#{}.tranche_done()",
                     _object.id
                 );
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6008,9 +6014,11 @@ pub mod linux_dmabuf_v1 {
                     "-> zwp_linux_dmabuf_feedback_v1#{}.tranche_target_device()",
                     _object.id
                 );
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_array(device).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_array(device)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6048,11 +6056,11 @@ pub mod linux_dmabuf_v1 {
                     "-> zwp_linux_dmabuf_feedback_v1#{}.tranche_formats()",
                     _object.id
                 );
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_array(indices)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6074,11 +6082,11 @@ pub mod linux_dmabuf_v1 {
                     "-> zwp_linux_dmabuf_feedback_v1#{}.tranche_flags()",
                     _object.id
                 );
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(flags.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 6, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6099,13 +6107,13 @@ pub mod presentation_time {
             InvalidFlag = 1,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::InvalidTimestamp),
                     1 => Ok(Self::InvalidFlag),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -6143,7 +6151,7 @@ pub mod presentation_time {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -6157,10 +6165,10 @@ pub mod presentation_time {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -6187,8 +6195,8 @@ pub mod presentation_time {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                feedback: crate::wire::ObjectId,
-                feedback: crate::wire::ObjectId,
+                feedback: waynest::wire::ObjectId,
+                feedback: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This event tells the client in which clock domain the"#]
             #[doc = r#"compositor interprets the timestamps used by the presentation"#]
@@ -6225,9 +6233,11 @@ pub mod presentation_time {
                 clk_id: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation#{}.clock_id()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(clk_id).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_uint(clk_id)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6243,10 +6253,10 @@ pub mod presentation_time {
             pub struct Kind: u32 {const Vsync = 0x1;const HwClock = 0x2;const HwCompletion = 0x4;const ZeroCopy = 0x8;}
         }
         impl TryFrom<u32> for Kind {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"A presentation_feedback object returns an indication that a"#]
@@ -6275,7 +6285,7 @@ pub mod presentation_time {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     _ => Err(crate::error::Error::UnknownOpcode),
@@ -6293,14 +6303,14 @@ pub mod presentation_time {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                output: crate::wire::ObjectId,
+                output: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation_feedback#{}.sync_output()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(output))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6358,7 +6368,7 @@ pub mod presentation_time {
                 flags: Kind,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation_feedback#{}.presented()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(tv_sec_hi)
                     .put_uint(tv_sec_lo)
                     .put_uint(tv_nsec)
@@ -6368,7 +6378,7 @@ pub mod presentation_time {
                     .put_uint(flags.bits())
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6379,9 +6389,9 @@ pub mod presentation_time {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> wp_presentation_feedback#{}.discarded()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6484,7 +6494,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -6494,10 +6504,10 @@ pub mod tablet_v2 {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -6514,8 +6524,8 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_tablet_seat: crate::wire::ObjectId,
-                get_tablet_seat: crate::wire::ObjectId,
+                get_tablet_seat: waynest::wire::ObjectId,
+                get_tablet_seat: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"Destroy the wp_tablet_manager object. Objects created from this"#]
             #[doc = r#"object are unaffected and should be destroyed separately."#]
@@ -6545,7 +6555,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -6570,14 +6580,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                id: crate::wire::ObjectId,
+                id: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_seat_v2#{}.tablet_added()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6589,14 +6599,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                id: crate::wire::ObjectId,
+                id: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_seat_v2#{}.tool_added()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6614,14 +6624,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                id: crate::wire::ObjectId,
+                id: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_seat_v2#{}.pad_added()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(id))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6659,7 +6669,7 @@ pub mod tablet_v2 {
             Lens = 0x147,
         }
         impl TryFrom<u32> for Type {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -6671,7 +6681,7 @@ pub mod tablet_v2 {
                     0x145 => Ok(Self::Finger),
                     0x146 => Ok(Self::Mouse),
                     0x147 => Ok(Self::Lens),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -6697,7 +6707,7 @@ pub mod tablet_v2 {
             Wheel = 6,
         }
         impl TryFrom<u32> for Capability {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -6707,7 +6717,7 @@ pub mod tablet_v2 {
                     4 => Ok(Self::Rotation),
                     5 => Ok(Self::Slider),
                     6 => Ok(Self::Wheel),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -6722,13 +6732,13 @@ pub mod tablet_v2 {
             Pressed = 1,
         }
         impl TryFrom<u32> for ButtonState {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Released),
                     1 => Ok(Self::Pressed),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -6740,12 +6750,12 @@ pub mod tablet_v2 {
             Role = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Role),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -6784,7 +6794,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -6841,7 +6851,7 @@ pub mod tablet_v2 {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 set_cursor: u32,
-                set_cursor: Option<crate::wire::ObjectId>,
+                set_cursor: Option<waynest::wire::ObjectId>,
                 set_cursor: i32,
                 set_cursor: i32,
             ) -> crate::Result<()>;
@@ -6863,11 +6873,11 @@ pub mod tablet_v2 {
                 tool_type: Type,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.type()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(tool_type as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6894,12 +6904,12 @@ pub mod tablet_v2 {
                 hardware_serial_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.hardware_serial()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(hardware_serial_hi)
                     .put_uint(hardware_serial_lo)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6921,12 +6931,12 @@ pub mod tablet_v2 {
                 hardware_id_lo: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.hardware_id_wacom()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(hardware_id_hi)
                     .put_uint(hardware_id_lo)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6944,11 +6954,11 @@ pub mod tablet_v2 {
                 capability: Capability,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.capability()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(capability as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6961,9 +6971,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -6987,9 +6997,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.removed()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7007,17 +7017,17 @@ pub mod tablet_v2 {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                tablet: crate::wire::ObjectId,
-                surface: crate::wire::ObjectId,
+                tablet: waynest::wire::ObjectId,
+                surface: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.proximity_in()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(tablet))
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 6, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7039,9 +7049,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.proximity_out()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 7, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 7, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7064,9 +7074,11 @@ pub mod tablet_v2 {
                 serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.down()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_uint(serial)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 8, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 8, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7092,9 +7104,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.up()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 9, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 9, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7103,16 +7115,16 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                x: crate::wire::Fixed,
-                y: crate::wire::Fixed,
+                x: waynest::wire::Fixed,
+                y: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.motion()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_fixed(x)
                     .put_fixed(y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 10, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 10, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7128,11 +7140,11 @@ pub mod tablet_v2 {
                 pressure: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.pressure()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(pressure)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 11, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 11, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7148,11 +7160,11 @@ pub mod tablet_v2 {
                 distance: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.distance()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(distance)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 12, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 12, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7164,16 +7176,16 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                tilt_x: crate::wire::Fixed,
-                tilt_y: crate::wire::Fixed,
+                tilt_x: waynest::wire::Fixed,
+                tilt_y: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.tilt()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_fixed(tilt_x)
                     .put_fixed(tilt_y)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 13, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 13, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7184,14 +7196,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                degrees: crate::wire::Fixed,
+                degrees: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.rotation()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 14, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 14, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7207,9 +7219,11 @@ pub mod tablet_v2 {
                 position: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.slider()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_int(position).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_int(position)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 15, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 15, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7229,16 +7243,16 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                degrees: crate::wire::Fixed,
+                degrees: waynest::wire::Fixed,
                 clicks: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.wheel()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .put_int(clicks)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 16, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 16, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7257,13 +7271,13 @@ pub mod tablet_v2 {
                 state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.button()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_uint(button)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 17, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 17, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7278,9 +7292,9 @@ pub mod tablet_v2 {
                 time: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_tool_v2#{}.frame()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_uint(time).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 18, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 18, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7310,7 +7324,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -7339,11 +7353,11 @@ pub mod tablet_v2 {
                 name: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2#{}.name()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(name))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7362,12 +7376,12 @@ pub mod tablet_v2 {
                 pid: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2#{}.id()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(vid)
                     .put_uint(pid)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7392,11 +7406,11 @@ pub mod tablet_v2 {
                 path: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2#{}.path()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(path))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7410,9 +7424,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2#{}.done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7427,9 +7441,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_v2#{}.removed()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7448,12 +7462,12 @@ pub mod tablet_v2 {
             Finger = 1,
         }
         impl TryFrom<u32> for Source {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     1 => Ok(Self::Finger),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -7477,7 +7491,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -7487,7 +7501,7 @@ pub mod tablet_v2 {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                         )
                         .await
@@ -7550,11 +7564,11 @@ pub mod tablet_v2 {
                 source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2#{}.source()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(source as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7566,14 +7580,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                degrees: crate::wire::Fixed,
+                degrees: waynest::wire::Fixed,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2#{}.angle()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_fixed(degrees)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7593,9 +7607,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2#{}.stop()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7619,9 +7633,9 @@ pub mod tablet_v2 {
                 time: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_ring_v2#{}.frame()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_uint(time).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7640,12 +7654,12 @@ pub mod tablet_v2 {
             Finger = 1,
         }
         impl TryFrom<u32> for Source {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     1 => Ok(Self::Finger),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -7669,7 +7683,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -7679,7 +7693,7 @@ pub mod tablet_v2 {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                         )
                         .await
@@ -7742,11 +7756,11 @@ pub mod tablet_v2 {
                 source: Source,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2#{}.source()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(source as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7762,11 +7776,11 @@ pub mod tablet_v2 {
                 position: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2#{}.position()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(position)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7786,9 +7800,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2#{}.stop()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7813,9 +7827,9 @@ pub mod tablet_v2 {
                 time: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_strip_v2#{}.frame()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(time).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_uint(time).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7858,7 +7872,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -7894,11 +7908,11 @@ pub mod tablet_v2 {
                 buttons: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2#{}.buttons()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_array(buttons)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7911,14 +7925,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                ring: crate::wire::ObjectId,
+                ring: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2#{}.ring()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(ring))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7931,14 +7945,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                strip: crate::wire::ObjectId,
+                strip: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2#{}.strip()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(strip))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7961,9 +7975,9 @@ pub mod tablet_v2 {
                 modes: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2#{}.modes()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(modes).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_uint(modes).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -7977,9 +7991,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2#{}.done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8019,13 +8033,13 @@ pub mod tablet_v2 {
                 mode: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_group_v2#{}.mode_switch()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(serial)
                     .put_uint(mode)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8044,13 +8058,13 @@ pub mod tablet_v2 {
             Pressed = 1,
         }
         impl TryFrom<u32> for ButtonState {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::Released),
                     1 => Ok(Self::Pressed),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -8091,7 +8105,7 @@ pub mod tablet_v2 {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -8102,7 +8116,7 @@ pub mod tablet_v2 {
                             message.uint()?,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                         )
                         .await
@@ -8162,14 +8176,14 @@ pub mod tablet_v2 {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                pad_group: crate::wire::ObjectId,
+                pad_group: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.group()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_object(Some(pad_group))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8190,11 +8204,11 @@ pub mod tablet_v2 {
                 path: String,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.path()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_string(Some(path))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8211,9 +8225,11 @@ pub mod tablet_v2 {
                 buttons: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.buttons()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(buttons).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_uint(buttons)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8226,9 +8242,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8242,13 +8258,13 @@ pub mod tablet_v2 {
                 state: ButtonState,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.button()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(time)
                     .put_uint(button)
                     .put_uint(state as u32)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 4, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 4, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8258,17 +8274,17 @@ pub mod tablet_v2 {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                tablet: crate::wire::ObjectId,
-                surface: crate::wire::ObjectId,
+                tablet: waynest::wire::ObjectId,
+                surface: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.enter()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(tablet))
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 5, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 5, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8279,15 +8295,15 @@ pub mod tablet_v2 {
                 _object: &crate::Object,
                 client: &mut crate::Client,
                 serial: u32,
-                surface: crate::wire::ObjectId,
+                surface: waynest::wire::ObjectId,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.leave()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_uint(serial)
                     .put_object(Some(surface))
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 6, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 6, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8303,9 +8319,9 @@ pub mod tablet_v2 {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> zwp_tablet_pad_v2#{}.removed()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 7, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 7, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8322,12 +8338,12 @@ pub mod viewporter {
             ViewportExists = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::ViewportExists),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -8352,7 +8368,7 @@ pub mod viewporter {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -8366,10 +8382,10 @@ pub mod viewporter {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -8392,8 +8408,8 @@ pub mod viewporter {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_viewport: crate::wire::ObjectId,
-                get_viewport: crate::wire::ObjectId,
+                get_viewport: waynest::wire::ObjectId,
+                get_viewport: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
         }
     }
@@ -8412,7 +8428,7 @@ pub mod viewporter {
             NoSurface = 3,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -8420,7 +8436,7 @@ pub mod viewporter {
                     1 => Ok(Self::BadSize),
                     2 => Ok(Self::OutOfBuffer),
                     3 => Ok(Self::NoSurface),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -8494,7 +8510,7 @@ pub mod viewporter {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -8543,10 +8559,10 @@ pub mod viewporter {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_source: crate::wire::Fixed,
-                set_source: crate::wire::Fixed,
-                set_source: crate::wire::Fixed,
-                set_source: crate::wire::Fixed,
+                set_source: waynest::wire::Fixed,
+                set_source: waynest::wire::Fixed,
+                set_source: waynest::wire::Fixed,
+                set_source: waynest::wire::Fixed,
             ) -> crate::Result<()>;
             #[doc = r#"Set the destination size of the associated wl_surface. See"#]
             #[doc = r#"wp_viewport for the description, and relation to the wl_buffer"#]
@@ -8591,7 +8607,7 @@ pub mod xdg_shell {
             Unresponsive = 6,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -8602,7 +8618,7 @@ pub mod xdg_shell {
                     4 => Ok(Self::InvalidSurfaceState),
                     5 => Ok(Self::InvalidPositioner),
                     6 => Ok(Self::Unresponsive),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -8626,7 +8642,7 @@ pub mod xdg_shell {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -8640,7 +8656,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -8651,10 +8667,10 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -8682,7 +8698,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                create_positioner: crate::wire::ObjectId,
+                create_positioner: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This creates an xdg_surface for the given surface. While xdg_surface"#]
             #[doc = r#"itself is not a role, the corresponding surface may only be assigned"#]
@@ -8701,8 +8717,8 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_xdg_surface: crate::wire::ObjectId,
-                get_xdg_surface: crate::wire::ObjectId,
+                get_xdg_surface: waynest::wire::ObjectId,
+                get_xdg_surface: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"A client must respond to a ping event with a pong request or"#]
             #[doc = r#"the client may be deemed unresponsive. See xdg_wm_base.ping"#]
@@ -8733,9 +8749,11 @@ pub mod xdg_shell {
                 serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_wm_base#{}.ping()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_uint(serial)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -8750,12 +8768,12 @@ pub mod xdg_shell {
             InvalidInput = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::InvalidInput),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -8774,7 +8792,7 @@ pub mod xdg_shell {
             BottomRight = 8,
         }
         impl TryFrom<u32> for Anchor {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -8787,7 +8805,7 @@ pub mod xdg_shell {
                     6 => Ok(Self::BottomLeft),
                     7 => Ok(Self::TopRight),
                     8 => Ok(Self::BottomRight),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -8806,7 +8824,7 @@ pub mod xdg_shell {
             BottomRight = 8,
         }
         impl TryFrom<u32> for Gravity {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -8819,7 +8837,7 @@ pub mod xdg_shell {
                     6 => Ok(Self::BottomLeft),
                     7 => Ok(Self::TopRight),
                     8 => Ok(Self::BottomRight),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -8839,10 +8857,10 @@ pub mod xdg_shell {
             pub struct ConstraintAdjustment: u32 {const None = 0;const SlideX = 1;const SlideY = 2;const FlipX = 4;const FlipY = 8;const ResizeX = 16;const ResizeY = 32;}
         }
         impl TryFrom<u32> for ConstraintAdjustment {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
-                Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
             }
         }
         #[doc = r#"The xdg_positioner provides a collection of rules for the placement of a"#]
@@ -8879,7 +8897,7 @@ pub mod xdg_shell {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -9095,7 +9113,7 @@ pub mod xdg_shell {
             DefunctRoleObject = 6,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -9105,7 +9123,7 @@ pub mod xdg_shell {
                     4 => Ok(Self::InvalidSerial),
                     5 => Ok(Self::InvalidSize),
                     6 => Ok(Self::DefunctRoleObject),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -9171,7 +9189,7 @@ pub mod xdg_shell {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -9185,7 +9203,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -9196,11 +9214,11 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.object()?,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -9240,7 +9258,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_toplevel: crate::wire::ObjectId,
+                get_toplevel: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"This creates an xdg_popup object for the given xdg_surface and gives"#]
             #[doc = r#"the associated wl_surface the xdg_popup role."#]
@@ -9254,9 +9272,9 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                get_popup: crate::wire::ObjectId,
-                get_popup: Option<crate::wire::ObjectId>,
-                get_popup: crate::wire::ObjectId,
+                get_popup: waynest::wire::ObjectId,
+                get_popup: Option<waynest::wire::ObjectId>,
+                get_popup: waynest::wire::ObjectId,
             ) -> crate::Result<()>;
             #[doc = r#"The window geometry of a surface is its "visible bounds" from the"#]
             #[doc = r#"user's perspective. Client-side decorations often have invisible"#]
@@ -9366,9 +9384,11 @@ pub mod xdg_shell {
                 serial: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_surface#{}.configure()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(serial).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
+                    .put_uint(serial)
+                    .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -9388,14 +9408,14 @@ pub mod xdg_shell {
             InvalidSize = 2,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::InvalidResizeEdge),
                     1 => Ok(Self::InvalidParent),
                     2 => Ok(Self::InvalidSize),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -9416,7 +9436,7 @@ pub mod xdg_shell {
             BottomRight = 10,
         }
         impl TryFrom<u32> for ResizeEdge {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -9429,7 +9449,7 @@ pub mod xdg_shell {
                     8 => Ok(Self::Right),
                     9 => Ok(Self::TopRight),
                     10 => Ok(Self::BottomRight),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -9459,7 +9479,7 @@ pub mod xdg_shell {
             Suspended = 9,
         }
         impl TryFrom<u32> for State {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -9472,7 +9492,7 @@ pub mod xdg_shell {
                     7 => Ok(Self::TiledTop),
                     8 => Ok(Self::TiledBottom),
                     9 => Ok(Self::Suspended),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -9490,7 +9510,7 @@ pub mod xdg_shell {
             Minimize = 4,
         }
         impl TryFrom<u32> for WmCapabilities {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
@@ -9498,7 +9518,7 @@ pub mod xdg_shell {
                     2 => Ok(Self::Maximize),
                     3 => Ok(Self::Fullscreen),
                     4 => Ok(Self::Minimize),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -9538,7 +9558,7 @@ pub mod xdg_shell {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -9556,7 +9576,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -9567,7 +9587,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .string()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                         )
                         .await
                     }
@@ -9578,7 +9598,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                             message.int()?,
                             message.int()?,
@@ -9592,7 +9612,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                         )
                         .await
@@ -9604,7 +9624,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                             message.uint()?.try_into()?,
                         )
@@ -9674,7 +9694,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_parent: Option<crate::wire::ObjectId>,
+                set_parent: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Set a short title for the surface."#]
             #[doc = r#""#]
@@ -9734,7 +9754,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                show_window_menu: crate::wire::ObjectId,
+                show_window_menu: waynest::wire::ObjectId,
                 show_window_menu: u32,
                 show_window_menu: i32,
                 show_window_menu: i32,
@@ -9759,7 +9779,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                r#move: crate::wire::ObjectId,
+                r#move: waynest::wire::ObjectId,
                 r#move: u32,
             ) -> crate::Result<()>;
             #[doc = r#"Start a user-driven, interactive resize of the surface."#]
@@ -9797,7 +9817,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                resize: crate::wire::ObjectId,
+                resize: waynest::wire::ObjectId,
                 resize: u32,
                 resize: ResizeEdge,
             ) -> crate::Result<()>;
@@ -9960,7 +9980,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                set_fullscreen: Option<crate::wire::ObjectId>,
+                set_fullscreen: Option<waynest::wire::ObjectId>,
             ) -> crate::Result<()>;
             #[doc = r#"Make the surface no longer fullscreen."#]
             #[doc = r#""#]
@@ -10025,13 +10045,13 @@ pub mod xdg_shell {
                 states: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel#{}.configure()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_int(width)
                     .put_int(height)
                     .put_array(states)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -10049,9 +10069,9 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel#{}.close()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -10078,12 +10098,12 @@ pub mod xdg_shell {
                 height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel#{}.configure_bounds()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_int(width)
                     .put_int(height)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -10114,11 +10134,11 @@ pub mod xdg_shell {
                 capabilities: Vec<u8>,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_toplevel#{}.wm_capabilities()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_array(capabilities)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 3, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 3, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -10133,12 +10153,12 @@ pub mod xdg_shell {
             InvalidGrab = 0,
         }
         impl TryFrom<u32> for Error {
-            type Error = crate::wire::DecodeError;
+            type Error = waynest::wire::DecodeError;
 
             fn try_from(v: u32) -> Result<Self, Self::Error> {
                 match v {
                     0 => Ok(Self::InvalidGrab),
-                    _ => Err(crate::wire::DecodeError::MalformedPayload),
+                    _ => Err(waynest::wire::DecodeError::MalformedPayload),
                 }
             }
         }
@@ -10181,7 +10201,7 @@ pub mod xdg_shell {
                 &self,
                 object: &crate::Object,
                 client: &mut crate::Client,
-                message: &mut crate::wire::Message,
+                message: &mut waynest::wire::Message,
             ) -> crate::Result<()> {
                 match message.opcode {
                     0 => {
@@ -10195,7 +10215,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                         )
                         .await
@@ -10207,7 +10227,7 @@ pub mod xdg_shell {
                             client,
                             message
                                 .object()?
-                                .ok_or(crate::wire::DecodeError::MalformedPayload)?,
+                                .ok_or(waynest::wire::DecodeError::MalformedPayload)?,
                             message.uint()?,
                         )
                         .await
@@ -10266,7 +10286,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                grab: crate::wire::ObjectId,
+                grab: waynest::wire::ObjectId,
                 grab: u32,
             ) -> crate::Result<()>;
             #[doc = r#"Reposition an already-mapped popup. The popup will be placed given the"#]
@@ -10296,7 +10316,7 @@ pub mod xdg_shell {
                 &self,
                 _object: &crate::Object,
                 client: &mut crate::Client,
-                reposition: crate::wire::ObjectId,
+                reposition: waynest::wire::ObjectId,
                 reposition: u32,
             ) -> crate::Result<()>;
             #[doc = r#"This event asks the popup surface to configure itself given the"#]
@@ -10321,14 +10341,14 @@ pub mod xdg_shell {
                 height: i32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_popup#{}.configure()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new()
+                let (payload, fds) = waynest::wire::PayloadBuilder::new()
                     .put_int(x)
                     .put_int(y)
                     .put_int(width)
                     .put_int(height)
                     .build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 0, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 0, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -10341,9 +10361,9 @@ pub mod xdg_shell {
                 client: &mut crate::Client,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_popup#{}.popup_done()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 1, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 1, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }
@@ -10369,9 +10389,9 @@ pub mod xdg_shell {
                 token: u32,
             ) -> crate::Result<()> {
                 tracing::debug!("-> xdg_popup#{}.repositioned()", _object.id);
-                let (payload, fds) = crate::wire::PayloadBuilder::new().put_uint(token).build();
+                let (payload, fds) = waynest::wire::PayloadBuilder::new().put_uint(token).build();
                 client
-                    .send_message(crate::wire::Message::new(_object.id, 2, payload, fds))
+                    .send_message(waynest::wire::Message::new(_object.id, 2, payload, fds))
                     .await
                     .map_err(crate::error::Error::IoError)
             }

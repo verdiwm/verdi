@@ -98,13 +98,13 @@ impl State<'_> {
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
-                entry_point: "vs_main",
+                entry_point: Some("vs_main"),
                 compilation_options: Default::default(),
                 buffers: &[Vertex::layout()],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
-                entry_point: "fs_main",
+                entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
                     format: config.format,
                     blend: Some(wgpu::BlendState::REPLACE),
@@ -116,6 +116,7 @@ impl State<'_> {
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,
+            cache: None,
         });
 
         let num_objects = 1;

@@ -48,7 +48,7 @@ impl WlSurface for Surface {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _buffer: Option<crate::wire::ObjectId>,
+        _buffer: Option<waynest::wire::ObjectId>,
         _x: i32,
         _y: i32,
     ) -> crate::Result<()> {
@@ -71,7 +71,7 @@ impl WlSurface for Surface {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _callback: crate::wire::ObjectId,
+        _callback: waynest::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
@@ -80,7 +80,7 @@ impl WlSurface for Surface {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _region: Option<crate::wire::ObjectId>,
+        _region: Option<waynest::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
@@ -89,7 +89,7 @@ impl WlSurface for Surface {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _region: Option<crate::wire::ObjectId>,
+        _region: Option<waynest::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
