@@ -1,8 +1,9 @@
 use crate::{
     protocol::xdg::toplevel::{Toplevel, XdgToplevel},
-    wire::ObjectId,
     Dispatcher, Object, Result,
 };
+
+use waynest::wire::ObjectId;
 
 pub use crate::protocol::interfaces::xdg_shell::xdg_surface::*;
 
@@ -26,7 +27,7 @@ impl XdgSurface for Surface {
         &self,
         _object: &Object,
         client: &mut crate::Client,
-        id: crate::wire::ObjectId,
+        id: waynest::wire::ObjectId,
     ) -> crate::Result<()> {
         client.insert(Toplevel::new().into_object(id));
 
@@ -37,9 +38,9 @@ impl XdgSurface for Surface {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _id: crate::wire::ObjectId,
-        _parent: Option<crate::wire::ObjectId>,
-        _positioner: crate::wire::ObjectId,
+        _id: waynest::wire::ObjectId,
+        _parent: Option<waynest::wire::ObjectId>,
+        _positioner: waynest::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }

@@ -16,7 +16,7 @@ impl WlSeat for Seat {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _id: crate::wire::ObjectId,
+        _id: waynest::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
@@ -25,7 +25,7 @@ impl WlSeat for Seat {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _id: crate::wire::ObjectId,
+        _id: waynest::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }
@@ -34,7 +34,7 @@ impl WlSeat for Seat {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _id: crate::wire::ObjectId,
+        _id: waynest::wire::ObjectId,
     ) -> crate::Result<()> {
         todo!()
     }

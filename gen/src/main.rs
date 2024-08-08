@@ -151,14 +151,14 @@ impl Arg {
         let ret = match self.ty {
             ArgType::Int => "i32",
             ArgType::Uint => "u32",
-            ArgType::Fixed => "crate::wire::Fixed",
+            ArgType::Fixed => "waynest::wire::Fixed",
             ArgType::String => "String",
-            ArgType::Object => "crate::wire::ObjectId",
+            ArgType::Object => "waynest::wire::ObjectId",
             ArgType::NewId => {
                 if self.interface.is_some() {
-                    "crate::wire::ObjectId"
+                    "waynest::wire::ObjectId"
                 } else {
-                    "crate::wire::NewId"
+                    "waynest::wire::NewId"
                 }
             }
             ArgType::Array => "Vec<u8>",
@@ -305,12 +305,12 @@ fn main() -> Result<()> {
                     writeln!(
                         &mut generated_path,
                         r#"impl TryFrom<u32> for {name} {{
-                            type Error = crate::wire::DecodeError;
+                            type Error = waynest::wire::DecodeError;
         
                             fn try_from(v: u32) -> Result<Self, Self::Error> {{
                                 match v {{
                                     {match_variants}
-                                    _ => Err(crate::wire::DecodeError::MalformedPayload)
+                                    _ => Err(waynest::wire::DecodeError::MalformedPayload)
                                 }}
                             }}
                         }}"#
@@ -372,10 +372,10 @@ fn main() -> Result<()> {
                     writeln!(
                         &mut generated_path,
                         r#"impl TryFrom<u32> for {name} {{
-                            type Error = crate::wire::DecodeError;
+                            type Error = waynest::wire::DecodeError;
         
                             fn try_from(v: u32) -> Result<Self, Self::Error> {{
-                               Self::from_bits(v).ok_or(crate::wire::DecodeError::MalformedPayload)
+                               Self::from_bits(v).ok_or(waynest::wire::DecodeError::MalformedPayload)
                             }}
                         }}"#
                     )?;
@@ -397,7 +397,7 @@ fn main() -> Result<()> {
                         crate::Object::new(id, self)
                     }}
                     
-                    async fn handle_request(&self, object: &crate::Object, client: &mut crate::Client, message: &mut crate::wire::Message) -> crate::Result<()> {{
+                    async fn handle_request(&self, object: &crate::Object, client: &mut crate::Client, message: &mut waynest::wire::Message) -> crate::Result<()> {{
                     match message.opcode {{"#,
                 trait_name = interface.name.to_upper_camel_case(),
                 name = interface.name,
@@ -411,7 +411,7 @@ fn main() -> Result<()> {
                     let mut optional = String::new();
 
                     if !arg.allow_null && arg.is_return_option() {
-                        optional = format!(".ok_or(crate::wire::DecodeError::MalformedPayload)?");
+                        optional = format!(".ok_or(waynest::wire::DecodeError::MalformedPayload)?");
                     }
 
                     let mut tryinto = String::new();
@@ -551,7 +551,7 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"tracing::debug!("-> {interface_name}#{{}}.{og_name}()", _object.id);
-                    let (payload,fds) = crate::wire::PayloadBuilder::new()
+                    let (payload,fds) = waynest::wire::PayloadBuilder::new()
                     {build_args}
                     .build();"#,
                     og_name = event.name.to_snek_case(),
@@ -561,7 +561,7 @@ fn main() -> Result<()> {
                 writeln!(
                     &mut generated_path,
                     r#"client
-                .send_message(crate::wire::Message::new(_object.id, {opcode}, payload, fds))
+                .send_message(waynest::wire::Message::new(_object.id, {opcode}, payload, fds))
                 .await
                 .map_err(crate::error::Error::IoError)"#
                 )?;

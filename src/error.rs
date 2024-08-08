@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::wire::DecodeError;
+use waynest::wire::DecodeError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -8,6 +8,8 @@ pub enum Error {
     Internal,
     #[error("Not found")]
     NotFound,
+    #[error("Input error: {0}")]
+    Input(colpetto::Error),
     #[error("Malformed")]
     Malformed(#[from] DecodeError),
     #[error("Io Error: {0}")]

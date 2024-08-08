@@ -20,7 +20,7 @@ impl XdgToplevel for Toplevel {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _parent: Option<crate::wire::ObjectId>,
+        _parent: Option<waynest::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }
@@ -51,7 +51,7 @@ impl XdgToplevel for Toplevel {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _seat: crate::wire::ObjectId,
+        _seat: waynest::wire::ObjectId,
         _serial: u32,
         _x: i32,
         _y: i32,
@@ -63,7 +63,7 @@ impl XdgToplevel for Toplevel {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _seat: crate::wire::ObjectId,
+        _seat: waynest::wire::ObjectId,
         _serial: u32,
     ) -> crate::Result<()> {
         todo!()
@@ -73,7 +73,7 @@ impl XdgToplevel for Toplevel {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _seat: crate::wire::ObjectId,
+        _seat: waynest::wire::ObjectId,
         _serial: u32,
         _edges: ResizeEdge,
     ) -> crate::Result<()> {
@@ -120,7 +120,7 @@ impl XdgToplevel for Toplevel {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _output: Option<crate::wire::ObjectId>,
+        _output: Option<waynest::wire::ObjectId>,
     ) -> crate::Result<()> {
         todo!()
     }

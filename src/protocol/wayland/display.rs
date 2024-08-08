@@ -3,9 +3,10 @@ use crate::{
         callback::{Callback, WlCallback},
         registry::{Registry, WlRegistry},
     },
-    wire::ObjectId,
     Client, Dispatcher, Object, Result,
 };
+
+use waynest::wire::ObjectId;
 
 pub use crate::protocol::interfaces::wayland::wl_display::*;
 

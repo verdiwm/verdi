@@ -11,9 +11,8 @@ use tokio_stream::StreamExt;
 
 pub mod error;
 pub mod protocol;
-pub mod wire;
 
-use wire::{DecodeError, Message, ObjectId, Socket};
+use waynest::wire::{DecodeError, Message, ObjectId, Socket};
 
 pub type Result<T, E = error::Error> = core::result::Result<T, E>;
 

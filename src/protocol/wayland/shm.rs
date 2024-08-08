@@ -2,9 +2,10 @@ use rustix::fd::OwnedFd;
 
 use crate::{
     protocol::wayland::shm_pool::{ShmPool, WlShmPool},
-    wire::ObjectId,
     Client, Dispatcher, Object, Result,
 };
+
+use waynest::wire::ObjectId;
 
 pub use crate::protocol::interfaces::wayland::wl_shm::*;
 

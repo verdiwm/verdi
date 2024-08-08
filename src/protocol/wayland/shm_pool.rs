@@ -56,7 +56,7 @@ impl WlShmPool for ShmPool {
         &self,
         _object: &Object,
         _client: &mut crate::Client,
-        _id: crate::wire::ObjectId,
+        _id: waynest::wire::ObjectId,
         _offset: i32,
         _width: i32,
         _height: i32,
