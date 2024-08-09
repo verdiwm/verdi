@@ -1467,17 +1467,8 @@ dependencies = [
  "toml_edit",
  "tracing",
  "tracing-subscriber",
- "verdi-macros",
  "waynest",
  "wgpu",
-]
-
-[[package]]
-name = "verdi-macros"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn 2.0.72",
 ]
 
 [[package]]
@@ -1562,13 +1553,26 @@ checksum = "af190c94f2773fdb3729c55b007a722abb5384da03bc0986df4c289bf5567e96"
 name = "waynest"
 version = "0.0.1"
 dependencies = [
+ "async-trait",
+ "bitflags 2.6.0",
  "bytes",
+ "downcast-rs",
  "futures-util",
  "pin-project-lite",
  "rustix",
  "thiserror",
  "tokio",
+ "tokio-stream",
  "tracing",
+ "waynest-macros",
+]
+
+[[package]]
+name = "waynest-macros"
+version = "0.0.1"
+dependencies = [
+ "quote",
+ "syn 2.0.72",
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
-use crate::{Dispatcher, Result};
+use waynest::server::{Dispatcher, Result};
 
-pub use crate::protocol::interfaces::wayland::wl_callback::*;
+pub use waynest::server::protocol::wayland::wl_callback::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Callback;

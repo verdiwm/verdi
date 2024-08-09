@@ -6,10 +6,14 @@ use rustix::{
 };
 use tokio::sync::RwLock;
 
-use crate::Object;
-use crate::{protocol::wayland::shm::Format, Dispatcher, Result};
+use crate::protocol::wayland::shm::Format;
 
-pub use crate::protocol::interfaces::wayland::wl_shm_pool::*;
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
+};
+
+pub use waynest::server::protocol::wayland::wl_shm_pool::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct ShmPool {
@@ -55,8 +59,8 @@ impl WlShmPool for ShmPool {
     async fn create_buffer(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _id: waynest::wire::ObjectId,
+        _client: &mut Client,
+        _id: ObjectId,
         _offset: i32,
         _width: i32,
         _height: i32,
@@ -66,11 +70,11 @@ impl WlShmPool for ShmPool {
         todo!()
     }
 
-    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         todo!()
     }
 
-    async fn resize(&self, _object: &Object, _client: &mut crate::Client, size: i32) -> Result<()> {
+    async fn resize(&self, _object: &Object, _client: &mut Client, size: i32) -> Result<()> {
         let mut write_guard = self.map.write().await;
         let old_size = write_guard.size;
         let new_size = size as usize;

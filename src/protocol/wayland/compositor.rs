@@ -1,11 +1,11 @@
-use crate::{
-    protocol::wayland::surface::{Surface, WlSurface},
-    Client, Dispatcher, Object, Result,
+use crate::protocol::wayland::surface::{Surface, WlSurface};
+
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
 };
 
-use waynest::wire::ObjectId;
-
-pub use crate::protocol::interfaces::wayland::wl_compositor::*;
+pub use waynest::server::protocol::wayland::wl_compositor::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Compositor;

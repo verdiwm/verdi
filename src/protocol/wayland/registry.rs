@@ -1,19 +1,19 @@
-use crate::{
-    protocol::{
-        wayland::{
-            compositor::{Compositor, WlCompositor},
-            output::{Output, WlOutput},
-            seat::{Seat, WlSeat},
-            shm::{Shm, WlShm},
-        },
-        xdg::wm_base::{WmBase, XdgWmBase},
+use crate::protocol::{
+    wayland::{
+        compositor::{Compositor, WlCompositor},
+        output::{Output, WlOutput},
+        seat::{Seat, WlSeat},
+        shm::{Shm, WlShm},
     },
-    Client, Dispatcher, Error, Object, Result,
+    xdg::wm_base::{WmBase, XdgWmBase},
 };
 
-use waynest::wire::NewId;
+use waynest::{
+    server::{Client, Dispatcher, Error, Object, Result},
+    wire::NewId,
+};
 
-pub use crate::protocol::interfaces::wayland::wl_registry::*;
+pub use waynest::server::protocol::wayland::wl_registry::*;
 
 struct RegistryGlobals;
 
@@ -107,7 +107,7 @@ impl WlRegistry for Registry {
             RegistryGlobals::WM_BASE => client.insert(WmBase::new().into_object(new_id.object_id)),
             RegistryGlobals::SEAT => client.insert(Seat::new().into_object(new_id.object_id)),
             RegistryGlobals::OUTPUT => client.insert(Output::new().into_object(new_id.object_id)),
-            _ => return Err(Error::NotFound),
+            _ => return Err(Error::Internal),
         }
 
         Ok(())
