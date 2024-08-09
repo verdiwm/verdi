@@ -1,6 +1,9 @@
-use crate::{Dispatcher, Object, Result};
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
+};
 
-pub use crate::protocol::interfaces::wayland::wl_seat::*;
+pub use waynest::server::protocol::wayland::wl_seat::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Seat;
@@ -15,31 +18,26 @@ impl WlSeat for Seat {
     async fn get_pointer(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _id: waynest::wire::ObjectId,
-    ) -> crate::Result<()> {
+        _client: &mut Client,
+        _id: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 
     async fn get_keyboard(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _id: waynest::wire::ObjectId,
-    ) -> crate::Result<()> {
+        _client: &mut Client,
+        _id: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 
-    async fn get_touch(
-        &self,
-        _object: &Object,
-        _client: &mut crate::Client,
-        _id: waynest::wire::ObjectId,
-    ) -> crate::Result<()> {
+    async fn get_touch(&self, _object: &Object, _client: &mut Client, _id: ObjectId) -> Result<()> {
         todo!()
     }
 
-    async fn release(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn release(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         todo!()
     }
 }

@@ -1,14 +1,14 @@
-use crate::{
-    protocol::wayland::{
-        callback::{Callback, WlCallback},
-        registry::{Registry, WlRegistry},
-    },
-    Client, Dispatcher, Object, Result,
+use crate::protocol::wayland::{
+    callback::{Callback, WlCallback},
+    registry::{Registry, WlRegistry},
 };
 
-use waynest::wire::ObjectId;
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
+};
 
-pub use crate::protocol::interfaces::wayland::wl_display::*;
+pub use waynest::server::protocol::wayland::wl_display::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Display;

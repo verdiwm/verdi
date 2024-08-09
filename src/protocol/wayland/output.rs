@@ -1,6 +1,6 @@
-use crate::{Dispatcher, Result};
+use waynest::server::{Client, Dispatcher, Object, Result};
 
-pub use crate::protocol::interfaces::wayland::wl_output::*;
+pub use waynest::server::protocol::wayland::wl_output::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Output;
@@ -12,11 +12,7 @@ impl Output {
 }
 
 impl WlOutput for Output {
-    async fn release(
-        &self,
-        _object: &crate::Object,
-        _client: &mut crate::Client,
-    ) -> crate::Result<()> {
+    async fn release(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         todo!()
     }
 }

@@ -1,13 +1,13 @@
 use rustix::fd::OwnedFd;
 
-use crate::{
-    protocol::wayland::shm_pool::{ShmPool, WlShmPool},
-    Client, Dispatcher, Object, Result,
+use crate::protocol::wayland::shm_pool::{ShmPool, WlShmPool};
+
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
 };
 
-use waynest::wire::ObjectId;
-
-pub use crate::protocol::interfaces::wayland::wl_shm::*;
+pub use waynest::server::protocol::wayland::wl_shm::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Shm;

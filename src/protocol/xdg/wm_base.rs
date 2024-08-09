@@ -1,11 +1,11 @@
-use crate::{
-    protocol::xdg::surface::{Surface, XdgSurface},
-    Dispatcher, Object, Result,
+use crate::protocol::xdg::surface::{Surface, XdgSurface};
+
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
 };
 
-use waynest::wire::ObjectId;
-
-pub use crate::protocol::interfaces::xdg_shell::xdg_wm_base::*;
+pub use waynest::server::protocol::xdg_shell::xdg_wm_base::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct WmBase;
@@ -17,23 +17,23 @@ impl WmBase {
 }
 
 impl XdgWmBase for WmBase {
-    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         todo!()
     }
 
     async fn create_positioner(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
+        _client: &mut Client,
         _id: ObjectId,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 
     async fn get_xdg_surface(
         &self,
         _object: &Object,
-        client: &mut crate::Client,
+        client: &mut Client,
         id: ObjectId,
         surface: ObjectId,
     ) -> Result<()> {
@@ -42,12 +42,7 @@ impl XdgWmBase for WmBase {
         Ok(())
     }
 
-    async fn pong(
-        &self,
-        _object: &Object,
-        _client: &mut crate::Client,
-        _serial: u32,
-    ) -> crate::Result<()> {
+    async fn pong(&self, _object: &Object, _client: &mut Client, _serial: u32) -> Result<()> {
         todo!()
     }
 }

@@ -1,11 +1,11 @@
-use crate::{
-    protocol::xdg::toplevel::{Toplevel, XdgToplevel},
-    Dispatcher, Object, Result,
+use crate::protocol::xdg::toplevel::{Toplevel, XdgToplevel};
+
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
 };
 
-use waynest::wire::ObjectId;
-
-pub use crate::protocol::interfaces::xdg_shell::xdg_surface::*;
+pub use waynest::server::protocol::xdg_shell::xdg_surface::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Surface {
@@ -19,16 +19,16 @@ impl Surface {
 }
 
 impl XdgSurface for Surface {
-    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         todo!()
     }
 
     async fn get_toplevel(
         &self,
         _object: &Object,
-        client: &mut crate::Client,
-        id: waynest::wire::ObjectId,
-    ) -> crate::Result<()> {
+        client: &mut Client,
+        id: ObjectId,
+    ) -> Result<()> {
         client.insert(Toplevel::new().into_object(id));
 
         Ok(())
@@ -37,32 +37,32 @@ impl XdgSurface for Surface {
     async fn get_popup(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _id: waynest::wire::ObjectId,
-        _parent: Option<waynest::wire::ObjectId>,
-        _positioner: waynest::wire::ObjectId,
-    ) -> crate::Result<()> {
+        _client: &mut Client,
+        _id: ObjectId,
+        _parent: Option<ObjectId>,
+        _positioner: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 
     async fn set_window_geometry(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
+        _client: &mut Client,
         _x: i32,
         _y: i32,
         _width: i32,
         _height: i32,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 
     async fn ack_configure(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
+        _client: &mut Client,
         _serial: u32,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 }

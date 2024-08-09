@@ -1,6 +1,9 @@
-use crate::{Dispatcher, Object, Result};
+use waynest::{
+    server::{Client, Dispatcher, Object, Result},
+    wire::ObjectId,
+};
 
-pub use crate::protocol::interfaces::wayland::wl_surface::*;
+pub use waynest::server::protocol::wayland::wl_surface::*;
 
 #[derive(Debug)]
 struct State {}
@@ -40,61 +43,61 @@ impl Surface {
 }
 
 impl WlSurface for Surface {
-    async fn destroy(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         todo!()
     }
 
     async fn attach(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _buffer: Option<waynest::wire::ObjectId>,
+        _client: &mut Client,
+        _buffer: Option<ObjectId>,
         _x: i32,
         _y: i32,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 
     async fn damage(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
+        _client: &mut Client,
         _x: i32,
         _y: i32,
         _width: i32,
         _height: i32,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 
     async fn frame(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _callback: waynest::wire::ObjectId,
-    ) -> crate::Result<()> {
+        _client: &mut Client,
+        _callback: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 
     async fn set_opaque_region(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _region: Option<waynest::wire::ObjectId>,
-    ) -> crate::Result<()> {
+        _client: &mut Client,
+        _region: Option<ObjectId>,
+    ) -> Result<()> {
         todo!()
     }
 
     async fn set_input_region(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _region: Option<waynest::wire::ObjectId>,
-    ) -> crate::Result<()> {
+        _client: &mut Client,
+        _region: Option<ObjectId>,
+    ) -> Result<()> {
         todo!()
     }
 
-    async fn commit(&self, _object: &Object, _client: &mut crate::Client) -> crate::Result<()> {
+    async fn commit(&self, _object: &Object, _client: &mut Client) -> Result<()> {
         // FIXME: commit state
 
         Ok(())
@@ -103,40 +106,34 @@ impl WlSurface for Surface {
     async fn set_buffer_transform(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
-        _transform: crate::protocol::interfaces::wayland::wl_output::Transform,
-    ) -> crate::Result<()> {
+        _client: &mut Client,
+        _transform: waynest::server::protocol::wayland::wl_output::Transform,
+    ) -> Result<()> {
         todo!()
     }
 
     async fn set_buffer_scale(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
+        _client: &mut Client,
         _scale: i32,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 
     async fn damage_buffer(
         &self,
         _object: &Object,
-        _client: &mut crate::Client,
+        _client: &mut Client,
         _x: i32,
         _y: i32,
         _width: i32,
         _height: i32,
-    ) -> crate::Result<()> {
+    ) -> Result<()> {
         todo!()
     }
 
-    async fn offset(
-        &self,
-        _object: &Object,
-        _client: &mut crate::Client,
-        _x: i32,
-        _y: i32,
-    ) -> crate::Result<()> {
+    async fn offset(&self, _object: &Object, _client: &mut Client, _x: i32, _y: i32) -> Result<()> {
         todo!()
     }
 }

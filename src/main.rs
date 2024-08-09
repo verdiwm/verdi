@@ -13,10 +13,9 @@ use tracing::error;
 use verdi::{
     error::Error,
     protocol::wayland::display::{Display, WlDisplay},
-    Client,
 };
 
-use waynest::wire::ObjectId;
+use waynest::{server::Client, wire::ObjectId};
 
 mod context;
 mod state;
@@ -171,7 +170,7 @@ impl Verdi {
                     Ok(_) => {}
                     Err(err) => {
                         error!("Error while handling message: {err}");
-                        return Err(err);
+                        return Err(err.into());
                     }
                 }
             }
