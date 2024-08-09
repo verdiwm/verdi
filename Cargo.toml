@@ -1,5 +1,5 @@
 [workspace]
-members = ["gen", "macros"]
+members = ["macros"]
 
 [package]
 name = "verdi"
