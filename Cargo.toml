@@ -36,10 +36,10 @@ diretto = { git = "https://github.com/verdiwm/diretto.git", version = "0.0.2" }
 raw-window-handle = "0.6.2"
 rand = "0.8.5"
 bytemuck = { version = "1.16.1", features = ["derive"] }
-reconciler = { version = "0.0.2", path = "../reconciler" }
+reconciler = "0.0.2"
 async-stream = "0.3.5"
-colpetto = { version = "0.0.3", path = "../colpetto" }
-waynest = { version = "0.0.2", path = "../waynest" }
+colpetto = "0.0.3"
+waynest = "0.0.2"
 home = "0.5.9"
 
 [features]

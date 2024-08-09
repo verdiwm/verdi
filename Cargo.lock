@@ -336,6 +336,8 @@ checksum = "d3fd119d74b830634cea2a0f58bbd0d54540518a14397557951e79340abc28c0"
 [[package]]
 name = "colpetto"
 version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd6a409042f716242d8c50de62f8edf7b15a83515334a005f995995ea5ddfd9f"
 dependencies = [
  "devil",
  "futures-core",
@@ -1031,6 +1033,8 @@ source = "git+https://github.com/morr0ne/raw-window-handle?branch=drm-connector#
 [[package]]
 name = "reconciler"
 version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5da3d16e2141216489ac17554fcf19d5a0ffe29ebcb5deccc7d10f01efd67995"
 dependencies = [
  "futures-util",
  "pin-project-lite",
@@ -1562,6 +1566,8 @@ checksum = "af190c94f2773fdb3729c55b007a722abb5384da03bc0986df4c289bf5567e96"
 [[package]]
 name = "waynest"
 version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0aee4a76ac6717b329f6961302e3433a2155f5d8da5fb6ae1b0f67de1401f3ca"
 dependencies = [
  "async-trait",
  "bitflags 2.6.0",
@@ -1580,6 +1586,8 @@ dependencies = [
 [[package]]
 name = "waynest-macros"
 version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "873f96048093f68124fc026dcaa6cae0677db3db7920a4f3c4080287793282ac"
 dependencies = [
  "quote",
  "syn 2.0.72",
