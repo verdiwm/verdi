@@ -1,6 +1,0 @@
-[submodule "wayland"]
-	path = wayland
-	url = https://gitlab.freedesktop.org/wayland/wayland.git
-[submodule "wayland-protocols"]
-	path = wayland-protocols
-	url = https://gitlab.freedesktop.org/wayland/wayland-protocols.git
