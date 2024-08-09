@@ -27,8 +27,8 @@ still work in progress and stuff might be missing
 
 ## Community and Support
 
-Join our growing community on [Discord](https://discord.verdi.rocks). This is
-the primary hub for discussion, support, and collaboration. Whether you're a
+Join our growing community on [Discord](https://chat.verdi.rocks). This is the
+primary hub for discussion, support, and collaboration. Whether you're a
 developer interested in contributing or a user eager to test the latest
 features, our community is here to help.
 
