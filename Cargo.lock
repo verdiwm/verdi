@@ -245,7 +245,8 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 [[package]]
 name = "bytes"
 version = "1.7.1"
-source = "git+https://github.com/morr0ne/bytes?branch=arbitrary#9c77b9c082a4a624be116a7334fb9e45144a1a69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8318a53db07bb3f8dca91a600466bdb3f2eaadeedfdbcf02e1accbad9271ba50"
 
 [[package]]
 name = "cc"
@@ -1536,9 +1537,9 @@ checksum = "af190c94f2773fdb3729c55b007a722abb5384da03bc0986df4c289bf5567e96"
 
 [[package]]
 name = "waynest"
-version = "0.0.4"
+version = "0.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "159be3c214ea2cfb59986eab40d362d4a7fedfe44222421af9c207eddb553139"
+checksum = "8486bab9c472cb2632f32f3dcf58f8bd4825acb0ad17f80a6a3ba6f196ae8297"
 dependencies = [
  "async-trait",
  "bitflags 2.6.0",

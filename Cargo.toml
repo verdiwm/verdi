@@ -33,10 +33,9 @@ bytemuck = { version = "1.16.1", features = ["derive"] }
 reconciler = "0.0.2"
 async-stream = "0.3.5"
 colpetto = "0.0.3"
-waynest = "0.0.4"
+waynest = "0.0.5"
 home = "0.5.9"
 
 [patch.crates-io]
-bytes = { git = "https://github.com/morr0ne/bytes", branch = "arbitrary" }
 wgpu = { git = "https://github.com/morr0ne/wgpu", branch = "drm-support" }
 raw-window-handle = { git = "https://github.com/morr0ne/raw-window-handle", branch = "drm-connector" }
