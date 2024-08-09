@@ -1,8 +1,13 @@
-use std::{ffi::CString, fs, path::Path, process::exit};
+use std::{
+    // ffi::CString,
+    fs,
+    path::{Path, PathBuf},
+    process::exit,
+};
 
 use anyhow::{bail, Context, Result as AnyResult};
 use clap::Parser;
-use colpetto::Libinput;
+// use colpetto::Libinput;
 use futures_util::TryStreamExt;
 use reconciler::EventListener;
 use rustix::process::geteuid;
@@ -48,9 +53,12 @@ fn register_ctrl_c_handler() {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Optional path to config file
+    /// Custom config file path
     #[arg(short, long)]
-    config: Option<String>,
+    config: Option<PathBuf>,
+    /// Custom wayland socket path
+    #[arg(short, long)]
+    socket: Option<PathBuf>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -59,16 +67,24 @@ pub struct Config {}
 fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
 
-    // if geteuid().is_root() {
-    //     error!("Tried running as root");
-    //     bail!("")
-    // }
+    if geteuid().is_root() {
+        error!("Tried running as root");
+        bail!("")
+    }
 
     let args = Args::parse();
 
-    // FIXME: Try to look into XDG_CONFIG_HOME and have some defaults
-    let config = fs::read(args.config.expect("Missing config"))?;
-    let config: Config = toml_edit::de::from_slice(&config)?;
+    let config_path = if let Some(config) = args.config {
+        config
+    } else if let Ok(path) = std::env::var("XDG_CONFIG_HOME") {
+        Path::new(&path).join("verdi/verdi.toml")
+    } else if let Some(path) = home::home_dir() {
+        path.join(".config/verdi/verdi.toml")
+    } else {
+        todo!()
+    };
+
+    let config: Config = toml_edit::de::from_slice(&fs::read(config_path)?)?;
 
     dbg!(config);
 
