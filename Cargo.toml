@@ -39,7 +39,7 @@ bytemuck = { version = "1.16.1", features = ["derive"] }
 reconciler = { version = "0.0.2", path = "../reconciler" }
 async-stream = "0.3.5"
 colpetto = { version = "0.0.2", path = "../colpetto" }
-waynest = { version = "0.0.1", path = "../waynest" }
+waynest = { version = "0.0.2", path = "../waynest" }
 home = "0.5.9"
 
 [features]
