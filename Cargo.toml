@@ -1,6 +1,5 @@
 [workspace]
 members = ["gen", "macros"]
-exclude = ["fuzz"]
 
 [package]
 name = "verdi"
