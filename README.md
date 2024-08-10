@@ -34,17 +34,6 @@ features, our community is here to help.
 
 ## Getting Started
 
-### Configuration
-
-Verdi is highly configurable via a simple TOML file. The main configuration file
-can be found at:
-
-`$XDG_CONFIG_HOME/verdi/verdi.toml` (Typically `~/.config/verdi/verdi.toml` on
-most systems).
-
-For detailed configuration options, visit our
-[documentation](https://docs.verdi.rocks/configuration).
-
 ### Installation
 
 If you're using an Arch-based distribution, Verdi is available as a development
@@ -56,6 +45,17 @@ paru -S verdi-git
 
 Support for additional distributions is on the roadmap and will be available
 soon.
+
+### Configuration
+
+Verdi is highly configurable via a simple TOML file. The main configuration file
+can be found at:
+
+`$XDG_CONFIG_HOME/verdi/verdi.toml` (Typically `~/.config/verdi/verdi.toml` on
+most systems).
+
+For detailed configuration options, visit our
+[documentation](https://docs.verdi.rocks/configuration).
 
 ### Building from Source
 
