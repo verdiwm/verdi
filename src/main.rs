@@ -27,8 +27,6 @@ mod state;
 // use context::WgpuContext;
 // use state::State;
 
-const SOCKET_PATH: &str = "verdi.sock";
-
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
@@ -76,7 +74,7 @@ fn main() -> AnyResult<()> {
         }
     };
 
-    dbg!(socket_path);
+    dbg!(&socket_path);
 
     let config_path = if let Some(config) = args.config {
         config
@@ -98,7 +96,7 @@ fn main() -> AnyResult<()> {
         .context("Failed to create tokio runtime")?;
 
     runtime.block_on(async move {
-        let mut verdi = Verdi::new(SOCKET_PATH).await?;
+        let mut verdi = Verdi::new(socket_path).await?;
 
         while let Some(event) = verdi.next_event().await? {
             dbg!(&event);
