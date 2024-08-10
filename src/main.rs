@@ -2,7 +2,6 @@ use std::{
     // ffi::CString,
     fs,
     path::{Path, PathBuf},
-    process::exit,
 };
 
 use anyhow::{bail, Context, Result as AnyResult};
@@ -29,26 +28,6 @@ mod state;
 // use state::State;
 
 const SOCKET_PATH: &str = "verdi.sock";
-
-/// Register a ctrl+c handler that ensures the socket is removed
-fn register_ctrl_c_handler() {
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("Failed to listen for signals");
-
-        // Check if the socket actually exists
-        if fs::metadata(SOCKET_PATH).is_ok() {
-            // We still want to gracefully exit even on error
-            if fs::remove_file(SOCKET_PATH).is_err() {
-                error!("Failed to remove old socket");
-                exit(1)
-            }
-        }
-
-        exit(0)
-    });
-}
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -119,8 +98,6 @@ fn main() -> AnyResult<()> {
         .context("Failed to create tokio runtime")?;
 
     runtime.block_on(async move {
-        register_ctrl_c_handler();
-
         let mut verdi = Verdi::new(SOCKET_PATH).await?;
 
         while let Some(event) = verdi.next_event().await? {
