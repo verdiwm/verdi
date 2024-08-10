@@ -43,6 +43,35 @@ package in the AUR. You can easily install it using your favorite AUR helper:
 paru -S verdi-git
 ```
 
+If you're using NixOS, or the Nix package manager, Verdi is available as a
+flake.
+
+<details>
+<summary>Detailed Nix instructions</summary>
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "nixpkgs/nixos-unstable";
+    verdi.url = "github:verdiwm/verdi";
+    verdi.inputs.nixpkgs.follows = "nixpkgs";
+  };
+}
+```
+
+It defines the `verdi` package, and `default` as an alias to `verdi`.
+It also defines a `default` shell for development purposes.
+
+It can be used in your system installation:
+```nix
+environment.systemPackages = [
+  inputs.verdi.packages.${pkgs.system}.verdi
+  # or
+  inputs.verdi.packages.${pkgs.system}.default
+];
+```
+</details>
+
 Support for additional distributions is on the roadmap and will be available
 soon.
 
