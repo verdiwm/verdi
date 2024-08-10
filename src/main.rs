@@ -64,6 +64,19 @@ struct Args {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {}
 
+fn find_socket_path(runtime_dir: &str) -> Option<PathBuf> {
+    // FIXME: is this ok?
+    for i in 0..100 {
+        let path = Path::new(&runtime_dir).join(format!("wayland-{i}"));
+
+        if !path.exists() {
+            return Some(path);
+        }
+    }
+
+    None
+}
+
 fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
 
@@ -73,9 +86,18 @@ fn main() -> AnyResult<()> {
     }
 
     let args = Args::parse();
-    
-    let runtime_dir = std::env::var("XDG_RUNTIME_DIR")?;
-    dbg!(runtime_dir);
+
+    let socket_path = {
+        if let Some(socket) = args.socket {
+            socket
+        } else if let Ok(path) = std::env::var("XDG_RUNTIME_DIR") {
+            find_socket_path(&path).expect("Failed to find a socket path")
+        } else {
+            todo!()
+        }
+    };
+
+    dbg!(socket_path);
 
     let config_path = if let Some(config) = args.config {
         config
