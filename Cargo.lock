@@ -1537,9 +1537,9 @@ checksum = "af190c94f2773fdb3729c55b007a722abb5384da03bc0986df4c289bf5567e96"
 
 [[package]]
 name = "waynest"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f567801bdebcdf05fa680cc3d7c97936d3dcee3154208395b215415441f5c56"
+checksum = "5ee4324a50b3c989bf433e5eefbd2bb2c0916d046df6bdfd8bc7ca87a4a6d8e3"
 dependencies = [
  "async-trait",
  "bitflags 2.6.0",
