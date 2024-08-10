@@ -73,6 +73,9 @@ fn main() -> AnyResult<()> {
     }
 
     let args = Args::parse();
+    
+    let runtime_dir = std::env::var("XDG_RUNTIME_DIR")?;
+    dbg!(runtime_dir);
 
     let config_path = if let Some(config) = args.config {
         config
@@ -85,7 +88,6 @@ fn main() -> AnyResult<()> {
     };
 
     let config: Config = toml_edit::de::from_slice(&fs::read(config_path)?)?;
-
     dbg!(config);
 
     // Create the tokio runtime manually instead of using a macro for better controll
