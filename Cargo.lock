@@ -268,9 +268,9 @@ checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
 name = "clap"
-version = "4.5.14"
+version = "4.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c937d4061031a6d0c8da4b9a4f98a172fc2976dfb1c19213a9cf7d0d3c837e36"
+checksum = "11d8838454fda655dafd3accb2b6e2bea645b9e4078abe84a22ceb947235c5cc"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -278,9 +278,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.14"
+version = "4.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85379ba512b21a328adf887e85f7742d12e96eb31f3ef077df4ffc26b506ffed"
+checksum = "216aec2b177652e3846684cbfe25c9964d18ec45234f0f5da5157b207ed1aab6"
 dependencies = [
  "anstream",
  "anstyle",
@@ -821,7 +821,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "22.0.0"
-source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#b1c784eca787bf24283cd90925f2802aabcad63d"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#a186bd08b688c8aee3da1365315db4363468f865"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1010,9 +1010,9 @@ source = "git+https://github.com/morr0ne/raw-window-handle?branch=drm-connector#
 
 [[package]]
 name = "reconciler"
-version = "0.0.2"
+version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5da3d16e2141216489ac17554fcf19d5a0ffe29ebcb5deccc7d10f01efd67995"
+checksum = "49244a4b2ff717268816108ba5f38557063994f9757b61e6e3cdb8d2cb81b564"
 dependencies = [
  "futures-util",
  "pin-project-lite",
@@ -1537,9 +1537,9 @@ checksum = "af190c94f2773fdb3729c55b007a722abb5384da03bc0986df4c289bf5567e96"
 
 [[package]]
 name = "waynest"
-version = "0.0.5"
+version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8486bab9c472cb2632f32f3dcf58f8bd4825acb0ad17f80a6a3ba6f196ae8297"
+checksum = "2f567801bdebcdf05fa680cc3d7c97936d3dcee3154208395b215415441f5c56"
 dependencies = [
  "async-trait",
  "bitflags 2.6.0",
@@ -1578,7 +1578,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "22.0.0"
-source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#b1c784eca787bf24283cd90925f2802aabcad63d"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#a186bd08b688c8aee3da1365315db4363468f865"
 dependencies = [
  "arrayvec",
  "cfg_aliases",
@@ -1601,7 +1601,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "22.0.0"
-source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#b1c784eca787bf24283cd90925f2802aabcad63d"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#a186bd08b688c8aee3da1365315db4363468f865"
 dependencies = [
  "arrayvec",
  "bit-vec",
@@ -1625,7 +1625,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "22.0.0"
-source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#b1c784eca787bf24283cd90925f2802aabcad63d"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#a186bd08b688c8aee3da1365315db4363468f865"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -1666,7 +1666,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "22.0.0"
-source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#b1c784eca787bf24283cd90925f2802aabcad63d"
+source = "git+https://github.com/morr0ne/wgpu?branch=drm-support#a186bd08b688c8aee3da1365315db4363468f865"
 dependencies = [
  "bitflags 2.6.0",
  "js-sys",
