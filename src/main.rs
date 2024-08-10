@@ -42,8 +42,7 @@ struct Args {
 pub struct Config {}
 
 fn find_socket_path(runtime_dir: &str) -> Option<PathBuf> {
-    // FIXME: is this ok?
-    for i in 0..100 {
+    for i in 1..=32u8 {
         let path = Path::new(&runtime_dir).join(format!("wayland-{i}"));
 
         if !path.exists() {
