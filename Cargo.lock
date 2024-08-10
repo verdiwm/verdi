@@ -405,8 +405,8 @@ dependencies = [
 
 [[package]]
 name = "diretto"
-version = "0.0.2"
-source = "git+https://github.com/verdiwm/diretto.git#b53b34bb6b01769387e2ae970f0ed8ad2997fc6f"
+version = "0.0.3"
+source = "git+https://github.com/verdiwm/diretto.git#e28c849015330d754210a27fa12ed1dc9dd79136"
 dependencies = [
  "linux-raw-sys 0.6.4",
  "rustix",
