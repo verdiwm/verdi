@@ -8,11 +8,15 @@ jobs:
   test:
     name: Build and test
     runs-on: ubuntu-latest
+    container: archlinux:latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install necessary packages
-        run: sudo apt-get install -y libudev-dev libinput-dev
+      - name: Install dependencies
+        run: |
+          pacman --noconfirm -Syu && pacman --needed --noconfirm -S \
+          rustup
 
       - name: Setup rust
         run: rustup toolchain install stable --profile minimal
