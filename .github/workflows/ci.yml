@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           pacman --noconfirm -Syu && pacman --needed --noconfirm -S \
-          rustup base-devel
+          rustup base-devel libinput
 
       - name: Setup rust
         run: rustup toolchain install stable --profile minimal
