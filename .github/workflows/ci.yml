@@ -19,7 +19,7 @@ jobs:
           rustup base-devel libinput
 
       - name: Setup rust
-        run: rustup toolchain install stable --profile minimal
+        run: rustup toolchain install stable
 
       - name: Install nextest to run tests
         uses: taiki-e/install-action@nextest
