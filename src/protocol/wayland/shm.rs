@@ -9,14 +9,10 @@ use waynest::{
 
 pub use waynest::server::protocol::wayland::wl_shm::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct Shm;
 
 impl Shm {
-    pub fn new() -> Self {
-        Self
-    }
-
     pub async fn advertise_formats(&self, object: &Object, client: &mut Client) -> Result<()> {
         self.format(object, client, Format::Argb8888).await?;
         self.format(object, client, Format::Xrgb8888).await?;

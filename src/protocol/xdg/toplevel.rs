@@ -5,14 +5,8 @@ use waynest::{
 
 pub use waynest::server::protocol::xdg_shell::xdg_toplevel::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct Toplevel;
-
-impl Toplevel {
-    pub fn new() -> Self {
-        Self
-    }
-}
 
 impl XdgToplevel for Toplevel {
     async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {

@@ -25,14 +25,10 @@ impl RegistryGlobals {
     pub const OUTPUT: u32 = 4;
 }
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct Registry;
 
 impl Registry {
-    pub fn new() -> Self {
-        Self
-    }
-
     pub async fn advertise_globals(&self, object: &Object, client: &mut Client) -> Result<()> {
         self.global(
             object,
@@ -93,10 +89,10 @@ impl WlRegistry for Registry {
     ) -> Result<()> {
         match name {
             RegistryGlobals::COMPOSITOR => {
-                client.insert(Compositor::new().into_object(new_id.object_id))
+                client.insert(Compositor::default().into_object(new_id.object_id))
             }
             RegistryGlobals::SHM => {
-                let shm = Shm::new().into_object(new_id.object_id);
+                let shm = Shm::default().into_object(new_id.object_id);
 
                 shm.as_dispatcher::<Shm>()?
                     .advertise_formats(&shm, client)
@@ -104,9 +100,13 @@ impl WlRegistry for Registry {
 
                 client.insert(shm);
             }
-            RegistryGlobals::WM_BASE => client.insert(WmBase::new().into_object(new_id.object_id)),
-            RegistryGlobals::SEAT => client.insert(Seat::new().into_object(new_id.object_id)),
-            RegistryGlobals::OUTPUT => client.insert(Output::new().into_object(new_id.object_id)),
+            RegistryGlobals::WM_BASE => {
+                client.insert(WmBase::default().into_object(new_id.object_id))
+            }
+            RegistryGlobals::SEAT => client.insert(Seat::default().into_object(new_id.object_id)),
+            RegistryGlobals::OUTPUT => {
+                client.insert(Output::default().into_object(new_id.object_id))
+            }
             _ => return Err(Error::Internal),
         }
 

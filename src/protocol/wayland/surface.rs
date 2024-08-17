@@ -5,41 +5,18 @@ use waynest::{
 
 pub use waynest::server::protocol::wayland::wl_surface::*;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct State {}
 
-impl State {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct DoubleBuffer {
     current: State,
     pending: State,
 }
 
-impl DoubleBuffer {
-    pub fn new() -> Self {
-        Self {
-            current: State::new(),
-            pending: State::new(),
-        }
-    }
-}
-
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct Surface {
     state: DoubleBuffer,
-}
-
-impl Surface {
-    pub fn new() -> Self {
-        Self {
-            state: DoubleBuffer::new(),
-        }
-    }
 }
 
 impl WlSurface for Surface {

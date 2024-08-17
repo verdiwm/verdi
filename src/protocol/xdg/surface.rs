@@ -29,7 +29,7 @@ impl XdgSurface for Surface {
         client: &mut Client,
         id: ObjectId,
     ) -> Result<()> {
-        client.insert(Toplevel::new().into_object(id));
+        client.insert(Toplevel::default().into_object(id));
 
         Ok(())
     }
