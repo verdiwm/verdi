@@ -1,4 +1,5 @@
 #![allow(unused)]
+#![allow(clippy::default_constructed_unit_structs)]
 
 use std::{
     // ffi::CString,
@@ -152,7 +153,7 @@ impl Verdi {
                         // FIXME: handle errors instead of unwraping
                         let mut client = Client::new(stream).unwrap();
 
-                        client.insert(Display::new().into_object(ObjectId::DISPLAY));
+                        client.insert(Display::default().into_object(ObjectId::DISPLAY));
 
                         yield Ok(Event::NewClient(client))
                     }

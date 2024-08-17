@@ -7,14 +7,8 @@ use waynest::{
 
 pub use waynest::server::protocol::xdg_shell::xdg_wm_base::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct WmBase;
-
-impl WmBase {
-    pub fn new() -> Self {
-        Self
-    }
-}
 
 impl XdgWmBase for WmBase {
     async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {

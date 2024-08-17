@@ -7,14 +7,8 @@ use waynest::{
 
 pub use waynest::server::protocol::wayland::wl_compositor::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct Compositor;
-
-impl Compositor {
-    pub fn new() -> Self {
-        Self
-    }
-}
 
 impl WlCompositor for Compositor {
     async fn create_surface(
@@ -23,7 +17,7 @@ impl WlCompositor for Compositor {
         client: &mut Client,
         id: ObjectId,
     ) -> Result<()> {
-        client.insert(Surface::new().into_object(id));
+        client.insert(Surface::default().into_object(id));
 
         Ok(())
     }

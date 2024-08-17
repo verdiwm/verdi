@@ -5,14 +5,8 @@ use waynest::{
 
 pub use waynest::server::protocol::wayland::wl_seat::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct Seat;
-
-impl Seat {
-    pub fn new() -> Self {
-        Self
-    }
-}
 
 impl WlSeat for Seat {
     async fn get_pointer(

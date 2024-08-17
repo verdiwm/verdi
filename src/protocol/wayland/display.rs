@@ -10,14 +10,8 @@ use waynest::{
 
 pub use waynest::server::protocol::wayland::wl_display::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, Dispatcher, Default)]
 pub struct Display;
-
-impl Display {
-    pub fn new() -> Self {
-        Self
-    }
-}
 
 impl WlDisplay for Display {
     async fn sync(
@@ -28,7 +22,7 @@ impl WlDisplay for Display {
     ) -> Result<()> {
         let serial = client.next_event_serial();
 
-        let callback = Callback::new().into_object(callback_id);
+        let callback = Callback::default().into_object(callback_id);
 
         callback
             .as_dispatcher::<Callback>()?
@@ -44,7 +38,7 @@ impl WlDisplay for Display {
         client: &mut Client,
         registry_id: ObjectId,
     ) -> Result<()> {
-        let registry = Registry::new().into_object(registry_id);
+        let registry = Registry::default().into_object(registry_id);
 
         registry
             .as_dispatcher::<Registry>()?
