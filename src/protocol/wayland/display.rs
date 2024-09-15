@@ -8,7 +8,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::wayland::wl_display::*;
+pub use waynest::server::protocol::core::wayland::wl_display::*;
 
 #[derive(Debug, Dispatcher, Default)]
 pub struct Display;

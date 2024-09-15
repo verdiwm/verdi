@@ -5,7 +5,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::xdg_shell::xdg_surface::*;
+pub use waynest::server::protocol::stable::xdg_shell::xdg_surface::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct Surface {

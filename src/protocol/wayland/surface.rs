@@ -3,7 +3,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::wayland::wl_surface::*;
+pub use waynest::server::protocol::core::wayland::wl_surface::*;
 
 #[derive(Debug, Default)]
 struct State {}
@@ -84,7 +84,7 @@ impl WlSurface for Surface {
         &self,
         _object: &Object,
         _client: &mut Client,
-        _transform: waynest::server::protocol::wayland::wl_output::Transform,
+        _transform: waynest::server::protocol::core::wayland::wl_output::Transform,
     ) -> Result<()> {
         todo!()
     }

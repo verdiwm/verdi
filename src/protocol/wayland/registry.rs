@@ -13,7 +13,7 @@ use waynest::{
     wire::NewId,
 };
 
-pub use waynest::server::protocol::wayland::wl_registry::*;
+pub use waynest::server::protocol::core::wayland::wl_registry::*;
 
 struct RegistryGlobals;
 
