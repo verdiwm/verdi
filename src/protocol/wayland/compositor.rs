@@ -5,7 +5,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::wayland::wl_compositor::*;
+pub use waynest::server::protocol::core::wayland::wl_compositor::*;
 
 #[derive(Debug, Dispatcher, Default)]
 pub struct Compositor;

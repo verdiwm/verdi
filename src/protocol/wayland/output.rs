@@ -1,6 +1,6 @@
 use waynest::server::{Client, Dispatcher, Object, Result};
 
-pub use waynest::server::protocol::wayland::wl_output::*;
+pub use waynest::server::protocol::core::wayland::wl_output::*;
 
 #[derive(Debug, Dispatcher, Default)]
 pub struct Output;

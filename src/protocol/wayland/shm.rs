@@ -7,7 +7,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::wayland::wl_shm::*;
+pub use waynest::server::protocol::core::wayland::wl_shm::*;
 
 #[derive(Debug, Dispatcher, Default)]
 pub struct Shm;

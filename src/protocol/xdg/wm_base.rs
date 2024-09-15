@@ -5,7 +5,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::xdg_shell::xdg_wm_base::*;
+pub use waynest::server::protocol::stable::xdg_shell::xdg_wm_base::*;
 
 #[derive(Debug, Dispatcher, Default)]
 pub struct WmBase;

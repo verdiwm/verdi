@@ -13,7 +13,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::wayland::wl_shm_pool::*;
+pub use waynest::server::protocol::core::wayland::wl_shm_pool::*;
 
 #[derive(Debug, Dispatcher)]
 pub struct ShmPool {

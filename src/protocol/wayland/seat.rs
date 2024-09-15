@@ -3,7 +3,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::wayland::wl_seat::*;
+pub use waynest::server::protocol::core::wayland::wl_seat::*;
 
 #[derive(Debug, Dispatcher, Default)]
 pub struct Seat;

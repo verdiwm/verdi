@@ -3,7 +3,7 @@ use waynest::{
     wire::ObjectId,
 };
 
-pub use waynest::server::protocol::xdg_shell::xdg_toplevel::*;
+pub use waynest::server::protocol::stable::xdg_shell::xdg_toplevel::*;
 
 #[derive(Debug, Dispatcher, Default)]
 pub struct Toplevel;
