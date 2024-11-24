@@ -10,7 +10,7 @@ use std::{
 use anyhow::{bail, Context, Result as AnyResult};
 use clap::Parser;
 // use colpetto::Libinput;
-use futures_util::TryStreamExt;
+use futures_util::{StreamExt, TryStreamExt};
 use reconciler::EventListener;
 use rustix::process::geteuid;
 use serde::{Deserialize, Serialize};
@@ -22,7 +22,10 @@ use verdi::{
     protocol::wayland::display::{Display, WlDisplay},
 };
 
-use waynest::{server::Client, wire::ObjectId};
+use waynest::{
+    server::{Client, Listener},
+    wire::ObjectId,
+};
 
 mod context;
 mod state;
@@ -44,18 +47,6 @@ struct Args {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {}
 
-fn find_socket_path(runtime_dir: &str) -> Option<PathBuf> {
-    for i in 1..=32u8 {
-        let path = Path::new(&runtime_dir).join(format!("wayland-{i}"));
-
-        if !path.exists() {
-            return Some(path);
-        }
-    }
-
-    None
-}
-
 fn main() -> AnyResult<()> {
     tracing_subscriber::fmt::init();
 
@@ -65,18 +56,6 @@ fn main() -> AnyResult<()> {
     }
 
     let args = Args::parse();
-
-    let socket_path = {
-        if let Some(socket) = args.socket {
-            socket
-        } else if let Ok(path) = std::env::var("XDG_RUNTIME_DIR") {
-            find_socket_path(&path).expect("Failed to find a socket path")
-        } else {
-            todo!()
-        }
-    };
-
-    dbg!(&socket_path);
 
     let config_path = if let Some(config) = args.config {
         config
@@ -98,7 +77,15 @@ fn main() -> AnyResult<()> {
         .context("Failed to create tokio runtime")?;
 
     runtime.block_on(async move {
-        let mut verdi = Verdi::new(socket_path).await?;
+        let listener = {
+            if let Some(socket) = args.socket {
+                Listener::new_with_path(socket)
+            } else {
+                Listener::new()
+            }
+        }?;
+
+        let mut verdi = Verdi::new(listener).await?;
 
         while let Some(event) = verdi.next_event().await? {
             dbg!(&event);
@@ -141,26 +128,25 @@ pub enum Event {
 }
 
 impl Verdi {
-    pub async fn new<P: AsRef<Path>>(path: P) -> AnyResult<Self> {
+    pub async fn new(listener: Listener) -> AnyResult<Self> {
         let mut event_listener = EventListener::new();
 
-        let listener = UnixListener::bind(path)?;
+        let client_loop = listener.map(|stream| {
+            match stream {
+                Ok(stream) => {
+                    // FIXME: handle errors instead of unwraping
+                    let mut client = Client::new(stream).unwrap();
 
-        let client_loop = async_stream::stream! {
-            loop {
-                match listener.accept().await {
-                    Ok((stream, _addr)) => {
-                        // FIXME: handle errors instead of unwraping
-                        let mut client = Client::new(stream).unwrap();
+                    client.insert(Display::default().into_object(ObjectId::DISPLAY));
 
-                        client.insert(Display::default().into_object(ObjectId::DISPLAY));
-
-                        yield Ok(Event::NewClient(client))
-                    }
-                    Err(_err) => {error!("Client failed to connect")}
+                    Ok(Event::NewClient(client))
+                }
+                Err(err) => {
+                    error!("Client failed to connect");
+                    Err(Error::Protocol(waynest::server::Error::IoError(err)))
                 }
             }
-        };
+        });
 
         event_listener.add_listener(client_loop);
 
