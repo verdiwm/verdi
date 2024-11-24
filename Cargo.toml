@@ -14,14 +14,14 @@ codegen-units = 1
 strip = true
 
 [dependencies]
-anyhow = "1.0.89"
-bytes = "1.7.2"
-futures-util = { version = "0.3.30", default-features = false, features = [
+anyhow = "1.0.93"
+bytes = "1.8.0"
+futures-util = { version = "0.3.31", default-features = false, features = [
     "sink",
 ] }
-rustix = { version = "0.38.37", features = ["fs", "mm", "process"] }
-thiserror = "1.0.64"
-tokio = { version = "1.40.0", features = [
+rustix = { version = "0.38.41", features = ["fs", "mm", "process"] }
+thiserror = "2.0.3"
+tokio = { version = "1.41.1", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -35,15 +35,15 @@ tracing-subscriber = { version = "0.3.18", features = [
     "tracing-log",
 ] }
 wgpu = { version = "22.0.0", default-features = false, features = ["wgsl"] }
-clap = { version = "4.5.18", features = ["derive"] }
-toml_edit = { version = "0.22.20", features = ["serde"] }
-serde = { version = "1.0.210", features = ["derive"] }
+clap = { version = "4.5.21", features = ["derive"] }
+toml_edit = { version = "0.22.22", features = ["serde"] }
+serde = { version = "1.0.215", features = ["derive"] }
 diretto = { git = "https://github.com/verdiwm/diretto.git", version = "0.0.3" }
 raw-window-handle = "0.6.2"
 rand = "0.8.5"
-bytemuck = { version = "1.18.0", features = ["derive"] }
+bytemuck = { version = "1.20.0", features = ["derive"] }
 reconciler = "0.0.3"
-async-stream = "0.3.5"
+async-stream = "0.3.6"
 colpetto = "0.0.4"
 waynest = { version = "0.0.18", features = ["server", "stable"] }
 home = "0.5.9"
