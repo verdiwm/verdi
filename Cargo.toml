@@ -14,14 +14,14 @@ codegen-units = 1
 strip = true
 
 [dependencies]
-anyhow = "1.0.93"
-bytes = "1.8.0"
+anyhow = "1.0.94"
+bytes = "1.9.0"
 futures-util = { version = "0.3.31", default-features = false, features = [
     "sink",
 ] }
-rustix = { version = "0.38.41", features = ["fs", "mm", "process"] }
-thiserror = "2.0.3"
-tokio = { version = "1.41.1", features = [
+rustix = { version = "0.38.42", features = ["fs", "mm", "process"] }
+thiserror = "2.0.8"
+tokio = { version = "1.42.0", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -29,13 +29,13 @@ tokio = { version = "1.41.1", features = [
     "sync",
     "tracing",
 ] }
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = [
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = [
     "env-filter",
     "tracing-log",
 ] }
 wgpu = { version = "22.0.0", default-features = false, features = ["wgsl"] }
-clap = { version = "4.5.21", features = ["derive"] }
+clap = { version = "4.5.23", features = ["derive"] }
 toml_edit = { version = "0.22.22", features = ["serde"] }
 serde = { version = "1.0.215", features = ["derive"] }
 diretto = { git = "https://github.com/verdiwm/diretto.git", version = "0.0.3" }
@@ -46,7 +46,7 @@ reconciler = "0.0.3"
 async-stream = "0.3.6"
 colpetto = "0.0.4"
 waynest = { version = "0.0.18", features = ["server", "stable"] }
-home = "0.5.9"
+home = "0.5.11"
 
 [patch.crates-io]
 wgpu = { git = "https://github.com/verdiwm/wgpu", branch = "drm-support" }
