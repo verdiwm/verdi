@@ -8,18 +8,9 @@ jobs:
   test:
     name: Build and test
     runs-on: ubuntu-latest
-    container: archlinux:latest
-
+    container: ghcr.io/verdiwm/ci-image:latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          pacman --noconfirm -Syu && pacman --needed --noconfirm -S \
-          rustup base-devel libinput
-
-      - name: Setup rust
-        run: rustup toolchain install stable
 
       - name: Install nextest to run tests
         uses: taiki-e/install-action@nextest
