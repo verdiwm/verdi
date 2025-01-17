@@ -19,9 +19,13 @@ bytes = "1.9.0"
 futures-util = { version = "0.3.31", default-features = false, features = [
     "sink",
 ] }
-rustix = { version = "0.38.42", features = ["fs", "mm", "process"] }
+rustix = { version = "0.38.35", git = "https://github.com/bytecodealliance/rustix/", rev = "7be338668bc58d4c32cf8e23977ea20572b0c837", features = [
+    "fs",
+    "mm",
+    "process",
+] }
 thiserror = "2.0.8"
-tokio = { version = "1.42.0", features = [
+tokio = { version = "1.36.0", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -34,11 +38,11 @@ tracing-subscriber = { version = "0.3.19", features = [
     "env-filter",
     "tracing-log",
 ] }
-wgpu = { version = "23.0.1", default-features = false, features = ["wgsl"] }
+wgpu = { version = "24.0.0", default-features = false, features = ["wgsl"] }
 clap = { version = "4.5.23", features = ["derive"] }
 toml_edit = { version = "0.22.22", features = ["serde"] }
 serde = { version = "1.0.215", features = ["derive"] }
-diretto = { git = "https://github.com/verdiwm/diretto.git", version = "0.0.3" }
+diretto = { git = "https://github.com/verdiwm/diretto.git", version = "0.0.4" }
 raw-window-handle = "0.6.2"
 rand = "0.8.5"
 bytemuck = { version = "1.20.0", features = ["derive"] }
