@@ -1,10 +1,11 @@
+use std::io;
+
 use anyhow::{Context, Result};
 use diretto::{Connector, Device as DrmDevice};
 use raw_window_handle::{DisplayHandle, DrmDisplayHandle, DrmWindowHandle, WindowHandle};
 use rustix::{
     fd::{AsFd, AsRawFd},
     fs::{self, Mode, OFlags},
-    io,
 };
 use tracing::{debug, info};
 use wgpu::{Backends, InstanceDescriptor, PresentMode, SurfaceTargetUnsafe};
