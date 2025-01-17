@@ -358,7 +358,7 @@ version = "0.0.4"
 source = "git+https://github.com/verdiwm/diretto.git#66c1547e40a54819180e12f43333eeac23ff79d2"
 dependencies = [
  "drm-sys",
- "rustix 0.38.43",
+ "rustix",
  "tracing",
 ]
 
@@ -373,9 +373,9 @@ dependencies = [
 
 [[package]]
 name = "downcast-rs"
-version = "1.2.1"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
+checksum = "ea8a8b81cacc08888170eef4d13b775126db426d0b348bee9d18c2c1eaf123cf"
 
 [[package]]
 name = "drm-sys"
@@ -1038,18 +1038,6 @@ checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
 name = "rustix"
-version = "0.38.35"
-source = "git+https://github.com/bytecodealliance/rustix/?rev=7be338668bc58d4c32cf8e23977ea20572b0c837#7be338668bc58d4c32cf8e23977ea20572b0c837"
-dependencies = [
- "bitflags 2.8.0",
- "errno",
- "libc",
- "linux-raw-sys 0.6.5",
- "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "rustix"
 version = "0.38.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a78891ee6bf2340288408954ac787aa063d8e8817e9f53abb37c695c6d834ef6"
@@ -1439,7 +1427,7 @@ dependencies = [
  "rand",
  "raw-window-handle",
  "reconciler",
- "rustix 0.38.35",
+ "rustix",
  "serde",
  "thiserror 2.0.11",
  "tokio",
@@ -1535,9 +1523,9 @@ dependencies = [
 
 [[package]]
 name = "waynest"
-version = "0.0.18"
+version = "0.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84cb5cbc5ffa12142e77152e2b1d26fc5c70ca71ad87dd5b983bedf31f35ee7d"
+checksum = "dde980d3fc8d588e0d86535facf8d31843df24956d71b435f0b5038c82da301a"
 dependencies = [
  "async-trait",
  "bitflags 2.8.0",
@@ -1545,7 +1533,7 @@ dependencies = [
  "downcast-rs",
  "futures-util",
  "pin-project-lite",
- "rustix 0.38.43",
+ "rustix",
  "thiserror 2.0.11",
  "tokio",
  "tracing",

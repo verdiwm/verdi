@@ -14,18 +14,14 @@ codegen-units = 1
 strip = true
 
 [dependencies]
-anyhow = "1.0.94"
+anyhow = "1.0.95"
 bytes = "1.9.0"
 futures-util = { version = "0.3.31", default-features = false, features = [
     "sink",
 ] }
-rustix = { version = "0.38.35", git = "https://github.com/bytecodealliance/rustix/", rev = "7be338668bc58d4c32cf8e23977ea20572b0c837", features = [
-    "fs",
-    "mm",
-    "process",
-] }
-thiserror = "2.0.8"
-tokio = { version = "1.36.0", features = [
+rustix = { version = "0.38.43", features = ["fs", "mm", "process"] }
+thiserror = "2.0.11"
+tokio = { version = "1.43.0", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -39,17 +35,17 @@ tracing-subscriber = { version = "0.3.19", features = [
     "tracing-log",
 ] }
 wgpu = { version = "24.0.0", default-features = false, features = ["wgsl"] }
-clap = { version = "4.5.23", features = ["derive"] }
+clap = { version = "4.5.26", features = ["derive"] }
 toml_edit = { version = "0.22.22", features = ["serde"] }
-serde = { version = "1.0.215", features = ["derive"] }
+serde = { version = "1.0.217", features = ["derive"] }
 diretto = "0.0.4"
 raw-window-handle = "0.6.2"
 rand = "0.8.5"
-bytemuck = { version = "1.20.0", features = ["derive"] }
+bytemuck = { version = "1.21.0", features = ["derive"] }
 reconciler = "0.0.3"
 async-stream = "0.3.6"
 colpetto = "0.0.4"
-waynest = { version = "0.0.18", features = ["server", "stable"] }
+waynest = { version = "0.0.19", features = ["server", "stable"] }
 home = "0.5.11"
 
 [patch.crates-io]
