@@ -102,7 +102,7 @@ impl<'s> WgpuContext<'s> {
         };
 
         // FIXME: add drm + opengl support to wgpu
-        let instance = wgpu::Instance::new(InstanceDescriptor {
+        let instance = wgpu::Instance::new(&InstanceDescriptor {
             backends: Backends::VULKAN,
             ..Default::default()
         });
