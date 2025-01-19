@@ -292,11 +292,12 @@ checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 [[package]]
 name = "colpetto"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a3439beb78f23a619164b57feb36a97ec8a7d506123d540aa86bb9986bfca6e"
 dependencies = [
  "cc",
  "devil",
  "futures-core",
- "futures-util",
  "paste",
  "pkg-config",
  "thiserror",
@@ -431,17 +432,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f29059c0c2090612e8d742178b0580d2dc940c837851ad723096f87af6663e"
 
 [[package]]
-name = "futures-macro"
-version = "0.3.31"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "162ee34ebcb7c64a8abebc059ce0fee27c2262618d7b60ed8faf72fef13c3650"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "futures-sink"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -460,12 +450,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fa08315bb612088cc391249efdc3bc77536f16c91f6cf495e6fbe85b20a4a81"
 dependencies = [
  "futures-core",
- "futures-macro",
  "futures-sink",
  "futures-task",
  "pin-project-lite",
  "pin-utils",
- "slab",
 ]
 
 [[package]]
@@ -1103,15 +1091,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "slab"
-version = "0.4.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f92a496fb766b417c996b9c5e57daf2f7ad3b0bebe1ccfca4856390e3d3bb67"
-dependencies = [
- "autocfg",
-]
-
-[[package]]
 name = "slotmap"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1506,6 +1485,8 @@ dependencies = [
 [[package]]
 name = "waynest"
 version = "0.0.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dde980d3fc8d588e0d86535facf8d31843df24956d71b435f0b5038c82da301a"
 dependencies = [
  "async-trait",
  "bitflags 2.8.0",
@@ -1523,6 +1504,8 @@ dependencies = [
 [[package]]
 name = "waynest-macros"
 version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "839fbfb09f19a60c3dd5fc0c769b5cfad6e6ebde81127bfc0056a0470752e0b6"
 dependencies = [
  "quote",
  "syn",
