@@ -20,3 +20,12 @@ jobs:
 
       - name: Check clippy
         run: cargo clippy --all-targets --all-features
+
+  fmt:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    container: ghcr.io/verdiwm/ci-image:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run formatter
+        run: cargo fmt --check
