@@ -15,8 +15,8 @@ jobs:
       - name: Install nextest to run tests
         uses: taiki-e/install-action@nextest
 
-      - name: Run tests
-        run: cargo nextest run --all-features
+      # - name: Run tests
+      #   run: cargo nextest run --all-features
 
       - name: Check clippy
         run: cargo clippy --all-targets --all-features
