@@ -4,19 +4,25 @@
 use std::{
     // ffi::CString,
     fs,
+    os::fd::{FromRawFd, IntoRawFd, OwnedFd},
     path::{Path, PathBuf},
 };
 
 use anyhow::{bail, Context, Result as AnyResult};
 use clap::Parser;
+use colpetto::Libinput;
 // use colpetto::Libinput;
-use futures_util::{StreamExt, TryStreamExt};
-use reconciler::EventListener;
-use rustix::process::geteuid;
+use rustix::{
+    fs::{Mode, OFlags},
+    io::Errno,
+    process::geteuid,
+};
 use serde::{Deserialize, Serialize};
-use tokio::{net::UnixListener, task::JoinSet};
-use tracing::error;
+use tokio::{net::UnixListener, sync::mpsc, task::JoinSet};
+use tokio_stream::{wrappers::UnboundedReceiverStream, StreamExt};
+use tracing::{debug, error};
 
+use tracing_subscriber::EnvFilter;
 use verdi::{
     error::Error,
     protocol::wayland::display::{Display, WlDisplay},
@@ -48,7 +54,18 @@ struct Args {
 pub struct Config {}
 
 fn main() -> AnyResult<()> {
-    tracing_subscriber::fmt::init();
+    let format = tracing_subscriber::fmt::format()
+        .with_level(false)
+        .with_target(false)
+        .with_thread_ids(true)
+        .with_thread_names(false)
+        .without_time()
+        .compact();
+
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .event_format(format)
+        .init();
 
     if geteuid().is_root() {
         error!("Tried running as root");
@@ -76,6 +93,8 @@ fn main() -> AnyResult<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
+    debug!("Created runtime");
+
     runtime.block_on(async move {
         let listener = {
             if let Some(socket) = args.socket {
@@ -85,15 +104,16 @@ fn main() -> AnyResult<()> {
             }
         }?;
 
+        debug!("Started listener");
+
         let mut verdi = Verdi::new(listener).await?;
+
+        debug!("Started new verdi instance");
 
         while let Some(event) = verdi.next_event().await? {
             dbg!(&event);
             match event {
                 Event::NewClient(client) => verdi.spawn_client(client)?,
-                Event::Input(colpetto::Event::Keyboard(_)) => {
-                    break;
-                }
                 _ => {}
             }
         }
@@ -115,7 +135,7 @@ fn main() -> AnyResult<()> {
 pub struct Verdi {
     // state: Arc<State<'s>>,
     // listener: UnixListener,
-    event_listener: EventListener<Result<Event, Error>>,
+    events_receiver: UnboundedReceiverStream<Result<Event, Error>>,
     clients: JoinSet<Result<(), Error>>,
 }
 
@@ -124,46 +144,62 @@ pub enum Event {
     NewClient(Client),
     SessionPaused,
     SessionResumed,
-    Input(colpetto::Event),
+    Input,
+    // Input(colpetto::Event),
 }
 
 impl Verdi {
-    pub async fn new(listener: Listener) -> AnyResult<Self> {
-        let mut event_listener = EventListener::new();
+    pub async fn new(mut listener: Listener) -> AnyResult<Self> {
+        let (tx, mut rx) = mpsc::unbounded_channel();
 
-        let client_loop = listener.map(|stream| {
-            match stream {
-                Ok(stream) => {
-                    // FIXME: handle errors instead of unwraping
-                    let mut client = Client::new(stream).unwrap();
+        debug!("Creating libinput instance");
 
-                    client.insert(Display::default().into_object(ObjectId::DISPLAY));
+        let mut libinput = Libinput::new(
+            |path, flags| {
+                rustix::fs::open(path, OFlags::from_bits_retain(flags as u32), Mode::empty())
+                    .map(IntoRawFd::into_raw_fd)
+                    .map_err(|err| err.raw_os_error().wrapping_neg())
+            },
+            |fd| drop(unsafe { OwnedFd::from_raw_fd(fd) }),
+        )?;
 
-                    Ok(Event::NewClient(client))
-                }
-                Err(err) => {
-                    error!("Client failed to connect");
-                    Err(Error::Protocol(waynest::server::Error::IoError(err)))
+        libinput.udev_assign_seat(c"seat0")?;
+
+        debug!("Created libinputinstance");
+
+        let mut event_stream = libinput.event_stream()?;
+
+        tokio::spawn({
+            let tx = tx.clone();
+
+            async move {
+                while let Some(stream) = event_stream.try_next().await.unwrap() {
+                    tx.send(Ok(Event::Input)).unwrap();
                 }
             }
         });
 
-        event_listener.add_listener(client_loop);
+        // FIXME: handle errors instead of unwraping
+        tokio::spawn(async move {
+            while let Some(stream) = listener.try_next().await.unwrap() {
+                let mut client = Client::new(stream).unwrap();
 
-        // let libinput = Libinput::new()?;
-        // libinput.assign_seat(CString::new("seat0").unwrap().as_c_str())?;
+                client.insert(Display::default().into_object(ObjectId::DISPLAY));
 
-        // event_listener.add_listener(libinput.map_err(Error::Input).map_ok(Event::Input));
+                tx.send(Ok(Event::NewClient(client))).unwrap();
+            }
+        });
+
+        debug!("Spawned stuff");
 
         Ok(Self {
-            // state: Arc::new(State::new().await?),
-            event_listener,
+            events_receiver: UnboundedReceiverStream::new(rx),
             clients: JoinSet::new(),
         })
     }
 
     pub async fn next_event(&mut self) -> Result<Option<Event>, Error> {
-        self.event_listener.try_next().await
+        self.events_receiver.try_next().await
     }
 
     pub fn spawn_client(&mut self, mut client: Client) -> Result<(), Error> {
