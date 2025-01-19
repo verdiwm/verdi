@@ -39,7 +39,7 @@ diretto = "0.0.4"
 raw-window-handle = "0.6.2"
 rand = "0.8.5"
 bytemuck = { version = "1.21.0", features = ["derive"] }
-colpetto = { version = "0.2.0", features = ["tokio", "tracing"] }
+colpetto = { version = "0.3.0", features = ["tokio", "tracing"] }
 waynest = { version = "0.0.19", features = ["server", "stable"] }
 home = "0.5.11"
 tokio-stream = { version = "0.1.17", features = ["sync"] }
