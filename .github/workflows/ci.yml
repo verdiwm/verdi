@@ -12,9 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install nextest to run tests
-        uses: taiki-e/install-action@nextest
-
       # - name: Run tests
       #   run: cargo nextest run --all-features
 
