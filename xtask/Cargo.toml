@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.95"
+clap = { version = "4.5.27", features = ["derive", "cargo", "env", "unicode", "wrap_help"] }
+xshell = "0.2.7"
