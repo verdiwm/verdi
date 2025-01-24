@@ -24,8 +24,8 @@ enum Commands {
         destdir: PathBuf,
         #[arg(long, default_value = "usr")]
         prefix: PathBuf,
-        #[arg(long)]
-        mode: Option<String>,
+        #[arg(long, default_value = "755")]
+        mode: String,
     },
 }
 
@@ -38,7 +38,7 @@ fn main() -> Result<()> {
             destdir,
             prefix,
             mode,
-        } => install(destdir, prefix, mode.as_deref()),
+        } => install(destdir, prefix, mode),
     }
 }
 
@@ -49,7 +49,7 @@ fn build() -> Result<()> {
     Ok(())
 }
 
-fn install(destdir: &Path, prefix: &Path, mode: Option<&str>) -> Result<()> {
+fn install(destdir: &Path, prefix: &Path, mode: &str) -> Result<()> {
     if !fs::exists("target/release/verdi")? {
         bail!("You must build the project first!")
     }
@@ -64,14 +64,12 @@ fn install(destdir: &Path, prefix: &Path, mode: Option<&str>) -> Result<()> {
     fs::copy("target/release/verdi", &target)
         .with_context(|| format!("Failed to copy binary to {:?}", target))?;
 
-    if let Some(mode) = mode {
-        // Parse octal mode string (e.g., "755" or "0755")
-        let mode = u32::from_str_radix(mode.trim_start_matches('0'), 8)
-            .with_context(|| format!("Invalid mode: {mode}"))?;
+    // Parse octal mode string (e.g., "755" or "0755")
+    let mode = u32::from_str_radix(mode.trim_start_matches('0'), 8)
+        .with_context(|| format!("Invalid mode: {mode}"))?;
 
-        fs::set_permissions(&target, fs::Permissions::from_mode(mode))
-            .context("Failed to set binary permissions")?;
-    }
+    fs::set_permissions(&target, fs::Permissions::from_mode(mode))
+        .context("Failed to set binary permissions")?;
 
     println!("Installation complete!");
     Ok(())
