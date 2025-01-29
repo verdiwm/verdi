@@ -2184,7 +2184,7 @@ dependencies = [
 [[package]]
 name = "xtask-common"
 version = "0.1.0"
-source = "git+https://github.com/morr0ne/xtask-common#6a24c568e77999714a11e9d6e691f9930ff5bb72"
+source = "git+https://github.com/morr0ne/xtask-common#39fa2a4f0c1abb271722de42f5dbfa2575a5816b"
 dependencies = [
  "anyhow",
  "clap",
