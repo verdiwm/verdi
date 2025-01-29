@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.95"
-xtask-common = { git = "https://github.com/morr0ne/xtask-common", version = "0.1.0" }
+xtask-common = { version = "0.1.0", git = "https://github.com/morr0ne/xtask-common" }
