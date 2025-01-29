@@ -39,8 +39,19 @@ mod state;
 // use context::WgpuContext;
 // use state::State;
 
+const fn version() -> &'static str {
+    concat!(
+        env!("CARGO_PKG_VERSION"),
+        " (",
+        env!("GIT_HASH"),
+        " ",
+        env!("COMMIT_DATE"),
+        ")"
+    )
+}
+
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version = version(), about, long_about = None)]
 struct Args {
     /// Custom config file path
     #[arg(short, long)]
