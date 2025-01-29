@@ -6,7 +6,17 @@ env:
 
 jobs:
   test:
-    name: Build and test
+    name: Build
+    runs-on: ubuntu-latest
+    container: ghcr.io/verdiwm/ci-image:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Try building
+        run: cargo xtask build
+
+  lint:
+    name: Lint project
     runs-on: ubuntu-latest
     container: ghcr.io/verdiwm/ci-image:latest
     steps:
