@@ -123,6 +123,7 @@ fn main() -> AnyResult<()> {
 
         while let Some(event) = verdi.next_event().await? {
             dbg!(&event);
+            #[allow(clippy::single_match)]
             match event {
                 Event::NewClient(client) => verdi.spawn_client(client)?,
                 _ => {}

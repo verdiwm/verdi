@@ -20,7 +20,7 @@ pub struct WgpuContext<'s> {
     pub _drm_device: DrmDevice,
 }
 
-impl<'s> WgpuContext<'s> {
+impl WgpuContext<'_> {
     pub async fn new() -> Result<Self> {
         // Open the dri device
         // FIXME: should employ a strategy to choose a correct one
