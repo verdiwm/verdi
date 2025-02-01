@@ -122,15 +122,15 @@ impl State<'_> {
         let num_objects = 1;
         let mut windows = Vec::with_capacity(num_objects);
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         for _ in 0..num_objects {
             let aspect = config.width / config.height;
-            let scale = rng.gen_range(0.2..0.5);
+            let scale = rng.random_range(0.2..0.5);
 
             let props = WindowProps {
                 scale: [scale / (aspect as f32), scale],
-                offset: [rng.gen_range(-0.9..0.9), rng.gen_range(-0.9..0.9)],
+                offset: [rng.random_range(-0.9..0.9), rng.random_range(-0.9..0.9)],
             };
 
             let props = WindowProps {
@@ -141,19 +141,19 @@ impl State<'_> {
             let vertices = &[
                 Vertex {
                     position: [-1.0, 1.0],
-                    color: [rng.gen(), rng.gen(), rng.gen()],
+                    color: [rng.random(), rng.random(), rng.random()],
                 },
                 Vertex {
                     position: [-1.0, -1.0],
-                    color: [rng.gen(), rng.gen(), rng.gen()],
+                    color: [rng.random(), rng.random(), rng.random()],
                 },
                 Vertex {
                     position: [1.0, -1.0],
-                    color: [rng.gen(), rng.gen(), rng.gen()],
+                    color: [rng.random(), rng.random(), rng.random()],
                 },
                 Vertex {
                     position: [1.0, 1.0],
-                    color: [rng.gen(), rng.gen(), rng.gen()],
+                    color: [rng.random(), rng.random(), rng.random()],
                 },
             ];
 
