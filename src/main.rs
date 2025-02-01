@@ -2,7 +2,6 @@
 #![allow(clippy::default_constructed_unit_structs)]
 
 use std::{
-    // ffi::CString,
     fs,
     os::fd::{FromRawFd, IntoRawFd, OwnedFd},
     path::{Path, PathBuf},
@@ -10,8 +9,6 @@ use std::{
 
 use anyhow::{bail, Context, Result as AnyResult};
 use clap::Parser;
-use colpetto::Libinput;
-// use colpetto::Libinput;
 use rustix::{
     fs::{Mode, OFlags},
     io::Errno,
@@ -34,6 +31,7 @@ use waynest::{
 };
 
 mod context;
+mod libinput;
 mod state;
 
 // use context::WgpuContext;
@@ -156,8 +154,7 @@ pub enum Event {
     NewClient(Client),
     SessionPaused,
     SessionResumed,
-    Input,
-    // Input(colpetto::Event),
+    Input(libinput::Event),
 }
 
 impl Verdi {
@@ -166,30 +163,20 @@ impl Verdi {
 
         debug!("Creating libinput instance");
 
-        let mut libinput = Libinput::new(
-            |path, flags| {
-                rustix::fs::open(path, OFlags::from_bits_retain(flags as u32), Mode::empty())
-                    .map(IntoRawFd::into_raw_fd)
-                    .map_err(|err| err.raw_os_error().wrapping_neg())
-            },
-            |fd| drop(unsafe { OwnedFd::from_raw_fd(fd) }),
-        )?;
+        let (mut event_stream, shutdown_handle) = libinput::spawn_libinput_task()?;
 
-        libinput.udev_assign_seat(c"seat0")?;
-
-        debug!("Created libinputinstance");
-
-        let mut event_stream = libinput.event_stream()?;
-
+        // FIXME: handle errors instead of unwraping
         tokio::spawn({
             let tx = tx.clone();
 
             async move {
-                while let Some(stream) = event_stream.try_next().await.unwrap() {
-                    tx.send(Ok(Event::Input)).unwrap();
+                while let Some(event) = event_stream.try_next().await.unwrap() {
+                    tx.send(Ok(Event::Input(event))).unwrap();
                 }
             }
         });
+
+        debug!("Created libinput instance");
 
         // FIXME: handle errors instead of unwraping
         tokio::spawn(async move {
