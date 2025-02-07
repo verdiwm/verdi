@@ -88,15 +88,6 @@ contribute to the overall advancement of the Wayland ecosystem. Every line of
 code in Verdi is written in Rust, ensuring memory safety, concurrency without
 data races, and reliability.
 
-## Contributing
-
-<!-- We welcome contributions from the community! Whether you're interested in
-coding, reporting bugs, improving documentation, or just providing feedback,
-your input is invaluable. Check out our
-[contributing guidelines]() to get started. -->
-
-TBA
-
 ## License
 
 This project is licensed under the
