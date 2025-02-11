@@ -1,92 +1,83 @@
 # Verdi
 
-Welcome to **Verdi**, a modern, elegant, and fresh Wayland compositor that aims
-to reshape the Wayland ecosystem from the ground up. Verdi isn't just another
-compositor; it's a complete reimagining of what a Wayland compositor can be,
-built to empower developers and users alike with performance and flexibility
-without sacrificing on stability.
+Verdi is a Wayland compositor written in Rust, designed with a focus on
+performance, stability, and extensibility. The project implements its core
+functionality from the ground up, taking a fresh approach to compositor
+architecture while maintaining clean and maintainable code.
 
 ## Overview
 
-Unlike many other Wayland compositors, **Verdi** is crafted from scratch, free
-from reliance on existing libraries, providing a fresh and innovative
-architecture. At its core, Verdi is powered by this cutting-edge technologies:
+Verdi takes an independent approach to Wayland compositor design, implementing
+core functionality without relying on existing compositor libraries. The
+architecture is built on two main foundations:
 
-- **[Tokio](https://github.com/tokio-rs/tokio)**: A state-of-the-art
-  asynchronous runtime for the Rust programming language, enabling Verdi to
-  handle the async nature of the protocol without fear.
-- **[wgpu](https://github.com/gfx-rs/wgpu)**: A modern and powerful graphics API
-  that ensures Verdi is not only performant but also compatible with a broad
-  range of hardware, including more esoteric setups like NVIDIA GPUs.
+- **[Tokio](https://github.com/tokio-rs/tokio)**: An asynchronous runtime for
+  Rust that provides robust handling of the Wayland protocol's asynchronous
+  nature
+- **[wgpu](https://github.com/gfx-rs/wgpu)**: A cross-platform graphics API
+  providing broad hardware compatibility and high performance across different
+  platforms
 
 ## Documentation
 
-Comprehensive documentation for Verdi is available at
-[docs.verdi.rocks](https://docs.verdi.rocks). Keep in mind that documentation is
-still work in progress and stuff might be missing
+Documentation is available at [docs.verdi.rocks](https://docs.verdi.rocks).
+Please note that the documentation is currently under development and may be
+incomplete in some areas.
 
 ## Community and Support
 
-Join our growing community on [Discord](https://chat.verdi.rocks). This is the
-primary hub for discussion, support, and collaboration. Whether you're a
-developer interested in contributing or a user eager to test the latest
-features, our community is here to help.
+For questions, discussions, and development updates, join our community on
+[Discord](https://chat.verdi.rocks). Whether you're interested in contributing
+to development or testing new features, the community is here to help.
 
 ## Getting Started
 
 ### Installation
 
-If you're using an Arch-based distribution, Verdi is available as a development
-package in the AUR. You can easily install it using your favorite AUR helper:
+For Arch-based distributions, Verdi is available in the AUR as a development
+package:
 
 ```bash
 paru -S verdi-git
 ```
 
-Support for additional distributions is on the roadmap and will be available
-soon.
+Support for additional distributions is in development.
 
 ### Configuration
 
-Verdi is highly configurable via a simple TOML file. The main configuration file
-can be found at:
+Verdi uses TOML for configuration. The default configuration file location is:
 
-`$XDG_CONFIG_HOME/verdi/verdi.toml` (Typically `~/.config/verdi/verdi.toml` on
-most systems).
+`$XDG_CONFIG_HOME/verdi/verdi.toml` (typically `~/.config/verdi/verdi.toml`)
 
-For detailed configuration options, visit our
+For configuration options and examples, see the
 [documentation](https://docs.verdi.rocks/configuration).
 
 ### Building from Source
 
-Before you start building Verdi, ensure that your environment meets the
-following prerequisites:
+Prerequisites:
 
-- **[just](https://just.system)**: Must be installed and available in your
-  system's `PATH`.
-- **Rust**: Installed via [rustup](https://rustup.rs/). Note that
-  distro-provided versions of Rust are not supported.
-- **System Libraries**: Ensure that `libinput` and `libudev` libraries are
-  installed, along with their corresponding headers.
+- **Rust**: Install via [rustup](https://rustup.rs/) (distribution-provided Rust
+  versions are not supported)
+- **System Libraries**: `libinput` and `libudev` with development headers
 
-Once the prerequisites are in place, you can build and install Verdi with:
+Build and install commands:
 
 ```bash
-just && just install
+cargo xtask build && cargo xtask install
 ```
 
-For more detailed build instructions, check the
+Detailed build instructions are available in the
 [documentation](https://docs.verdi.rocks/building).
 
-## Roadmap and Future Development
+## Development Status
 
-Verdi is still in its early stages, with many exciting features and improvements
-planned. Our focus is on stability, performance, and expanding support for a
-wider range of hardware. The mission of Verdi extends beyond building a stable
-and feature-rich compositor. Verdi is an ambitious project that seeks to
-contribute to the overall advancement of the Wayland ecosystem. Every line of
-code in Verdi is written in Rust, ensuring memory safety, concurrency without
-data races, and reliability.
+Verdi is currently in pre-alpha stage, with active development focusing on core
+functionality and stability.
+
+The project aims to contribute to the Wayland ecosystem by providing a reliable,
+performant implementation that can serve as a foundation for future development.
+Each component is carefully designed and implemented with a focus on long-term
+maintainability and reliability.
 
 ## License
 
