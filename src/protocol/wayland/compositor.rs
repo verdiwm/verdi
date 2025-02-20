@@ -1,7 +1,7 @@
 use crate::protocol::wayland::surface::{Surface, WlSurface};
 
 use waynest::{
-    server::{Client, Dispatcher, Object, Result},
+    server::{Client, Dispatcher, Result},
     wire::ObjectId,
 };
 
@@ -13,19 +13,19 @@ pub struct Compositor;
 impl WlCompositor for Compositor {
     async fn create_surface(
         &self,
-        _object: &Object,
         client: &mut Client,
+        _sender_id: ObjectId,
         id: ObjectId,
     ) -> Result<()> {
-        client.insert(Surface::default().into_object(id));
+        client.insert(id, Surface::default());
 
         Ok(())
     }
 
     async fn create_region(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _id: ObjectId,
     ) -> Result<()> {
         todo!()

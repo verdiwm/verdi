@@ -1,7 +1,7 @@
 use crate::protocol::xdg::toplevel::{Toplevel, XdgToplevel};
 
 use waynest::{
-    server::{Client, Dispatcher, Object, Result},
+    server::{Client, Dispatcher, Result},
     wire::ObjectId,
 };
 
@@ -19,25 +19,25 @@ impl Surface {
 }
 
 impl XdgSurface for Surface {
-    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
     async fn get_toplevel(
         &self,
-        _object: &Object,
         client: &mut Client,
+        _sender_id: ObjectId,
         id: ObjectId,
     ) -> Result<()> {
-        client.insert(Toplevel::default().into_object(id));
+        client.insert(id, Toplevel::default());
 
         Ok(())
     }
 
     async fn get_popup(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _id: ObjectId,
         _parent: Option<ObjectId>,
         _positioner: ObjectId,
@@ -47,8 +47,8 @@ impl XdgSurface for Surface {
 
     async fn set_window_geometry(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _x: i32,
         _y: i32,
         _width: i32,
@@ -59,8 +59,8 @@ impl XdgSurface for Surface {
 
     async fn ack_configure(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _serial: u32,
     ) -> Result<()> {
         todo!()

@@ -1,5 +1,5 @@
 use waynest::{
-    server::{Client, Dispatcher, Object, Result},
+    server::{Client, Dispatcher, Result},
     wire::ObjectId,
 };
 
@@ -20,14 +20,14 @@ pub struct Surface {
 }
 
 impl WlSurface for Surface {
-    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
     async fn attach(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _buffer: Option<ObjectId>,
         _x: i32,
         _y: i32,
@@ -37,8 +37,8 @@ impl WlSurface for Surface {
 
     async fn damage(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _x: i32,
         _y: i32,
         _width: i32,
@@ -49,8 +49,8 @@ impl WlSurface for Surface {
 
     async fn frame(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _callback: ObjectId,
     ) -> Result<()> {
         todo!()
@@ -58,8 +58,8 @@ impl WlSurface for Surface {
 
     async fn set_opaque_region(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _region: Option<ObjectId>,
     ) -> Result<()> {
         todo!()
@@ -67,14 +67,14 @@ impl WlSurface for Surface {
 
     async fn set_input_region(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _region: Option<ObjectId>,
     ) -> Result<()> {
         todo!()
     }
 
-    async fn commit(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn commit(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         // FIXME: commit state
 
         Ok(())
@@ -82,8 +82,8 @@ impl WlSurface for Surface {
 
     async fn set_buffer_transform(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _transform: waynest::server::protocol::core::wayland::wl_output::Transform,
     ) -> Result<()> {
         todo!()
@@ -91,8 +91,8 @@ impl WlSurface for Surface {
 
     async fn set_buffer_scale(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _scale: i32,
     ) -> Result<()> {
         todo!()
@@ -100,8 +100,8 @@ impl WlSurface for Surface {
 
     async fn damage_buffer(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _x: i32,
         _y: i32,
         _width: i32,
@@ -110,7 +110,13 @@ impl WlSurface for Surface {
         todo!()
     }
 
-    async fn offset(&self, _object: &Object, _client: &mut Client, _x: i32, _y: i32) -> Result<()> {
+    async fn offset(
+        &self,
+        _client: &mut Client,
+        _sender_id: ObjectId,
+        _x: i32,
+        _y: i32,
+    ) -> Result<()> {
         todo!()
     }
 }

@@ -9,7 +9,7 @@ use tokio::sync::RwLock;
 use crate::protocol::wayland::shm::Format;
 
 use waynest::{
-    server::{Client, Dispatcher, Object, Result},
+    server::{Client, Dispatcher, Result},
     wire::ObjectId,
 };
 
@@ -58,8 +58,8 @@ impl ShmPool {
 impl WlShmPool for ShmPool {
     async fn create_buffer(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _id: ObjectId,
         _offset: i32,
         _width: i32,
@@ -70,11 +70,11 @@ impl WlShmPool for ShmPool {
         todo!()
     }
 
-    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
-    async fn resize(&self, _object: &Object, _client: &mut Client, size: i32) -> Result<()> {
+    async fn resize(&self, _client: &mut Client, _sender_id: ObjectId, size: i32) -> Result<()> {
         let mut write_guard = self.map.write().await;
         let old_size = write_guard.size;
         let new_size = size as usize;

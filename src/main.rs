@@ -183,7 +183,7 @@ impl Verdi {
             while let Some(stream) = listener.try_next().await.unwrap() {
                 let mut client = Client::new(stream).unwrap();
 
-                client.insert(Display::default().into_object(ObjectId::DISPLAY));
+                client.insert(ObjectId::DISPLAY, Display::default());
 
                 tx.send(Ok(Event::NewClient(client))).unwrap();
             }

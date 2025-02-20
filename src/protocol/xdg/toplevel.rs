@@ -1,5 +1,5 @@
 use waynest::{
-    server::{Client, Dispatcher, Object, Result},
+    server::{Client, Dispatcher, Result},
     wire::ObjectId,
 };
 
@@ -9,14 +9,14 @@ pub use waynest::server::protocol::stable::xdg_shell::xdg_toplevel::*;
 pub struct Toplevel;
 
 impl XdgToplevel for Toplevel {
-    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
     async fn set_parent(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _parent: Option<ObjectId>,
     ) -> Result<()> {
         todo!()
@@ -24,8 +24,8 @@ impl XdgToplevel for Toplevel {
 
     async fn set_title(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _title: String,
     ) -> Result<()> {
         // FIXME: change  state
@@ -35,8 +35,8 @@ impl XdgToplevel for Toplevel {
 
     async fn set_app_id(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _app_id: String,
     ) -> Result<()> {
         // FIXME: change  state
@@ -46,8 +46,8 @@ impl XdgToplevel for Toplevel {
 
     async fn show_window_menu(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _seat: ObjectId,
         _serial: u32,
         _x: i32,
@@ -58,8 +58,8 @@ impl XdgToplevel for Toplevel {
 
     async fn r#move(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _seat: ObjectId,
         _serial: u32,
     ) -> Result<()> {
@@ -68,8 +68,8 @@ impl XdgToplevel for Toplevel {
 
     async fn resize(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _seat: ObjectId,
         _serial: u32,
         _edges: ResizeEdge,
@@ -79,8 +79,8 @@ impl XdgToplevel for Toplevel {
 
     async fn set_max_size(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _width: i32,
         _height: i32,
     ) -> Result<()> {
@@ -89,36 +89,36 @@ impl XdgToplevel for Toplevel {
 
     async fn set_min_size(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _width: i32,
         _height: i32,
     ) -> Result<()> {
         todo!()
     }
 
-    async fn set_maximized(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn set_maximized(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
-    async fn unset_maximized(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn unset_maximized(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
     async fn set_fullscreen(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _output: Option<ObjectId>,
     ) -> Result<()> {
         todo!()
     }
 
-    async fn unset_fullscreen(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn unset_fullscreen(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
-    async fn set_minimized(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn set_minimized(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 }

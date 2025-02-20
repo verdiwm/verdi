@@ -1,7 +1,7 @@
 use crate::protocol::xdg::surface::{Surface, XdgSurface};
 
 use waynest::{
-    server::{Client, Dispatcher, Object, Result},
+    server::{Client, Dispatcher, Result},
     wire::ObjectId,
 };
 
@@ -11,14 +11,14 @@ pub use waynest::server::protocol::stable::xdg_shell::xdg_wm_base::*;
 pub struct WmBase;
 
 impl XdgWmBase for WmBase {
-    async fn destroy(&self, _object: &Object, _client: &mut Client) -> Result<()> {
+    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
     async fn create_positioner(
         &self,
-        _object: &Object,
         _client: &mut Client,
+        _sender_id: ObjectId,
         _id: ObjectId,
     ) -> Result<()> {
         todo!()
@@ -26,17 +26,17 @@ impl XdgWmBase for WmBase {
 
     async fn get_xdg_surface(
         &self,
-        _object: &Object,
         client: &mut Client,
+        _sender_id: ObjectId,
         id: ObjectId,
         surface: ObjectId,
     ) -> Result<()> {
-        client.insert(Surface::new(surface).into_object(id));
+        client.insert(id, Surface::new(surface));
 
         Ok(())
     }
 
-    async fn pong(&self, _object: &Object, _client: &mut Client, _serial: u32) -> Result<()> {
+    async fn pong(&self, _client: &mut Client, _sender_id: ObjectId, _serial: u32) -> Result<()> {
         todo!()
     }
 }
