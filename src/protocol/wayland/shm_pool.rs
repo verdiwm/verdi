@@ -2,7 +2,7 @@ use std::{io, ptr::null_mut};
 
 use rustix::{
     fd::OwnedFd,
-    mm::{mmap, mremap, MapFlags, MremapFlags, ProtFlags},
+    mm::{MapFlags, MremapFlags, ProtFlags, mmap, mremap},
 };
 use tokio::sync::RwLock;
 

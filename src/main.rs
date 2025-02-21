@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, Context, Result as AnyResult};
+use anyhow::{Context, Result as AnyResult, bail};
 use clap::Parser;
 use rustix::{
     fs::{Mode, OFlags},
@@ -16,7 +16,7 @@ use rustix::{
 };
 use serde::{Deserialize, Serialize};
 use tokio::{net::UnixListener, sync::mpsc, task::JoinSet};
-use tokio_stream::{wrappers::UnboundedReceiverStream, StreamExt};
+use tokio_stream::{StreamExt, wrappers::UnboundedReceiverStream};
 use tracing::{debug, error};
 
 use tracing_subscriber::EnvFilter;

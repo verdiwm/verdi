@@ -1,19 +1,19 @@
 use std::{
-    ffi::{c_int, CStr},
+    ffi::{CStr, c_int},
     os::fd::RawFd,
 };
 
-use colpetto::{event::AsRawEvent, Error, Libinput};
+use colpetto::{Error, Libinput, event::AsRawEvent};
 use rustix::{
     fd::{FromRawFd, IntoRawFd, OwnedFd},
-    fs::{open, Mode, OFlags},
+    fs::{Mode, OFlags, open},
 };
 use tokio::{
     runtime,
     sync::mpsc::{self, UnboundedReceiver, UnboundedSender},
     task::LocalSet,
 };
-use tokio_stream::{wrappers::UnboundedReceiverStream, StreamExt};
+use tokio_stream::{StreamExt, wrappers::UnboundedReceiverStream};
 
 #[derive(Debug)]
 pub struct Event {
