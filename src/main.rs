@@ -5,6 +5,8 @@ use std::{
     fs,
     os::fd::{FromRawFd, IntoRawFd, OwnedFd},
     path::{Path, PathBuf},
+    process::exit,
+    time::Duration,
 };
 
 use anyhow::{Context, Result as AnyResult, bail};
@@ -15,7 +17,7 @@ use rustix::{
     process::geteuid,
 };
 use serde::{Deserialize, Serialize};
-use tokio::{net::UnixListener, sync::mpsc, task::JoinSet};
+use tokio::{net::UnixListener, sync::mpsc, task::JoinSet, time::sleep};
 use tokio_stream::{StreamExt, wrappers::UnboundedReceiverStream};
 use tracing::{debug, error};
 
@@ -34,7 +36,7 @@ mod context;
 mod libinput;
 mod state;
 
-// use context::WgpuContext;
+use context::WgpuContext;
 // use state::State;
 
 const fn version() -> &'static str {
@@ -119,22 +121,36 @@ fn main() -> AnyResult<()> {
 
         debug!("Started new verdi instance");
 
-        while let Some(event) = verdi.next_event().await? {
-            dbg!(&event);
-            #[allow(clippy::single_match)]
-            match event {
-                Event::NewClient(client) => verdi.spawn_client(client)?,
-                _ => {}
+        tokio::spawn(async move {
+            while let Some(event) = verdi.next_event().await? {
+                dbg!(&event);
+                #[allow(clippy::single_match)]
+                match event {
+                    Event::NewClient(client) => verdi.spawn_client(client)?,
+                    _ => {}
+                }
             }
+
+            anyhow::Ok(())
+        });
+
+        // FAILSAFE
+        tokio::spawn({
+            // let session = session.clone();
+
+            async move {
+                sleep(Duration::from_secs(5)).await;
+                exit(-1)
+
+                // let _ = session.release_control().await;
+            }
+        });
+
+        let render_context = WgpuContext::new().await?;
+
+        loop {
+            render_context.present()?;
         }
-
-        // let state = verdi.state.clone();
-
-        // tokio::spawn(async move {
-        //     loop {
-        //         state.render().unwrap();
-        //     }
-        // });
 
         anyhow::Ok(())
     })?;
@@ -143,8 +159,6 @@ fn main() -> AnyResult<()> {
 }
 
 pub struct Verdi {
-    // state: Arc<State<'s>>,
-    // listener: UnixListener,
     events_receiver: UnboundedReceiverStream<Result<Event, Error>>,
     clients: JoinSet<Result<(), Error>>,
 }
