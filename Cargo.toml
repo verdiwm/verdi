@@ -28,6 +28,7 @@ tokio = { version = "1.43.0", features = [
     "signal",
     "sync",
     "tracing",
+    "process",
 ] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = [

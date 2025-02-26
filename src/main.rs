@@ -5,7 +5,7 @@ use std::{
     fs,
     os::fd::{FromRawFd, IntoRawFd, OwnedFd},
     path::{Path, PathBuf},
-    process::exit,
+    process::{Stdio, exit},
     time::Duration,
 };
 
@@ -17,7 +17,7 @@ use rustix::{
     process::geteuid,
 };
 use serde::{Deserialize, Serialize};
-use tokio::{net::UnixListener, sync::mpsc, task::JoinSet, time::sleep};
+use tokio::{net::UnixListener, process::Command, sync::mpsc, task::JoinSet, time::sleep};
 use tokio_stream::{StreamExt, wrappers::UnboundedReceiverStream};
 use tracing::{debug, error};
 
@@ -59,6 +59,9 @@ struct Args {
     /// Custom wayland socket path
     #[arg(short, long)]
     socket: Option<PathBuf>,
+    /// A client to exec on startup
+    #[arg(short, long)]
+    exec: Option<PathBuf>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -115,7 +118,11 @@ fn main() -> AnyResult<()> {
             }
         }?;
 
-        debug!("Started listener");
+        dbg!(listener.socket_path());
+
+        let socket_path = listener.socket_path().canonicalize()?;
+
+        debug!("Started listener at path {}", socket_path.display());
 
         let mut verdi = Verdi::new(listener).await?;
 
@@ -147,6 +154,22 @@ fn main() -> AnyResult<()> {
         });
 
         let render_context = WgpuContext::new().await?;
+
+        if let Some(exec) = args.exec {
+            tokio::spawn(async move {
+                let mut child = Command::new(exec)
+                    .env("WAYLAND_DISPLAY", socket_path)
+                    .env("WAYLAND_DEBUG", "1")
+                    .stdout(Stdio::null())
+                    .stdin(Stdio::null())
+                    .stderr(Stdio::null())
+                    .spawn()?;
+
+                child.wait().await?;
+
+                anyhow::Ok(())
+            });
+        }
 
         loop {
             render_context.present()?;
