@@ -895,7 +895,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "24.0.0"
-source = "git+https://github.com/verdiwm/wgpu?branch=drm-support-v2#1ec7df97e2204277ef8d200c80dce6f90556d2d3"
+source = "git+https://github.com/gfx-rs/wgpu#faea4e871716bf098b12980c5ae4d3b3c100758c"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1786,7 +1786,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "24.0.0"
-source = "git+https://github.com/verdiwm/wgpu?branch=drm-support-v2#1ec7df97e2204277ef8d200c80dce6f90556d2d3"
+source = "git+https://github.com/gfx-rs/wgpu#faea4e871716bf098b12980c5ae4d3b3c100758c"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1811,7 +1811,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "24.0.0"
-source = "git+https://github.com/verdiwm/wgpu?branch=drm-support-v2#1ec7df97e2204277ef8d200c80dce6f90556d2d3"
+source = "git+https://github.com/gfx-rs/wgpu#faea4e871716bf098b12980c5ae4d3b3c100758c"
 dependencies = [
  "arrayvec",
  "bit-vec",
@@ -1838,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core-deps-windows-linux-android"
 version = "24.0.0"
-source = "git+https://github.com/verdiwm/wgpu?branch=drm-support-v2#1ec7df97e2204277ef8d200c80dce6f90556d2d3"
+source = "git+https://github.com/gfx-rs/wgpu#faea4e871716bf098b12980c5ae4d3b3c100758c"
 dependencies = [
  "wgpu-hal",
 ]
@@ -1846,7 +1846,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "24.0.0"
-source = "git+https://github.com/verdiwm/wgpu?branch=drm-support-v2#1ec7df97e2204277ef8d200c80dce6f90556d2d3"
+source = "git+https://github.com/gfx-rs/wgpu#faea4e871716bf098b12980c5ae4d3b3c100758c"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -1875,7 +1875,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "24.0.0"
-source = "git+https://github.com/verdiwm/wgpu?branch=drm-support-v2#1ec7df97e2204277ef8d200c80dce6f90556d2d3"
+source = "git+https://github.com/gfx-rs/wgpu#faea4e871716bf098b12980c5ae4d3b3c100758c"
 dependencies = [
  "bitflags",
  "js-sys",

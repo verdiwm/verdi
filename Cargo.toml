@@ -56,7 +56,7 @@ chrono = { version = "0.4.39", default-features = false, features = ["std"] }
 git2 = { version = "0.20.0", default-features = false }
 
 [patch.crates-io]
-wgpu = { git = "https://github.com/verdiwm/wgpu", branch = "drm-support-v2" }
+wgpu = { git = "https://github.com/gfx-rs/wgpu" }
 libcorn = { git = "https://github.com/corn-config/corn" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
 # colpetto = { path = "../colpetto" }
