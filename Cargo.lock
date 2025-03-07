@@ -314,9 +314,9 @@ checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
 name = "colpetto"
-version = "0.4.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d4f26a81e05bf78b3a8db7f4ec9fd1e5ef798206d23c3655c783829390cbefa"
+checksum = "a9bac489a5240c777561cb744407f9fd4b42c5218241ad39c28c6396dcf08c9f"
 dependencies = [
  "cc",
  "devil",
@@ -327,12 +327,6 @@ dependencies = [
  "tokio",
  "tracing",
 ]
-
-[[package]]
-name = "corn"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5f7933023bfcc275d3f8ac4db3204f59fb080933101e8e432894592be3b328d"
 
 [[package]]
 name = "cpufeatures"
@@ -374,12 +368,12 @@ dependencies = [
 
 [[package]]
 name = "diretto"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb0d1e8bb45542b790cbfda9137a81626282b453ff2d0bdcecd1663333913df7"
+checksum = "e7864a07aad9bf60d3e9f8b45a03c0be7f1629e4aa07c4f7a43aa819548dc18f"
 dependencies = [
  "bitflags",
- "rustix",
+ "rustix 1.0.1",
 ]
 
 [[package]]
@@ -830,6 +824,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d26c52dbd32dccf2d10cac7725f8eae5296885fb5703b261f7d0a0739ec807ab"
 
 [[package]]
+name = "linux-raw-sys"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6db9c683daf087dc577b7506e9695b3d556a9f3849903fa28186283afd6809e9"
+
+[[package]]
 name = "litemap"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1216,7 +1216,20 @@ dependencies = [
  "bitflags",
  "errno",
  "libc",
- "linux-raw-sys",
+ "linux-raw-sys 0.4.15",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "rustix"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dade4812df5c384711475be5fcd8c162555352945401aed22a35bffeab61f657"
+dependencies = [
+ "bitflags",
+ "errno",
+ "libc",
+ "linux-raw-sys 0.9.2",
  "windows-sys 0.59.0",
 ]
 
@@ -1389,7 +1402,7 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5352447f921fda68cf61b4101566c0bdb5104eff6804d0678e5227580ab6a4e9"
 dependencies = [
- "rustix",
+ "rustix 0.38.44",
  "windows-sys 0.59.0",
 ]
 
@@ -1635,14 +1648,13 @@ dependencies = [
  "chrono",
  "clap",
  "colpetto",
- "corn",
  "diretto",
  "git2",
  "home",
  "libcorn",
  "rand",
  "raw-window-handle",
- "rustix",
+ "rustix 1.0.1",
  "serde",
  "thiserror",
  "tokio",
@@ -1734,9 +1746,9 @@ dependencies = [
 
 [[package]]
 name = "waynest"
-version = "0.0.22"
+version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3ea2c01c870decbf673a5807c49d11eefeeba798406dad18da5a8f8f28bbae3"
+checksum = "0265a3807b8dcda6a4320a8abb7e4a56408438e8fc284a641104d17b327b878c"
 dependencies = [
  "async-trait",
  "bitflags",
@@ -1744,7 +1756,7 @@ dependencies = [
  "downcast-rs",
  "futures-util",
  "pin-project-lite",
- "rustix",
+ "rustix 1.0.1",
  "thiserror",
  "tokio",
  "tracing",
@@ -1753,9 +1765,9 @@ dependencies = [
 
 [[package]]
 name = "waynest-macros"
-version = "0.0.3"
+version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a80c42c2c2f7ee4c2b847ebb88665f59e8c501b87832069511c3bb28163c07c2"
+checksum = "39d3344e99038d012cc6738e2f8efc59b17c74ff1aab7267526c3ac4c80de394"
 dependencies = [
  "quote",
  "syn",

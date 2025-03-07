@@ -17,10 +17,10 @@ codegen-units = 1
 strip = true
 
 [dependencies]
-anyhow = "1.0.96"
-bytes = "1.10.0"
-rustix = { version = "0.38.44", features = ["fs", "mm", "process"] }
-thiserror = "2.0.11"
+anyhow = "1.0.97"
+bytes = "1.10.1"
+rustix = { version = "1.0.1", features = ["fs", "mm", "process"] }
+thiserror = "2.0.12"
 tokio = { version = "1.43.0", features = [
     "macros",
     "net",
@@ -41,15 +41,14 @@ wgpu = { version = "24.0.0", default-features = false, features = [
 ] }
 clap = { version = "4.5.31", features = ["derive"] }
 serde = { version = "1.0.218", features = ["derive"] }
-diretto = "0.0.6"
+diretto = "0.0.7"
 raw-window-handle = "0.6.2"
 rand = "0.9.0"
 bytemuck = { version = "1.21.0", features = ["derive"] }
-colpetto = { version = "0.4.0", features = ["tokio", "tracing"] }
-waynest = { version = "0.0.22", features = ["server", "stable"] }
+colpetto = { version = "0.6.0", features = ["tokio", "tracing"] }
+waynest = { version = "0.0.25", features = ["server", "stable"] }
 home = "0.5.11"
 tokio-stream = { version = "0.1.17", features = ["sync"] }
-corn = "0.1.1"
 libcorn = "0.10.0"
 
 [build-dependencies]

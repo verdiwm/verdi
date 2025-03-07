@@ -88,7 +88,9 @@ impl WlRegistry for Registry {
         new_id: NewId,
     ) -> Result<()> {
         match name {
-            RegistryGlobals::COMPOSITOR => client.insert(new_id.object_id, Compositor::default()),
+            RegistryGlobals::COMPOSITOR => {
+                client.insert(new_id.object_id, Compositor::default());
+            }
             RegistryGlobals::SHM => {
                 let shm = Shm::default();
 
@@ -96,10 +98,16 @@ impl WlRegistry for Registry {
 
                 client.insert(new_id.object_id, shm);
             }
-            RegistryGlobals::WM_BASE => client.insert(new_id.object_id, WmBase::default()),
-            RegistryGlobals::SEAT => client.insert(new_id.object_id, Seat::default()),
-            RegistryGlobals::OUTPUT => client.insert(new_id.object_id, Output::default()),
-            _ => return Err(Error::Internal),
+            RegistryGlobals::WM_BASE => {
+                client.insert(new_id.object_id, WmBase::default());
+            }
+            RegistryGlobals::SEAT => {
+                client.insert(new_id.object_id, Seat::default());
+            }
+            RegistryGlobals::OUTPUT => {
+                client.insert(new_id.object_id, Output::default());
+            }
+            _ => return Err(Error::Custom("Unknown global".to_string())),
         }
 
         Ok(())
