@@ -91,14 +91,14 @@ fn main() -> AnyResult<()> {
     let config_path = if let Some(config) = args.config {
         config
     } else if let Ok(path) = std::env::var("XDG_CONFIG_HOME") {
-        Path::new(&path).join("verdi/verdi.toml")
+        Path::new(&path).join("verdi/verdi.corn")
     } else if let Some(path) = home::home_dir() {
-        path.join(".config/verdi/verdi.toml")
+        path.join(".config/verdi/verdi.corn")
     } else {
         todo!()
     };
 
-    let config: Config = toml_edit::de::from_slice(&fs::read(config_path)?)?;
+    let config: Config = corn::from_slice(&fs::read(config_path)?)?;
     dbg!(config);
 
     // Create the tokio runtime manually instead of using a macro for better controll

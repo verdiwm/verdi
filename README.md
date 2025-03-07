@@ -45,9 +45,9 @@ Support for additional distributions is in development.
 
 ### Configuration
 
-Verdi uses TOML for configuration. The default configuration file location is:
+Verdi uses Corn for configuration. The default configuration file location is:
 
-`$XDG_CONFIG_HOME/verdi/verdi.toml` (typically `~/.config/verdi/verdi.toml`)
+`$XDG_CONFIG_HOME/verdi/verdi.corn` (typically `~/.config/verdi/verdi.corn`)
 
 For configuration options and examples, see the
 [documentation](https://docs.verdi.rocks/configuration).
