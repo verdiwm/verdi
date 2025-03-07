@@ -65,7 +65,10 @@ struct Args {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Config {}
+pub struct Config {
+    /// Custom wayland socket path
+    socket: Option<PathBuf>,
+}
 
 fn main() -> AnyResult<()> {
     let format = tracing_subscriber::fmt::format()
@@ -99,7 +102,7 @@ fn main() -> AnyResult<()> {
     };
 
     let config: Config = corn::from_slice(&fs::read(config_path)?)?;
-    dbg!(config);
+    dbg!(&config);
 
     // Create the tokio runtime manually instead of using a macro for better controll
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -112,6 +115,8 @@ fn main() -> AnyResult<()> {
     runtime.block_on(async move {
         let listener = {
             if let Some(socket) = args.socket {
+                Listener::new_with_path(socket)
+            } else if let Some(socket) = config.socket {
                 Listener::new_with_path(socket)
             } else {
                 Listener::new()
