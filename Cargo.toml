@@ -16,6 +16,10 @@ lto = true
 codegen-units = 1
 strip = true
 
+[profile.bloat]
+inherits = "release"
+strip = false
+
 [dependencies]
 anyhow = "1.0.97"
 bytes = "1.10.1"
