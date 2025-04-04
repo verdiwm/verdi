@@ -22,7 +22,6 @@ strip = false
 
 [dependencies]
 anyhow = "1.0.97"
-bytes = "1.10.1"
 rustix = { version = "1.0.5", features = ["fs", "mm", "process"] }
 thiserror = "2.0.12"
 tokio = { version = "1.44.1", features = [
@@ -46,7 +45,6 @@ wgpu = { version = "24.0.0", default-features = false, features = [
 clap = { version = "4.5.35", features = ["derive"] }
 serde = { version = "1.0.219", features = ["derive"] }
 diretto = "0.0.7"
-raw-window-handle = "0.6.2"
 rand = "0.9.0"
 bytemuck = { version = "1.22.0", features = ["derive"] }
 colpetto = { version = "0.6.0", features = ["tokio", "tracing"] }

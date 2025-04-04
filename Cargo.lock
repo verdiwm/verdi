@@ -907,7 +907,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#211d2ec0f3f1316b9bf1384ed58bacdf597f1dd9"
+source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1645,7 +1645,6 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "bytemuck",
- "bytes",
  "chrono",
  "clap",
  "colpetto",
@@ -1654,7 +1653,6 @@ dependencies = [
  "home",
  "libcorn",
  "rand",
- "raw-window-handle",
  "rustix",
  "serde",
  "thiserror",
@@ -1787,7 +1785,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#211d2ec0f3f1316b9bf1384ed58bacdf597f1dd9"
+source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1812,7 +1810,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#211d2ec0f3f1316b9bf1384ed58bacdf597f1dd9"
+source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1840,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core-deps-windows-linux-android"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#211d2ec0f3f1316b9bf1384ed58bacdf597f1dd9"
+source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
 dependencies = [
  "wgpu-hal",
 ]
@@ -1848,7 +1846,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#211d2ec0f3f1316b9bf1384ed58bacdf597f1dd9"
+source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -1878,7 +1876,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#211d2ec0f3f1316b9bf1384ed58bacdf597f1dd9"
+source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
 dependencies = [
  "bitflags",
  "bytemuck",
