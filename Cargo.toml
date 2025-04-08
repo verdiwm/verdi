@@ -24,7 +24,7 @@ strip = false
 anyhow = "1.0.97"
 rustix = { version = "1.0.5", features = ["fs", "mm", "process"] }
 thiserror = "2.0.12"
-tokio = { version = "1.44.1", features = [
+tokio = { version = "1.44.2", features = [
     "macros",
     "net",
     "rt-multi-thread",
