@@ -307,7 +307,7 @@ checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 [[package]]
 name = "colpetto"
 version = "0.6.0"
-source = "git+https://github.com/verdiwm/colpetto.git#d04c0ed5ebf91bc9b44695b1a279629f105f5c0f"
+source = "git+https://github.com/verdiwm/colpetto.git#6108f5e832d6e1df27760ca8ec32e045e104c127"
 dependencies = [
  "cc",
  "devil",
@@ -554,9 +554,9 @@ dependencies = [
 
 [[package]]
 name = "half"
-version = "2.5.0"
+version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7db2ff139bba50379da6aa0766b52fdcb62cb5b263009b09ed58ba604e14bbd1"
+checksum = "459196ed295495a68f7d7fe1d84f6c4b7ff0e21fe3017b2f283c6fac3ad803c9"
 dependencies = [
  "arbitrary",
  "cfg-if",
@@ -735,9 +735,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.8.0"
+version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3954d50fe15b02142bf25d3b8bdadb634ec3948f103d04ffe3031bc8fe9d7058"
+checksum = "cea70ddb795996207ad57735b50c5982d8844f38ba9ee5f1aedcfb708a2aa11e"
 dependencies = [
  "equivalent",
  "hashbrown",
@@ -907,7 +907,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
+source = "git+https://github.com/gfx-rs/wgpu#a6d7e0d56b3b2e78f17d3766d0d98e71d294a703"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1158,9 +1158,9 @@ checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
 
 [[package]]
 name = "redox_syscall"
-version = "0.5.10"
+version = "0.5.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b8c0c260b63a8219631167be35e6a988e9554dbd323f8bd08439c8ed1302bd1"
+checksum = "d2f103c6d277498fbceb16e84d317e2a400f160f46904d5f5410848c829511a3"
 dependencies = [
  "bitflags",
 ]
@@ -1309,9 +1309,9 @@ dependencies = [
 
 [[package]]
 name = "smallvec"
-version = "1.14.0"
+version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fcf8323ef1faaee30a44a340193b1ac6814fd9b7b4e88e9d4519a3e4abe1cfd"
+checksum = "8917285742e9f3e1683f0a9c4e6b57960b7314d0b08d30d1ecd426713ee2eee9"
 
 [[package]]
 name = "socket2"
@@ -1455,9 +1455,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.44.1"
+version = "1.44.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f382da615b842244d4b8738c82ed1275e6c5dd90c459a30941cd07080b06c91a"
+checksum = "e6b88822cbe49de4185e3a4cbf8321dd487cf5fe0c5c65695fef6346371e9c48"
 dependencies = [
  "backtrace",
  "bytes",
@@ -1785,7 +1785,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
+source = "git+https://github.com/gfx-rs/wgpu#a6d7e0d56b3b2e78f17d3766d0d98e71d294a703"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1810,7 +1810,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
+source = "git+https://github.com/gfx-rs/wgpu#a6d7e0d56b3b2e78f17d3766d0d98e71d294a703"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1838,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core-deps-windows-linux-android"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
+source = "git+https://github.com/gfx-rs/wgpu#a6d7e0d56b3b2e78f17d3766d0d98e71d294a703"
 dependencies = [
  "wgpu-hal",
 ]
@@ -1846,7 +1846,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
+source = "git+https://github.com/gfx-rs/wgpu#a6d7e0d56b3b2e78f17d3766d0d98e71d294a703"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -1876,7 +1876,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "24.0.0"
-source = "git+https://github.com/gfx-rs/wgpu#a843c880d243b45acbc7634ffa53587f41aa59ae"
+source = "git+https://github.com/gfx-rs/wgpu#a6d7e0d56b3b2e78f17d3766d0d98e71d294a703"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -2110,7 +2110,7 @@ dependencies = [
 [[package]]
 name = "xtask-common"
 version = "0.1.0"
-source = "git+https://github.com/morr0ne/xtask-common#70ac3c997e08769c2f3c691c23de557167427214"
+source = "git+https://github.com/morr0ne/xtask-common#6cfcb9b68548ed12dd1483bc25203740af8f267c"
 dependencies = [
  "anyhow",
  "clap",
