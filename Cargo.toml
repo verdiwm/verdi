@@ -21,10 +21,10 @@ inherits = "release"
 strip = false
 
 [dependencies]
-anyhow = "1.0.97"
-rustix = { version = "1.0.5", features = ["fs", "mm", "process"] }
+anyhow = "1.0.98"
+rustix = { version = "1.0.7", features = ["fs", "mm", "process"] }
 thiserror = "2.0.12"
-tokio = { version = "1.44.1", features = [
+tokio = { version = "1.45.0", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -38,15 +38,15 @@ tracing-subscriber = { version = "0.3.19", features = [
     "env-filter",
     "tracing-log",
 ] }
-wgpu = { version = "24.0.0", default-features = false, features = [
+wgpu = { version = "25.0.0", default-features = false, features = [
     "vulkan",
     "wgsl",
 ] }
-clap = { version = "4.5.35", features = ["derive"] }
+clap = { version = "4.5.37", features = ["derive"] }
 serde = { version = "1.0.219", features = ["derive"] }
 diretto = "0.0.7"
-rand = "0.9.0"
-bytemuck = { version = "1.22.0", features = ["derive"] }
+rand = "0.9.1"
+bytemuck = { version = "1.23.0", features = ["derive"] }
 colpetto = { version = "0.6.0", features = ["tokio", "tracing"] }
 waynest = { version = "0.0.25", features = ["server", "stable"] }
 home = "0.5.11"
@@ -54,11 +54,11 @@ tokio-stream = { version = "0.1.17", features = ["sync"] }
 libcorn = "0.10.0"
 
 [build-dependencies]
-chrono = { version = "0.4.40", default-features = false, features = ["std"] }
-git2 = { version = "0.20.1", default-features = false }
+chrono = { version = "0.4.41", default-features = false, features = ["std"] }
+git2 = { version = "0.20.2", default-features = false }
 
 [patch.crates-io]
-wgpu = { git = "https://github.com/gfx-rs/wgpu" }
+# wgpu = { git = "https://github.com/gfx-rs/wgpu" }
 libcorn = { git = "https://github.com/corn-config/corn" }
 colpetto = { git = "https://github.com/verdiwm/colpetto.git" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
