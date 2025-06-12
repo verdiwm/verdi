@@ -12,4 +12,4 @@ targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
 ignore-build-dependencies = false
 ignore-dev-dependencies = false
 ignore-transitive-dependencies = false
-workarounds = ["unicode-ident"]
+workarounds = ["unicode-ident", "chrono"]
