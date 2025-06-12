@@ -24,7 +24,7 @@ strip = false
 anyhow = "1.0.98"
 rustix = { version = "1.0.7", features = ["fs", "mm", "process"] }
 thiserror = "2.0.12"
-tokio = { version = "1.45.0", features = [
+tokio = { version = "1.45.1", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -38,15 +38,15 @@ tracing-subscriber = { version = "0.3.19", features = [
     "env-filter",
     "tracing-log",
 ] }
-wgpu = { version = "25.0.0", default-features = false, features = [
+wgpu = { version = "25.0.2", default-features = false, features = [
     "vulkan",
     "wgsl",
 ] }
-clap = { version = "4.5.37", features = ["derive"] }
+clap = { version = "4.5.40", features = ["derive"] }
 serde = { version = "1.0.219", features = ["derive"] }
 diretto = "0.0.7"
 rand = "0.9.1"
-bytemuck = { version = "1.23.0", features = ["derive"] }
+bytemuck = { version = "1.23.1", features = ["derive"] }
 colpetto = { version = "0.6.0", features = ["tokio", "tracing"] }
 waynest = { version = "0.0.25", features = ["server", "stable"] }
 home = "0.5.11"
