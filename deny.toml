@@ -7,7 +7,7 @@ ignore = [
 ]
 
 [licenses]
-confidence-threshold = 0.93
+confidence-threshold = 1.0
 allow = [
     "EUPL-1.2",
     "Apache-2.0",
