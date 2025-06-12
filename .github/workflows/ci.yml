@@ -5,7 +5,7 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
-  test:
+  build:
     name: Build
     runs-on: ubuntu-latest
     container: ghcr.io/verdiwm/ci-image:latest
@@ -22,9 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Run tests
-      #   run: cargo nextest run --all-features
-
       - name: Check clippy
         run: cargo clippy --all-targets --all-features
 
@@ -36,3 +33,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run formatter
         run: cargo fmt --check
+
+  deny:
+    name: Run cargo-deny
+    runs-on: ubuntu-latest
+    container: ghcr.io/verdiwm/ci-image:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@v2
