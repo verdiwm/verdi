@@ -60,7 +60,11 @@ git2 = { version = "0.20.2", default-features = false }
 [patch.crates-io]
 # wgpu = { git = "https://github.com/gfx-rs/wgpu" }
 libcorn = { git = "https://github.com/corn-config/corn" }
-colpetto = { git = "https://github.com/verdiwm/colpetto.git" }
+colpetto = { git = "https://github.com/verdiwm/colpetto" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
 # colpetto = { path = "../colpetto" }
 # waynest = { path = "../waynest" }
+
+# TODO: update this once we get a new tracing-subcriber release
+tracing-subscriber = { git = "https://github.com/tokio-rs/tracing", rev = "e4df76127538aa8370d7dee32a6f84bbec6bbf10" }
+tracing = { git = "https://github.com/tokio-rs/tracing", rev = "e4df76127538aa8370d7dee32a6f84bbec6bbf10" }
