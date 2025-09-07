@@ -8,6 +8,8 @@ edition = "2024"
 license = "EUPL-1.2"
 authors = ["Matilde Morrone <contact@morrone.dev>"]
 readme = "README.md"
+description = "The elegant Wayland compositor"
+homepage = "https://verdi.rocks/"
 repository = "https://github.com/verdiwm/verdi"
 publish = false
 

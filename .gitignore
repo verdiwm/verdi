@@ -3,3 +3,5 @@
 *.log*
 verdi.corn
 license.html
+.direnv
+result
