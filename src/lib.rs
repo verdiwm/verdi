@@ -137,27 +137,38 @@ impl Verdi<'_> {
         })
     }
 
-    pub fn spawn_client(&mut self, mut client: Client) -> error::Result<()> {
-        self.clients.spawn(async move {
-            while let Some(mut message) = client.next_message().await? {
-                match client.handle_message(&mut message).await {
-                    Ok(_) => {}
-                    Err(err) => {
-                        error!("Error while handling message: {err}");
-                        return Err(err.into());
+    pub async fn run(self) -> error::Result<()> {
+        let Self {
+            seat,
+            libinput_handle,
+            mut libinput_event_stream,
+            mut control_stream,
+            mut wgpu_context,
+            mut listener,
+            config,
+            mut clients,
+        } = self;
+
+        tokio::spawn(async move {
+            while let Some(stream) = listener.try_next().await.unwrap() {
+                let mut client = Client::new(stream).unwrap();
+
+                client.insert(ObjectId::DISPLAY, Display::default());
+                clients.spawn(async move {
+                    while let Some(mut message) = client.next_message().await? {
+                        match client.handle_message(&mut message).await {
+                            Ok(_) => {}
+                            Err(err) => {
+                                error!("Error while handling message: {err}");
+                                return Err(err.into());
+                            }
+                        }
                     }
-                }
+
+                    Ok(())
+                });
             }
-
-            Ok(())
         });
-
-        Ok(())
-    }
-
-    pub async fn run(&mut self) -> error::Result<()> {
-        let seat = &self.seat;
-        let libinput_handle = &self.libinput_handle;
 
         let key_map = KeyMap::new();
         let modifier_state = Arc::new(RwLock::new(ModifierState::new()));
@@ -167,14 +178,14 @@ impl Verdi<'_> {
         loop {
             tokio::select! {
                 biased;
-                Some(control) = self.control_stream.next() => {
+                Some(control) = control_stream.next() => {
                     if control != has_control {
                         has_control = control;
 
                         if has_control {
                             info!("Session activated - creating fresh rendering context");
                             match WgpuContext::new().await {
-                                Ok(ctx) => self.wgpu_context = Some(ctx),
+                                Ok(ctx) => wgpu_context = Some(ctx),
                                 Err(e) => error!("Failed to create context: {}", e),
                             }
                         } else {
@@ -183,7 +194,7 @@ impl Verdi<'_> {
                         }
                     }
                 }
-                Some(event) = self.libinput_event_stream.next() => {
+                Some(event) = libinput_event_stream.next() => {
                     match event {
                         Ok(event) => match event.event_type {
                             EventType::Keyboard(KeyboardEvent::Key { key, state, .. }) => {
@@ -208,7 +219,7 @@ impl Verdi<'_> {
                                             if let Ok(current_vt) = seat.current_session().await && vt != current_vt {
                                                 info!("Deactivating session - destroying rendering context completely");
 
-                                                self.wgpu_context = None;
+                                                wgpu_context = None;
 
                                                 if let Err(e) = seat.switch_session(vt).await {
                                                     error!("Failed to switch to VT {vt}: {e}");
@@ -228,7 +239,7 @@ impl Verdi<'_> {
                 else => {}
             };
 
-            if let Some(ref context) = self.wgpu_context {
+            if let Some(ref context) = wgpu_context {
                 if let Err(e) = context.present() {
                     error!("Present failed: {}", e);
                 }

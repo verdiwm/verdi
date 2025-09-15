@@ -115,123 +115,12 @@ fn main() -> AnyResult<()> {
 
         let mut verdi = Verdi::new(listener, config).await?;
 
+        debug!("Started new verdi instance");
+
         verdi.run().await?;
-
-        // debug!("Started new verdi instance");
-
-        // tokio::spawn(async move {
-        //     while let Some(event) = verdi.next_event().await? {
-        //         dbg!(&event);
-        //         #[allow(clippy::single_match)]
-        //         match event {
-        //             Event::NewClient(client) => verdi.spawn_client(client)?,
-        //             _ => {}
-        //         }
-        //     }
-
-        //     anyhow::Ok(())
-        // });
-
-        // let render_context = WgpuContext::new().await?;
-
-        // if let Some(exec) = args.exec {
-        //     tokio::spawn(async move {
-        //         let mut child = Command::new(exec)
-        //             .env("WAYLAND_DISPLAY", socket_path)
-        //             .env("WAYLAND_DEBUG", "1")
-        //             .stdout(Stdio::null())
-        //             .stdin(Stdio::null())
-        //             .stderr(Stdio::null())
-        //             .spawn()?;
-
-        //         child.wait().await?;
-
-        //         anyhow::Ok(())
-        //     });
-        // }
-
-        // loop {
-        //     render_context.present()?;
-        // }
 
         anyhow::Ok(())
     })?;
 
     Ok(())
 }
-
-// pub struct Verdi {
-//     events_receiver: UnboundedReceiverStream<Result<Event, Error>>,
-//     clients: JoinSet<Result<(), Error>>,
-// }
-
-// #[derive(Debug)]
-// pub enum Event {
-//     NewClient(Client),
-//     SessionPaused,
-//     SessionResumed,
-//     Input(colpetto::helper::event::Event),
-// }
-
-// impl Verdi {
-//     pub async fn new(mut listener: Listener) -> AnyResult<Self> {
-//         let (tx, mut rx) = mpsc::unbounded_channel();
-
-//         debug!("Creating libinput instance");
-
-//         let (mut event_stream, shutdown_handle) = libinput::spawn_libinput_task()?;
-
-//         // FIXME: handle errors instead of unwraping
-//         tokio::spawn({
-//             let tx = tx.clone();
-
-//             async move {
-//                 while let Some(event) = event_stream.try_next().await.unwrap() {
-//                     tx.send(Ok(Event::Input(event))).unwrap();
-//                 }
-//             }
-//         });
-
-//         debug!("Created libinput instance");
-
-//         // FIXME: handle errors instead of unwraping
-//         tokio::spawn(async move {
-//             while let Some(stream) = listener.try_next().await.unwrap() {
-//                 let mut client = Client::new(stream).unwrap();
-
-//                 client.insert(ObjectId::DISPLAY, Display::default());
-
-//                 tx.send(Ok(Event::NewClient(client))).unwrap();
-//             }
-//         });
-
-//         debug!("Spawned stuff");
-
-//         Ok(Self {
-//             events_receiver: UnboundedReceiverStream::new(rx),
-//             clients: JoinSet::new(),
-//         })
-//     }
-
-//     pub async fn next_event(&mut self) -> Result<Option<Event>, Error> {
-//         self.events_receiver.try_next().await
-//     }
-
-//     pub fn spawn_client(&mut self, mut client: Client) -> Result<(), Error> {
-//         self.clients.spawn(async move {
-//             while let Some(mut message) = client.next_message().await? {
-//                 match client.handle_message(&mut message).await {
-//                     Ok(_) => {}
-//                     Err(err) => {
-//                         error!("Error while handling message: {err}");
-//                         return Err(err.into());
-//                     }
-//                 }
-//             }
-
-//             Ok(())
-//         });
-
-//         Ok(())
-//     }
-// }
