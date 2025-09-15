@@ -23,10 +23,10 @@ inherits = "release"
 strip = false
 
 [dependencies]
-anyhow = "1.0.98"
-rustix = { version = "1.0.7", features = ["fs", "mm", "process"] }
-thiserror = "2.0.12"
-tokio = { version = "1.45.1", features = [
+anyhow = "1.0.99"
+rustix = { version = "1.1.2", features = ["fs", "mm", "process"] }
+thiserror = "2.0.16"
+tokio = { version = "1.47.1", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -36,24 +36,25 @@ tokio = { version = "1.45.1", features = [
     "process",
 ] }
 tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.19", features = [
+tracing-subscriber = { version = "0.3.20", features = [
     "env-filter",
     "tracing-log",
 ] }
-wgpu = { version = "25.0.2", default-features = false, features = [
+wgpu = { version = "26.0.1", default-features = false, features = [
     "vulkan",
     "wgsl",
 ] }
-clap = { version = "4.5.40", features = ["derive"] }
-serde = { version = "1.0.219", features = ["derive"] }
+clap = { version = "4.5.47", features = ["derive"] }
+serde = { version = "1.0.224", features = ["derive"] }
 diretto = "0.0.7"
-rand = "0.9.1"
-bytemuck = { version = "1.23.1", features = ["derive"] }
+rand = "0.9.2"
+bytemuck = { version = "1.23.2", features = ["derive"] }
 colpetto = { version = "0.6.0", features = ["tokio", "tracing"] }
 waynest = { version = "0.0.25", features = ["server", "stable"] }
 home = "0.5.11"
 tokio-stream = { version = "0.1.17", features = ["sync"] }
 libcorn = "0.10.0"
+saddle = "0.1.2"
 
 [build-dependencies]
 chrono = { version = "0.4.41", default-features = false, features = ["std"] }
@@ -62,11 +63,7 @@ git2 = { version = "0.20.2", default-features = false }
 [patch.crates-io]
 # wgpu = { git = "https://github.com/gfx-rs/wgpu" }
 libcorn = { git = "https://github.com/corn-config/corn" }
-colpetto = { git = "https://github.com/verdiwm/colpetto" }
+# colpetto = { git = "https://github.com/verdiwm/colpetto" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
 # colpetto = { path = "../colpetto" }
 # waynest = { path = "../waynest" }
-
-# TODO: update this once we get a new tracing-subcriber release
-tracing-subscriber = { git = "https://github.com/tokio-rs/tracing", rev = "e4df76127538aa8370d7dee32a6f84bbec6bbf10" }
-tracing = { git = "https://github.com/tokio-rs/tracing", rev = "e4df76127538aa8370d7dee32a6f84bbec6bbf10" }
