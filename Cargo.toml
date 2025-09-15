@@ -49,12 +49,13 @@ serde = { version = "1.0.224", features = ["derive"] }
 diretto = "0.0.7"
 rand = "0.9.2"
 bytemuck = { version = "1.23.2", features = ["derive"] }
-colpetto = { version = "0.6.0", features = ["tokio", "tracing"] }
+colpetto = { version = "0.6.0", features = ["helper", "tokio", "tracing"] }
 waynest = { version = "0.0.25", features = ["server", "stable"] }
 home = "0.5.11"
 tokio-stream = { version = "0.1.17", features = ["sync"] }
 libcorn = "0.10.0"
 saddle = "0.1.2"
+input-linux-sys = "0.9.0"
 
 [build-dependencies]
 chrono = { version = "0.4.41", default-features = false, features = ["std"] }

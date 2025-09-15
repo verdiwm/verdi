@@ -23,6 +23,7 @@ use tracing::{debug, error};
 
 use tracing_subscriber::EnvFilter;
 use verdi::{
+    Config, Verdi,
     error::Error,
     protocol::wayland::display::{Display, WlDisplay},
 };
@@ -31,13 +32,6 @@ use waynest::{
     server::{Client, Listener},
     wire::ObjectId,
 };
-
-mod context;
-mod libinput;
-mod state;
-
-use context::WgpuContext;
-// use state::State;
 
 const fn version() -> &'static str {
     concat!(
@@ -64,12 +58,6 @@ struct Args {
     exec: Option<PathBuf>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Config {
-    /// Custom wayland socket path
-    socket: Option<PathBuf>,
-}
-
 fn main() -> AnyResult<()> {
     let format = tracing_subscriber::fmt::format()
         .with_level(false)
@@ -80,19 +68,18 @@ fn main() -> AnyResult<()> {
         .compact();
 
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env())
+        .with_env_filter(EnvFilter::from_env("VERDI_LOG_LEVEL"))
         .event_format(format)
         .init();
 
     if geteuid().is_root() {
-        error!("Tried running as root");
-        bail!("")
+        bail!("Tried running as root")
     }
 
     let args = Args::parse();
 
-    let config_path = if let Some(config) = args.config {
-        config
+    let config_path = if let Some(ref config) = args.config {
+        config.clone() // FIXME: avoid this clone
     } else if let Ok(path) = std::env::var("XDG_CONFIG_HOME") {
         Path::new(&path).join("verdi/verdi.corn")
     } else if let Some(path) = home::home_dir() {
@@ -102,7 +89,6 @@ fn main() -> AnyResult<()> {
     };
 
     let config: Config = corn::from_slice(&fs::read(config_path)?)?;
-    dbg!(&config);
 
     // Create the tokio runtime manually instead of using a macro for better controll
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -114,71 +100,59 @@ fn main() -> AnyResult<()> {
 
     runtime.block_on(async move {
         let listener = {
-            if let Some(socket) = args.socket {
+            if let Some(ref socket) = args.socket {
                 Listener::new_with_path(socket)
-            } else if let Some(socket) = config.socket {
+            } else if let Some(ref socket) = config.socket {
                 Listener::new_with_path(socket)
             } else {
                 Listener::new()
             }
         }?;
 
-        dbg!(listener.socket_path());
-
         let socket_path = listener.socket_path().canonicalize()?;
 
         debug!("Started listener at path {}", socket_path.display());
 
-        let mut verdi = Verdi::new(listener).await?;
+        let mut verdi = Verdi::new(listener, config).await?;
 
-        debug!("Started new verdi instance");
+        verdi.run().await?;
 
-        tokio::spawn(async move {
-            while let Some(event) = verdi.next_event().await? {
-                dbg!(&event);
-                #[allow(clippy::single_match)]
-                match event {
-                    Event::NewClient(client) => verdi.spawn_client(client)?,
-                    _ => {}
-                }
-            }
+        // debug!("Started new verdi instance");
 
-            anyhow::Ok(())
-        });
+        // tokio::spawn(async move {
+        //     while let Some(event) = verdi.next_event().await? {
+        //         dbg!(&event);
+        //         #[allow(clippy::single_match)]
+        //         match event {
+        //             Event::NewClient(client) => verdi.spawn_client(client)?,
+        //             _ => {}
+        //         }
+        //     }
 
-        // FAILSAFE
-        tokio::spawn({
-            // let session = session.clone();
+        //     anyhow::Ok(())
+        // });
 
-            async move {
-                sleep(Duration::from_secs(5)).await;
-                exit(-1)
+        // let render_context = WgpuContext::new().await?;
 
-                // let _ = session.release_control().await;
-            }
-        });
+        // if let Some(exec) = args.exec {
+        //     tokio::spawn(async move {
+        //         let mut child = Command::new(exec)
+        //             .env("WAYLAND_DISPLAY", socket_path)
+        //             .env("WAYLAND_DEBUG", "1")
+        //             .stdout(Stdio::null())
+        //             .stdin(Stdio::null())
+        //             .stderr(Stdio::null())
+        //             .spawn()?;
 
-        let render_context = WgpuContext::new().await?;
+        //         child.wait().await?;
 
-        if let Some(exec) = args.exec {
-            tokio::spawn(async move {
-                let mut child = Command::new(exec)
-                    .env("WAYLAND_DISPLAY", socket_path)
-                    .env("WAYLAND_DEBUG", "1")
-                    .stdout(Stdio::null())
-                    .stdin(Stdio::null())
-                    .stderr(Stdio::null())
-                    .spawn()?;
+        //         anyhow::Ok(())
+        //     });
+        // }
 
-                child.wait().await?;
-
-                anyhow::Ok(())
-            });
-        }
-
-        loop {
-            render_context.present()?;
-        }
+        // loop {
+        //     render_context.present()?;
+        // }
 
         anyhow::Ok(())
     })?;
@@ -186,78 +160,78 @@ fn main() -> AnyResult<()> {
     Ok(())
 }
 
-pub struct Verdi {
-    events_receiver: UnboundedReceiverStream<Result<Event, Error>>,
-    clients: JoinSet<Result<(), Error>>,
-}
+// pub struct Verdi {
+//     events_receiver: UnboundedReceiverStream<Result<Event, Error>>,
+//     clients: JoinSet<Result<(), Error>>,
+// }
 
-#[derive(Debug)]
-pub enum Event {
-    NewClient(Client),
-    SessionPaused,
-    SessionResumed,
-    Input(libinput::Event),
-}
+// #[derive(Debug)]
+// pub enum Event {
+//     NewClient(Client),
+//     SessionPaused,
+//     SessionResumed,
+//     Input(colpetto::helper::event::Event),
+// }
 
-impl Verdi {
-    pub async fn new(mut listener: Listener) -> AnyResult<Self> {
-        let (tx, mut rx) = mpsc::unbounded_channel();
+// impl Verdi {
+//     pub async fn new(mut listener: Listener) -> AnyResult<Self> {
+//         let (tx, mut rx) = mpsc::unbounded_channel();
 
-        debug!("Creating libinput instance");
+//         debug!("Creating libinput instance");
 
-        let (mut event_stream, shutdown_handle) = libinput::spawn_libinput_task()?;
+//         let (mut event_stream, shutdown_handle) = libinput::spawn_libinput_task()?;
 
-        // FIXME: handle errors instead of unwraping
-        tokio::spawn({
-            let tx = tx.clone();
+//         // FIXME: handle errors instead of unwraping
+//         tokio::spawn({
+//             let tx = tx.clone();
 
-            async move {
-                while let Some(event) = event_stream.try_next().await.unwrap() {
-                    tx.send(Ok(Event::Input(event))).unwrap();
-                }
-            }
-        });
+//             async move {
+//                 while let Some(event) = event_stream.try_next().await.unwrap() {
+//                     tx.send(Ok(Event::Input(event))).unwrap();
+//                 }
+//             }
+//         });
 
-        debug!("Created libinput instance");
+//         debug!("Created libinput instance");
 
-        // FIXME: handle errors instead of unwraping
-        tokio::spawn(async move {
-            while let Some(stream) = listener.try_next().await.unwrap() {
-                let mut client = Client::new(stream).unwrap();
+//         // FIXME: handle errors instead of unwraping
+//         tokio::spawn(async move {
+//             while let Some(stream) = listener.try_next().await.unwrap() {
+//                 let mut client = Client::new(stream).unwrap();
 
-                client.insert(ObjectId::DISPLAY, Display::default());
+//                 client.insert(ObjectId::DISPLAY, Display::default());
 
-                tx.send(Ok(Event::NewClient(client))).unwrap();
-            }
-        });
+//                 tx.send(Ok(Event::NewClient(client))).unwrap();
+//             }
+//         });
 
-        debug!("Spawned stuff");
+//         debug!("Spawned stuff");
 
-        Ok(Self {
-            events_receiver: UnboundedReceiverStream::new(rx),
-            clients: JoinSet::new(),
-        })
-    }
+//         Ok(Self {
+//             events_receiver: UnboundedReceiverStream::new(rx),
+//             clients: JoinSet::new(),
+//         })
+//     }
 
-    pub async fn next_event(&mut self) -> Result<Option<Event>, Error> {
-        self.events_receiver.try_next().await
-    }
+//     pub async fn next_event(&mut self) -> Result<Option<Event>, Error> {
+//         self.events_receiver.try_next().await
+//     }
 
-    pub fn spawn_client(&mut self, mut client: Client) -> Result<(), Error> {
-        self.clients.spawn(async move {
-            while let Some(mut message) = client.next_message().await? {
-                match client.handle_message(&mut message).await {
-                    Ok(_) => {}
-                    Err(err) => {
-                        error!("Error while handling message: {err}");
-                        return Err(err.into());
-                    }
-                }
-            }
+//     pub fn spawn_client(&mut self, mut client: Client) -> Result<(), Error> {
+//         self.clients.spawn(async move {
+//             while let Some(mut message) = client.next_message().await? {
+//                 match client.handle_message(&mut message).await {
+//                     Ok(_) => {}
+//                     Err(err) => {
+//                         error!("Error while handling message: {err}");
+//                         return Err(err.into());
+//                     }
+//                 }
+//             }
 
-            Ok(())
-        });
+//             Ok(())
+//         });
 
-        Ok(())
-    }
-}
+//         Ok(())
+//     }
+// }
