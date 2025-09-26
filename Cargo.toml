@@ -50,9 +50,15 @@ diretto = "0.0.7"
 rand = "0.9.2"
 bytemuck = { version = "1.23.2", features = ["derive"] }
 colpetto = { version = "0.6.0", features = ["helper", "tokio", "tracing"] }
-waynest = { version = "0.0.25", features = ["server", "stable"] }
+waynest = "0.1.0"
+waynest-protocols = { version = "0.1.0", features = [
+    "tracing",
+    "server",
+    "stable",
+] }
+waynest-server = "0.1.0"
 home = "0.5.11"
-tokio-stream = { version = "0.1.17", features = ["sync"] }
+tokio-stream = { version = "0.1.8", features = ["sync"] }
 libcorn = "0.10.0"
 saddle = "0.1.2"
 input-linux-sys = "0.9.0"
@@ -67,4 +73,9 @@ libcorn = { git = "https://github.com/corn-config/corn" }
 # colpetto = { git = "https://github.com/verdiwm/colpetto" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
 # colpetto = { path = "../colpetto" }
-# waynest = { path = "../waynest" }
+waynest = { git = "https://github.com/verdiwm/waynest/", branch = "splitting" }
+waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "splitting" }
+waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "splitting" }
+# waynest = { path = "../waynest/crates/core" }
+# waynest-protocols = { path = "../waynest/crates/protocols" }
+# waynest-server = { path = "../waynest/crates/server" }

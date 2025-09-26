@@ -1,30 +1,34 @@
-use crate::protocol::wayland::surface::{Surface, WlSurface};
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
 
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
+use crate::{
+    error::{Result, VerdiError},
+    protocol::wayland::surface::{Surface, WlSurface},
 };
 
-pub use waynest::server::protocol::core::wayland::wl_compositor::*;
+pub use waynest_protocols::server::core::wayland::wl_compositor::*;
 
-#[derive(Debug, Dispatcher, Default)]
+#[derive(Debug, RequestDispatcher, Default)]
+#[waynest(error = VerdiError)]
 pub struct Compositor;
 
 impl WlCompositor for Compositor {
+    type Connection = Connection<VerdiError>;
+
     async fn create_surface(
         &self,
-        client: &mut Client,
+        connection: &mut Self::Connection,
         _sender_id: ObjectId,
         id: ObjectId,
     ) -> Result<()> {
-        client.insert(id, Surface::default());
+        connection.insert(id, Surface::default());
 
         Ok(())
     }
 
     async fn create_region(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _id: ObjectId,
     ) -> Result<()> {

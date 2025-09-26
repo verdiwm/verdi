@@ -1,21 +1,19 @@
-use std::{io, ptr::null_mut};
+use std::{io, os::fd::OwnedFd, ptr::null_mut};
 
-use rustix::{
-    fd::OwnedFd,
-    mm::{MapFlags, MremapFlags, ProtFlags, mmap, mremap},
-};
+use rustix::mm::{MapFlags, MremapFlags, ProtFlags, mmap, mremap};
 use tokio::sync::RwLock;
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
 
-use crate::protocol::wayland::shm::Format;
-
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
+use crate::{
+    error::{Result, VerdiError},
+    protocol::wayland::shm::Format,
 };
 
-pub use waynest::server::protocol::core::wayland::wl_shm_pool::*;
+pub use waynest_protocols::server::core::wayland::wl_shm_pool::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, RequestDispatcher)]
+#[waynest(error = VerdiError)]
 pub struct ShmPool {
     _fd: OwnedFd,
     map: RwLock<Map>,
@@ -56,9 +54,11 @@ impl ShmPool {
 }
 
 impl WlShmPool for ShmPool {
+    type Connection = Connection<VerdiError>;
+
     async fn create_buffer(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _id: ObjectId,
         _offset: i32,
@@ -70,11 +70,20 @@ impl WlShmPool for ShmPool {
         todo!()
     }
 
-    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
+    async fn destroy(
+        &self,
+        _client: &mut Self::Connection,
+        _sender_id: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 
-    async fn resize(&self, _client: &mut Client, _sender_id: ObjectId, size: i32) -> Result<()> {
+    async fn resize(
+        &self,
+        _client: &mut Self::Connection,
+        _sender_id: ObjectId,
+        size: i32,
+    ) -> Result<()> {
         let mut write_guard = self.map.write().await;
         let old_size = write_guard.size;
         let new_size = size as usize;

@@ -1,19 +1,20 @@
-use crate::protocol::{
-    wayland::{
-        compositor::{Compositor, WlCompositor},
-        output::{Output, WlOutput},
-        seat::{Seat, WlSeat},
-        shm::{Shm, WlShm},
+use waynest::{NewId, ObjectId};
+use waynest_server::{Connection, RequestDispatcher};
+
+use crate::{
+    error::{Result, VerdiError},
+    protocol::{
+        wayland::{
+            compositor::{Compositor, WlCompositor},
+            output::{Output, WlOutput},
+            seat::{Seat, WlSeat},
+            shm::{Shm, WlShm},
+        },
+        xdg::wm_base::{WmBase, XdgWmBase},
     },
-    xdg::wm_base::{WmBase, XdgWmBase},
 };
 
-use waynest::{
-    server::{Client, Dispatcher, Error, Result},
-    wire::{NewId, ObjectId},
-};
-
-pub use waynest::server::protocol::core::wayland::wl_registry::*;
+pub use waynest_protocols::server::core::wayland::wl_registry::*;
 
 struct RegistryGlobals;
 
@@ -25,11 +26,16 @@ impl RegistryGlobals {
     pub const OUTPUT: u32 = 4;
 }
 
-#[derive(Debug, Dispatcher, Default)]
+#[derive(Debug, RequestDispatcher, Default)]
+#[waynest(error = VerdiError)]
 pub struct Registry;
 
 impl Registry {
-    pub async fn advertise_globals(&self, client: &mut Client, sender_id: ObjectId) -> Result<()> {
+    pub async fn advertise_globals(
+        &self,
+        client: &mut <Self as WlRegistry>::Connection,
+        sender_id: ObjectId,
+    ) -> Result<()> {
         self.global(
             client,
             sender_id,
@@ -80,9 +86,11 @@ impl Registry {
 }
 
 impl WlRegistry for Registry {
+    type Connection = Connection<VerdiError>;
+
     async fn bind(
         &self,
-        client: &mut Client,
+        client: &mut Self::Connection,
         sender_id: ObjectId,
         name: u32,
         new_id: NewId,
@@ -107,7 +115,7 @@ impl WlRegistry for Registry {
             RegistryGlobals::OUTPUT => {
                 client.insert(new_id.object_id, Output::default());
             }
-            _ => return Err(Error::Custom("Unknown global".to_string())),
+            _ => return Err(VerdiError::UnknownGlobal(name)),
         }
 
         Ok(())

@@ -1,8 +1,13 @@
-use waynest::server::{Dispatcher, Result};
+use waynest_server::{Connection, RequestDispatcher};
 
-pub use waynest::server::protocol::core::wayland::wl_callback::*;
+pub use waynest_protocols::server::core::wayland::wl_callback::*;
 
-#[derive(Debug, Dispatcher, Default)]
+use crate::error::VerdiError;
+
+#[derive(Debug, Default, RequestDispatcher)]
+#[waynest(error = VerdiError)]
 pub struct Callback;
 
-impl WlCallback for Callback {}
+impl WlCallback for Callback {
+    type Connection = Connection<VerdiError>;
+}

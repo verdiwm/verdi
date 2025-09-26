@@ -1,23 +1,32 @@
-use crate::protocol::xdg::surface::{Surface, XdgSurface};
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
 
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
+use crate::error::{Result, VerdiError};
+use crate::protocol::{
+    wayland,
+    xdg::surface::{Surface, XdgSurface},
 };
 
-pub use waynest::server::protocol::stable::xdg_shell::xdg_wm_base::*;
+pub use waynest_protocols::server::stable::xdg_shell::xdg_wm_base::*;
 
-#[derive(Debug, Dispatcher, Default)]
+#[derive(Debug, RequestDispatcher, Default)]
+#[waynest(error = VerdiError)]
 pub struct WmBase;
 
 impl XdgWmBase for WmBase {
-    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
+    type Connection = Connection<VerdiError>;
+
+    async fn destroy(
+        &self,
+        _client: &mut Self::Connection,
+        _sender_id: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 
     async fn create_positioner(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _id: ObjectId,
     ) -> Result<()> {
@@ -26,17 +35,24 @@ impl XdgWmBase for WmBase {
 
     async fn get_xdg_surface(
         &self,
-        client: &mut Client,
+        client: &mut Self::Connection,
         _sender_id: ObjectId,
         id: ObjectId,
         surface: ObjectId,
     ) -> Result<()> {
+        let surface = client.get::<wayland::surface::Surface>(surface).unwrap();
+
         client.insert(id, Surface::new(surface));
 
         Ok(())
     }
 
-    async fn pong(&self, _client: &mut Client, _sender_id: ObjectId, _serial: u32) -> Result<()> {
-        todo!()
+    async fn pong(
+        &self,
+        _client: &mut Self::Connection,
+        _sender_id: ObjectId,
+        _serial: u32,
+    ) -> Result<()> {
+        Ok(())
     }
 }

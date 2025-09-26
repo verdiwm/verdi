@@ -1,19 +1,25 @@
-use rustix::fd::OwnedFd;
+use std::os::fd::OwnedFd;
 
-use crate::protocol::wayland::shm_pool::{ShmPool, WlShmPool};
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
 
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
+use crate::{
+    error::{Result, VerdiError},
+    protocol::wayland::shm_pool::{ShmPool, WlShmPool},
 };
 
-pub use waynest::server::protocol::core::wayland::wl_shm::*;
+pub use waynest_protocols::server::core::wayland::wl_shm::*;
 
-#[derive(Debug, Dispatcher, Default)]
+#[derive(Debug, RequestDispatcher, Default)]
+#[waynest(error = VerdiError)]
 pub struct Shm;
 
 impl Shm {
-    pub async fn advertise_formats(&self, client: &mut Client, sender_id: ObjectId) -> Result<()> {
+    pub async fn advertise_formats(
+        &self,
+        client: &mut <Self as WlShm>::Connection,
+        sender_id: ObjectId,
+    ) -> Result<()> {
         self.format(client, sender_id, Format::Argb8888).await?;
         self.format(client, sender_id, Format::Xrgb8888).await?;
 
@@ -22,9 +28,11 @@ impl Shm {
 }
 
 impl WlShm for Shm {
+    type Connection = Connection<VerdiError>;
+
     async fn create_pool(
         &self,
-        client: &mut Client,
+        client: &mut Self::Connection,
         sender_id: ObjectId,
         id: ObjectId,
         fd: OwnedFd,
@@ -35,7 +43,7 @@ impl WlShm for Shm {
         Ok(())
     }
 
-    async fn release(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
+    async fn release(&self, _client: &mut Self::Connection, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 }

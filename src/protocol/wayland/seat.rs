@@ -1,17 +1,20 @@
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
-};
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
 
-pub use waynest::server::protocol::core::wayland::wl_seat::*;
+use crate::error::{Result, VerdiError};
 
-#[derive(Debug, Dispatcher, Default)]
+pub use waynest_protocols::server::core::wayland::wl_seat::*;
+
+#[derive(Debug, RequestDispatcher, Default)]
+#[waynest(error = VerdiError)]
 pub struct Seat;
 
 impl WlSeat for Seat {
+    type Connection = Connection<VerdiError>;
+
     async fn get_pointer(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _id: ObjectId,
     ) -> Result<()> {
@@ -20,7 +23,7 @@ impl WlSeat for Seat {
 
     async fn get_keyboard(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _id: ObjectId,
     ) -> Result<()> {
@@ -29,14 +32,18 @@ impl WlSeat for Seat {
 
     async fn get_touch(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _id: ObjectId,
     ) -> Result<()> {
         todo!()
     }
 
-    async fn release(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
+    async fn release(
+        &self,
+        _client: &mut Self::Connection,
+        _sender_id: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 }

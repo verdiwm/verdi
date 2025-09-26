@@ -29,17 +29,17 @@ use tokio_stream::{
 use tracing::{debug, error, info};
 
 pub mod error;
+
 pub mod keymap;
 pub mod protocol;
 pub mod wgpu_context;
 
-use waynest::{
-    server::{Client, Listener},
-    wire::ObjectId,
-};
+use waynest::ObjectId;
+use waynest_server::{Connection, Listener};
 use wgpu_context::WgpuContext;
 
 use crate::{
+    error::VerdiError,
     keymap::{KeyMap, ModifierState},
     protocol::wayland::display::Display,
 };
@@ -59,7 +59,7 @@ pub struct Verdi<'a> {
     wgpu_context: Option<WgpuContext<'a>>,
     listener: Listener,
     config: Config,
-    clients: JoinSet<Result<(), error::Error>>,
+    clients: JoinSet<Result<(), error::VerdiError>>,
 }
 
 impl Verdi<'_> {
@@ -149,19 +149,24 @@ impl Verdi<'_> {
             mut clients,
         } = self;
 
+        drop(config);
+
         tokio::spawn(async move {
             while let Some(stream) = listener.try_next().await.unwrap() {
-                let mut client = Client::new(stream).unwrap();
+                let mut client: Connection<VerdiError> = Connection::new(stream).unwrap();
 
                 client.insert(ObjectId::DISPLAY, Display::default());
+
                 clients.spawn(async move {
-                    while let Some(mut message) = client.next_message().await? {
-                        match client.handle_message(&mut message).await {
-                            Ok(_) => {}
-                            Err(err) => {
-                                error!("Error while handling message: {err}");
-                                return Err(err.into());
-                            }
+                    while let Some(mut message) = client.try_next().await? {
+                        if let Err(err) = client
+                            .get_raw(message.object_id())
+                            .ok_or(VerdiError::MissingObject(message.object_id()))?
+                            .dispatch_request(&mut client, message.object_id(), &mut message)
+                            .await
+                        {
+                            error!("Error while handling message: {err}");
+                            return Err(err.into());
                         }
                     }
 

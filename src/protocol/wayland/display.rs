@@ -1,22 +1,26 @@
-use crate::protocol::wayland::{
-    callback::{Callback, WlCallback},
-    registry::{Registry, WlRegistry},
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
+
+use crate::{
+    error::{Result, VerdiError},
+    protocol::wayland::{
+        callback::{Callback, WlCallback},
+        registry::{Registry, WlRegistry},
+    },
 };
 
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
-};
+pub use waynest_protocols::server::core::wayland::wl_display::*;
 
-pub use waynest::server::protocol::core::wayland::wl_display::*;
-
-#[derive(Debug, Dispatcher, Default)]
+#[derive(Debug, Default, RequestDispatcher)]
+#[waynest(error = VerdiError)]
 pub struct Display;
 
 impl WlDisplay for Display {
+    type Connection = Connection<VerdiError>;
+
     async fn sync(
         &self,
-        client: &mut Client,
+        client: &mut Self::Connection,
         sender_id: ObjectId,
         callback_id: ObjectId,
     ) -> Result<()> {
@@ -32,7 +36,7 @@ impl WlDisplay for Display {
 
     async fn get_registry(
         &self,
-        client: &mut Client,
+        client: &mut Self::Connection,
         sender_id: ObjectId,
         registry_id: ObjectId,
     ) -> Result<()> {

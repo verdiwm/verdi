@@ -1,42 +1,57 @@
-use crate::protocol::xdg::toplevel::{Toplevel, XdgToplevel};
+use std::sync::Arc;
 
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
+
+use crate::{
+    error::{Result, VerdiError},
+    protocol::{
+        wayland::{self, surface::Role},
+        xdg::toplevel::{Toplevel, XdgToplevel},
+    },
 };
 
-pub use waynest::server::protocol::stable::xdg_shell::xdg_surface::*;
+pub use waynest_protocols::server::stable::xdg_shell::xdg_surface::*;
 
-#[derive(Debug, Dispatcher)]
+#[derive(Debug, RequestDispatcher)]
+#[waynest(error = VerdiError)]
 pub struct Surface {
-    wl_surface: ObjectId,
+    wl_surface: Arc<wayland::surface::Surface>,
 }
 
 impl Surface {
-    pub fn new(wl_surface: ObjectId) -> Self {
+    pub fn new(wl_surface: Arc<wayland::surface::Surface>) -> Self {
         Self { wl_surface }
     }
 }
 
 impl XdgSurface for Surface {
-    async fn destroy(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
-        todo!()
+    type Connection = Connection<VerdiError>;
+
+    async fn destroy(
+        &self,
+        _client: &mut Self::Connection,
+        _sender_id: ObjectId,
+    ) -> Result<()> {
+        Ok(())
     }
 
     async fn get_toplevel(
         &self,
-        client: &mut Client,
-        _sender_id: ObjectId,
+        client: &mut Self::Connection,
+        sender_id: ObjectId,
         id: ObjectId,
     ) -> Result<()> {
-        client.insert(id, Toplevel::default());
+        client.insert(id, Toplevel::new(client.get::<Self>(sender_id).unwrap()));
+
+        self.wl_surface.set_role(Role::XdgToplevel)?;
 
         Ok(())
     }
 
     async fn get_popup(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _id: ObjectId,
         _parent: Option<ObjectId>,
@@ -47,7 +62,7 @@ impl XdgSurface for Surface {
 
     async fn set_window_geometry(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _x: i32,
         _y: i32,
@@ -59,7 +74,7 @@ impl XdgSurface for Surface {
 
     async fn ack_configure(
         &self,
-        _client: &mut Client,
+        _client: &mut Self::Connection,
         _sender_id: ObjectId,
         _serial: u32,
     ) -> Result<()> {

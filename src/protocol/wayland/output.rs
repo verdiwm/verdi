@@ -1,15 +1,22 @@
-use waynest::{
-    server::{Client, Dispatcher, Result},
-    wire::ObjectId,
-};
+use waynest::ObjectId;
+use waynest_server::{Connection, RequestDispatcher};
 
-pub use waynest::server::protocol::core::wayland::wl_output::*;
+use crate::error::{Result, VerdiError};
 
-#[derive(Debug, Dispatcher, Default)]
+pub use waynest_protocols::server::core::wayland::wl_output::*;
+
+#[derive(Debug, RequestDispatcher, Default)]
+#[waynest(error = VerdiError)]
 pub struct Output;
 
 impl WlOutput for Output {
-    async fn release(&self, _client: &mut Client, _sender_id: ObjectId) -> Result<()> {
+    type Connection = Connection<VerdiError>;
+
+    async fn release(
+        &self,
+        _client: &mut Self::Connection,
+        _sender_id: ObjectId,
+    ) -> Result<()> {
         todo!()
     }
 }

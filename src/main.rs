@@ -23,15 +23,14 @@ use tracing::{debug, error};
 
 use tracing_subscriber::EnvFilter;
 use verdi::{
-    Config, Verdi,
-    error::Error,
-    protocol::wayland::display::{Display, WlDisplay},
+    Config,
+    Verdi,
+    error::VerdiError,
+    // protocol::wayland::display::{Display, WlDisplay},
 };
 
-use waynest::{
-    server::{Client, Listener},
-    wire::ObjectId,
-};
+use waynest::ObjectId;
+use waynest_server::Listener;
 
 const fn version() -> &'static str {
     concat!(
