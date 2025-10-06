@@ -7,7 +7,7 @@ use rustix::{
     fs::{Mode, OFlags, open},
 };
 use tracing::{debug, trace};
-use wgpu::{Backends, PresentMode, SurfaceTargetUnsafe};
+use wgpu::{Backends, ExperimentalFeatures, PresentMode, SurfaceTargetUnsafe};
 
 #[derive(Debug)]
 struct DrmState {
@@ -170,6 +170,7 @@ impl<'s> WgpuContext<'s> {
                 required_limits: adapter.limits(),
                 memory_hints: wgpu::MemoryHints::MemoryUsage,
                 trace: wgpu::Trace::Off,
+                experimental_features: ExperimentalFeatures::disabled(),
             })
             .await
             .context("Failed to create device")?;
