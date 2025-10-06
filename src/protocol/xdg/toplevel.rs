@@ -2,15 +2,14 @@ use std::sync::Arc;
 
 use tokio::sync::RwLock;
 use waynest::ObjectId;
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::RequestDispatcher;
 
-use crate::error::{Result, VerdiError};
-use crate::protocol::xdg;
+use crate::{Client, Result, VerdiError, protocol::xdg};
 
 pub use waynest_protocols::server::stable::xdg_shell::xdg_toplevel::*;
 
 #[derive(Debug, RequestDispatcher)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client)]
 pub struct Toplevel {
     xdg_surface: Arc<xdg::surface::Surface>,
     data: RwLock<ToplevelData>,
@@ -40,13 +39,9 @@ impl Toplevel {
 }
 
 impl XdgToplevel for Toplevel {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
-    async fn destroy(
-        &self,
-        _client: &mut Self::Connection,
-        _sender_id: ObjectId,
-    ) -> Result<()> {
+    async fn destroy(&self, _client: &mut Self::Connection, _sender_id: ObjectId) -> Result<()> {
         Ok(())
     }
 

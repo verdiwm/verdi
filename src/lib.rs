@@ -30,18 +30,23 @@ use tracing::{debug, error, info};
 
 pub mod error;
 
+pub mod client;
 pub mod keymap;
 pub mod protocol;
 pub mod wgpu_context;
 
 use waynest::ObjectId;
-use waynest_server::{Connection, Listener};
-use wgpu_context::WgpuContext;
+use waynest_server::{Client as _, Listener};
 
 use crate::{
-    error::VerdiError,
     keymap::{KeyMap, ModifierState},
     protocol::wayland::display::Display,
+    wgpu_context::WgpuContext,
+};
+
+pub use crate::{
+    client::Client,
+    error::{Result, VerdiError},
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -59,11 +64,11 @@ pub struct Verdi<'a> {
     wgpu_context: Option<WgpuContext<'a>>,
     listener: Listener,
     config: Config,
-    clients: JoinSet<Result<(), error::VerdiError>>,
+    clients: JoinSet<Result<(), VerdiError>>,
 }
 
 impl Verdi<'_> {
-    pub async fn new(listener: Listener, config: Config) -> error::Result<Self> {
+    pub async fn new(listener: Listener, config: Config) -> Result<Self> {
         let seat = Seat::new().await?;
         let seat_name = CString::new(seat.seat_name()).expect("Invalid seat name");
 
@@ -137,7 +142,7 @@ impl Verdi<'_> {
         })
     }
 
-    pub async fn run(self) -> error::Result<()> {
+    pub async fn run(self) -> Result<()> {
         let Self {
             seat,
             libinput_handle,
@@ -153,9 +158,9 @@ impl Verdi<'_> {
 
         tokio::spawn(async move {
             while let Some(stream) = listener.try_next().await.unwrap() {
-                let mut client: Connection<VerdiError> = Connection::new(stream).unwrap();
+                let mut client = Client::new(stream).unwrap();
 
-                client.insert(ObjectId::DISPLAY, Display::default());
+                let _ = client.insert(ObjectId::DISPLAY, Display::default());
 
                 clients.spawn(async move {
                     while let Some(mut message) = client.try_next().await? {

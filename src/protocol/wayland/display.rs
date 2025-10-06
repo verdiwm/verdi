@@ -1,7 +1,8 @@
 use waynest::ObjectId;
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::{Client as _, RequestDispatcher};
 
 use crate::{
+    Client,
     error::{Result, VerdiError},
     protocol::wayland::{
         callback::{Callback, WlCallback},
@@ -12,11 +13,11 @@ use crate::{
 pub use waynest_protocols::server::core::wayland::wl_display::*;
 
 #[derive(Debug, Default, RequestDispatcher)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client )]
 pub struct Display;
 
 impl WlDisplay for Display {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
     async fn sync(
         &self,

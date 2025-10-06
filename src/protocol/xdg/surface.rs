@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use waynest::ObjectId;
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::{Client as _, RequestDispatcher};
 
 use crate::{
-    error::{Result, VerdiError},
+    Client, Result, VerdiError,
     protocol::{
         wayland::{self, surface::Role},
         xdg::toplevel::{Toplevel, XdgToplevel},
@@ -14,7 +14,7 @@ use crate::{
 pub use waynest_protocols::server::stable::xdg_shell::xdg_surface::*;
 
 #[derive(Debug, RequestDispatcher)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client)]
 pub struct Surface {
     wl_surface: Arc<wayland::surface::Surface>,
 }
@@ -26,13 +26,9 @@ impl Surface {
 }
 
 impl XdgSurface for Surface {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
-    async fn destroy(
-        &self,
-        _client: &mut Self::Connection,
-        _sender_id: ObjectId,
-    ) -> Result<()> {
+    async fn destroy(&self, _client: &mut Self::Connection, _sender_id: ObjectId) -> Result<()> {
         Ok(())
     }
 

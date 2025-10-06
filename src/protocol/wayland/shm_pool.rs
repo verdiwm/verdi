@@ -3,17 +3,14 @@ use std::{io, os::fd::OwnedFd, ptr::null_mut};
 use rustix::mm::{MapFlags, MremapFlags, ProtFlags, mmap, mremap};
 use tokio::sync::RwLock;
 use waynest::ObjectId;
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::RequestDispatcher;
 
-use crate::{
-    error::{Result, VerdiError},
-    protocol::wayland::shm::Format,
-};
+use crate::{Client, Result, VerdiError, protocol::wayland::shm::Format};
 
 pub use waynest_protocols::server::core::wayland::wl_shm_pool::*;
 
 #[derive(Debug, RequestDispatcher)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client)]
 pub struct ShmPool {
     _fd: OwnedFd,
     map: RwLock<Map>,
@@ -54,7 +51,7 @@ impl ShmPool {
 }
 
 impl WlShmPool for ShmPool {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
     async fn create_buffer(
         &self,
@@ -70,11 +67,7 @@ impl WlShmPool for ShmPool {
         todo!()
     }
 
-    async fn destroy(
-        &self,
-        _client: &mut Self::Connection,
-        _sender_id: ObjectId,
-    ) -> Result<()> {
+    async fn destroy(&self, _client: &mut Self::Connection, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 

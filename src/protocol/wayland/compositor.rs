@@ -1,19 +1,19 @@
 use waynest::ObjectId;
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::{Client as _, RequestDispatcher};
 
 use crate::{
-    error::{Result, VerdiError},
+    Client, Result, VerdiError,
     protocol::wayland::surface::{Surface, WlSurface},
 };
 
 pub use waynest_protocols::server::core::wayland::wl_compositor::*;
 
 #[derive(Debug, RequestDispatcher, Default)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client)]
 pub struct Compositor;
 
 impl WlCompositor for Compositor {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
     async fn create_surface(
         &self,

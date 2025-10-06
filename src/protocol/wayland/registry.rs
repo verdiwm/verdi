@@ -1,8 +1,8 @@
 use waynest::{NewId, ObjectId};
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::{Client as _, RequestDispatcher};
 
 use crate::{
-    error::{Result, VerdiError},
+    Client, Result, VerdiError,
     protocol::{
         wayland::{
             compositor::{Compositor, WlCompositor},
@@ -27,7 +27,7 @@ impl RegistryGlobals {
 }
 
 #[derive(Debug, RequestDispatcher, Default)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client)]
 pub struct Registry;
 
 impl Registry {
@@ -86,7 +86,7 @@ impl Registry {
 }
 
 impl WlRegistry for Registry {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
     async fn bind(
         &self,

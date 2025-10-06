@@ -62,6 +62,8 @@ tokio-stream = { version = "0.1.8", features = ["sync"] }
 libcorn = "0.10.0"
 saddle = "0.1.2"
 input-linux-sys = "0.9.0"
+pin-project-lite = "0.2.16"
+futures-sink = "0.3.31"
 
 [build-dependencies]
 chrono = { version = "0.4.41", default-features = false, features = ["std"] }
@@ -73,9 +75,9 @@ libcorn = { git = "https://github.com/corn-config/corn" }
 # colpetto = { git = "https://github.com/verdiwm/colpetto" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
 # colpetto = { path = "../colpetto" }
-waynest = { git = "https://github.com/verdiwm/waynest/", branch = "splitting" }
-waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "splitting" }
-waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "splitting" }
+waynest = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
+waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
+waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 # waynest = { path = "../waynest/crates/core" }
 # waynest-protocols = { path = "../waynest/crates/protocols" }
 # waynest-server = { path = "../waynest/crates/server" }

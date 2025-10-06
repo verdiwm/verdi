@@ -1,17 +1,17 @@
 use std::os::fd::OwnedFd;
 
 use waynest::ObjectId;
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::{Client as _, RequestDispatcher};
 
 use crate::{
-    error::{Result, VerdiError},
+    Client, Result, VerdiError,
     protocol::wayland::shm_pool::{ShmPool, WlShmPool},
 };
 
 pub use waynest_protocols::server::core::wayland::wl_shm::*;
 
 #[derive(Debug, RequestDispatcher, Default)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client)]
 pub struct Shm;
 
 impl Shm {
@@ -28,7 +28,7 @@ impl Shm {
 }
 
 impl WlShm for Shm {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
     async fn create_pool(
         &self,

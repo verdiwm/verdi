@@ -1,26 +1,24 @@
 use waynest::ObjectId;
-use waynest_server::{Connection, RequestDispatcher};
+use waynest_server::{Client as _, RequestDispatcher};
 
-use crate::error::{Result, VerdiError};
-use crate::protocol::{
-    wayland,
-    xdg::surface::{Surface, XdgSurface},
+use crate::{
+    Client, Result, VerdiError,
+    protocol::{
+        wayland,
+        xdg::surface::{Surface, XdgSurface},
+    },
 };
 
 pub use waynest_protocols::server::stable::xdg_shell::xdg_wm_base::*;
 
 #[derive(Debug, RequestDispatcher, Default)]
-#[waynest(error = VerdiError)]
+#[waynest(error = VerdiError, connection = Client)]
 pub struct WmBase;
 
 impl XdgWmBase for WmBase {
-    type Connection = Connection<VerdiError>;
+    type Connection = Client;
 
-    async fn destroy(
-        &self,
-        _client: &mut Self::Connection,
-        _sender_id: ObjectId,
-    ) -> Result<()> {
+    async fn destroy(&self, _client: &mut Self::Connection, _sender_id: ObjectId) -> Result<()> {
         todo!()
     }
 
