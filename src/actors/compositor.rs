@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use tokio::{
-    net::UnixStream,
-    sync::{mpsc, oneshot},
-};
+use tokio::{net::UnixStream, sync::mpsc};
 use tokio_util::sync::CancellationToken;
 
 use crate::actors::client::ClientHandle;
@@ -15,7 +12,7 @@ pub enum CompositorMessage {
 
 #[derive(Clone)]
 pub struct CompositorHandle {
-    sender: mpsc::WeakSender<CompositorMessage>,
+    sender: mpsc::Sender<CompositorMessage>,
 }
 
 pub struct Compositor {
@@ -40,7 +37,7 @@ impl Compositor {
     }
 
     pub fn handle(&self) -> CompositorHandle {
-        CompositorHandle::new(self.sender.downgrade())
+        CompositorHandle::new(self.sender.clone())
     }
 
     fn next_client_id(&mut self) -> u32 {
@@ -84,16 +81,14 @@ impl Compositor {
 }
 
 impl CompositorHandle {
-    fn new(sender: mpsc::WeakSender<CompositorMessage>) -> Self {
+    fn new(sender: mpsc::Sender<CompositorMessage>) -> Self {
         Self { sender }
     }
 
     pub async fn new_client(&self, stream: UnixStream) {
-        match self.sender.upgrade() {
-            Some(sender) => {
-                let _ = sender.send(CompositorMessage::NewClient { stream }).await;
-            }
-            None => {}
-        }
+        let _ = self
+            .sender
+            .send(CompositorMessage::NewClient { stream })
+            .await;
     }
 }
