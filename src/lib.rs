@@ -30,7 +30,7 @@ use tracing::{debug, error, info};
 
 pub mod error;
 
-pub mod client;
+pub mod actors;
 pub mod keymap;
 pub mod protocol;
 pub mod wgpu_context;
@@ -39,13 +39,17 @@ use waynest::ObjectId;
 use waynest_server::{Client as _, Listener};
 
 use crate::{
+    actors::client::ClientHandle,
     keymap::{KeyMap, ModifierState},
     protocol::wayland::display::Display,
     wgpu_context::WgpuContext,
 };
 
 pub use crate::{
-    client::Client,
+    actors::{
+        client::Client,
+        compositor::{Compositor, CompositorHandle},
+    },
     error::{Result, VerdiError},
 };
 
@@ -55,207 +59,191 @@ pub struct Config {
     pub socket: Option<PathBuf>,
 }
 
-pub struct Verdi<'a> {
-    seat: Seat,
-    libinput_handle: colpetto::helper::Handle,
-    libinput_event_stream:
-        UnboundedReceiverStream<Result<colpetto::helper::event::Event, colpetto::Error>>,
-    control_stream: WatchStream<bool>,
-    wgpu_context: Option<WgpuContext<'a>>,
-    listener: Listener,
-    config: Config,
-    clients: JoinSet<Result<(), VerdiError>>,
-}
+// pub struct Verdi<'a> {
+//     // seat: Seat,
+//     // libinput_handle: colpetto::helper::Handle,
+//     // libinput_event_stream:
+//     //     UnboundedReceiverStream<Result<colpetto::helper::event::Event, colpetto::Error>>,
+//     // control_stream: WatchStream<bool>,
+//     wgpu_context: Option<WgpuContext<'a>>,
+//     // listener: Listener,
+//     // config: Config,
+//     // clients: JoinSet<Result<(), VerdiError>>,
+// }
 
-impl Verdi<'_> {
-    pub async fn new(listener: Listener, config: Config) -> Result<Self> {
-        let seat = Seat::new().await?;
-        let seat_name = CString::new(seat.seat_name()).expect("Invalid seat name");
+// impl Verdi<'_> {
+//     pub async fn new(listener: Listener, config: Config) -> Result<Self> {
+//         // let seat = Seat::new().await?;
+//         // let seat_name = CString::new(seat.seat_name()).expect("Invalid seat name");
 
-        let (libinput_handle, libinput_event_stream) = {
-            let open_seat = seat.clone();
-            let close_seat = seat.clone();
+//         // let (libinput_handle, libinput_event_stream) = {
+//         //     let open_seat = seat.clone();
+//         //     let close_seat = seat.clone();
 
-            LibinputHandle::new(
-                move |path| {
-                    let seat = open_seat.clone();
+//         //     LibinputHandle::new(
+//         //         move |path| {
+//         //             let seat = open_seat.clone();
 
-                    async move {
-                        match seat.open_device(path).await {
-                            Ok(fd) => fd.into_raw_fd(),
-                            Err(err) => {
-                                error!("Failed to open device: {err}");
-                                -1
-                            }
-                        }
-                    }
-                },
-                move |fd| {
-                    let seat = close_seat.clone();
+//         //             async move {
+//         //                 match seat.open_device(path).await {
+//         //                     Ok(fd) => fd.into_raw_fd(),
+//         //                     Err(err) => {
+//         //                         error!("Failed to open device: {err}");
+//         //                         -1
+//         //                     }
+//         //                 }
+//         //             }
+//         //         },
+//         //         move |fd| {
+//         //             let seat = close_seat.clone();
 
-                    async move {
-                        let _ = seat.close_device(unsafe { BorrowedFd::borrow_raw(fd) });
-                    }
-                },
-                seat_name,
-            )?
-        };
+//         //             async move {
+//         //                 let _ = seat.close_device(unsafe { BorrowedFd::borrow_raw(fd) });
+//         //             }
+//         //         },
+//         //         seat_name,
+//         //     )?
+//         // };
 
-        let (control_sx, control_rx) = watch::channel::<bool>(false);
+//         // let (control_sx, control_rx) = watch::channel::<bool>(false);
 
-        tokio::spawn({
-            let seat = seat.clone();
-            let libinput_handle = libinput_handle.clone();
+//         // tokio::spawn({
+//         //     let seat = seat.clone();
+//         //     let libinput_handle = libinput_handle.clone();
 
-            async move {
-                let stream = seat.active_stream().await;
+//         //     async move {
+//         //         let stream = seat.active_stream().await;
 
-                pin!(stream);
+//         //         pin!(stream);
 
-                while let Some(is_active) = stream.try_next().await? {
-                    if is_active {
-                        info!("Session became active, taking control");
-                        seat.aquire_session().await?;
-                        control_sx.send(true)?;
-                        libinput_handle.resume()?;
-                    } else {
-                        info!("Session became inactive");
-                        seat.release_session().await?;
-                        control_sx.send(false)?;
-                        libinput_handle.suspend()?;
-                    }
-                }
+//         //         while let Some(is_active) = stream.try_next().await? {
+//         //             if is_active {
+//         //                 info!("Session became active, taking control");
+//         //                 seat.aquire_session().await?;
+//         //                 control_sx.send(true)?;
+//         //                 libinput_handle.resume()?;
+//         //             } else {
+//         //                 info!("Session became inactive");
+//         //                 seat.release_session().await?;
+//         //                 control_sx.send(false)?;
+//         //                 libinput_handle.suspend()?;
+//         //             }
+//         //         }
 
-                anyhow::Ok(())
-            }
-        });
+//         //         anyhow::Ok(())
+//         //     }
+//         // });
 
-        Ok(Self {
-            seat,
-            libinput_handle,
-            libinput_event_stream,
-            control_stream: WatchStream::new(control_rx),
-            wgpu_context: None,
-            listener,
-            config,
-            clients: JoinSet::new(),
-        })
-    }
+//         Ok(Self {
+//             // seat,
+//             // libinput_handle,
+//             // libinput_event_stream,
+//             // control_stream: WatchStream::new(control_rx),
+//             wgpu_context: None,
+//             // listener,
+//             // config,
+//             // clients: JoinSet::new(),
+//         })
+//     }
 
-    pub async fn run(self) -> Result<()> {
-        let Self {
-            seat,
-            libinput_handle,
-            mut libinput_event_stream,
-            mut control_stream,
-            mut wgpu_context,
-            mut listener,
-            config,
-            mut clients,
-        } = self;
+//     pub async fn run(self) -> Result<()> {
+//         // let Self {
+//         //     seat,
+//         //     libinput_handle,
+//         //     mut libinput_event_stream,
+//         //     mut control_stream,
+//         //     mut wgpu_context,
+//         //     mut listener,
+//         //     config,
+//         //     mut clients,
+//         // } = self;
 
-        drop(config);
+//         // drop(config);
 
-        tokio::spawn(async move {
-            while let Some(stream) = listener.try_next().await.unwrap() {
-                let mut client = Client::new(stream).unwrap();
+//         // tokio::spawn(async move {
+//         //     while let Some(stream) = listener.try_next().await.unwrap() {
+//         //         let _client_handle = ClientHandle::new(stream, 1)?;
+//         //     }
 
-                let _ = client.insert(ObjectId::DISPLAY, Display::default());
+//         //     Ok::<_, VerdiError>(())
+//         // });
 
-                clients.spawn(async move {
-                    while let Some(mut message) = client.try_next().await? {
-                        if let Err(err) = client
-                            .get_raw(message.object_id())
-                            .ok_or(VerdiError::MissingObject(message.object_id()))?
-                            .dispatch_request(&mut client, message.object_id(), &mut message)
-                            .await
-                        {
-                            error!("Error while handling message: {err}");
-                            return Err(err.into());
-                        }
-                    }
+//         // let key_map = KeyMap::new();
+//         // let modifier_state = Arc::new(RwLock::new(ModifierState::new()));
 
-                    Ok(())
-                });
-            }
-        });
+//         // let mut has_control = false;
 
-        let key_map = KeyMap::new();
-        let modifier_state = Arc::new(RwLock::new(ModifierState::new()));
+//         // loop {
+//         //     tokio::select! {
+//         //         biased;
+//         //         Some(control) = control_stream.next() => {
+//         //             if control != has_control {
+//         //                 has_control = control;
 
-        let mut has_control = false;
+//         //                 if has_control {
+//         //                     info!("Session activated - creating fresh rendering context");
+//         //                     match WgpuContext::new().await {
+//         //                         Ok(ctx) => wgpu_context = Some(ctx),
+//         //                         Err(e) => error!("Failed to create context: {}", e),
+//         //                     }
+//         //                 } else {
+//         //                     // Reset modifier state when we lose control to avoid stuck keys
+//         //                     *modifier_state.write().await = ModifierState::new();
+//         //                 }
+//         //             }
+//         //         }
+//         //         Some(event) = libinput_event_stream.next() => {
+//         //             match event {
+//         //                 Ok(event) => match event.event_type {
+//         //                     EventType::Keyboard(KeyboardEvent::Key { key, state, .. }) => {
+//         //                         let (should_check_vt_switch, is_ctrl_alt_pressed) = {
+//         //                             let mut ms = modifier_state.write().await;
+//         //                             ms.update(key, state);
+//         //                             (state == KeyState::Pressed, ms.is_ctrl_alt_pressed())
+//         //                         };
 
-        loop {
-            tokio::select! {
-                biased;
-                Some(control) = control_stream.next() => {
-                    if control != has_control {
-                        has_control = control;
+//         //                         if should_check_vt_switch {
+//         //                             // Handle ESC for exit
+//         //                             if key as i32 == KEY_ESC {
+//         //                                 libinput_handle.shutdown();
+//         //                                 break;
+//         //                             }
 
-                        if has_control {
-                            info!("Session activated - creating fresh rendering context");
-                            match WgpuContext::new().await {
-                                Ok(ctx) => wgpu_context = Some(ctx),
-                                Err(e) => error!("Failed to create context: {}", e),
-                            }
-                        } else {
-                            // Reset modifier state when we lose control to avoid stuck keys
-                            *modifier_state.write().await = ModifierState::new();
-                        }
-                    }
-                }
-                Some(event) = libinput_event_stream.next() => {
-                    match event {
-                        Ok(event) => match event.event_type {
-                            EventType::Keyboard(KeyboardEvent::Key { key, state, .. }) => {
-                                let (should_check_vt_switch, is_ctrl_alt_pressed) = {
-                                    let mut ms = modifier_state.write().await;
-                                    ms.update(key, state);
-                                    (state == KeyState::Pressed, ms.is_ctrl_alt_pressed())
-                                };
+//         //                             // Only process function keys when Ctrl+Alt are held
+//         //                             if is_ctrl_alt_pressed && let Some(vt) = key_map.get_vt(key) {
+//         //                                 if has_control {
+//         //                                     info!("Ctrl+Alt+F{vt} pressed, attempting a VT switch to {vt}");
 
-                                if should_check_vt_switch {
-                                    // Handle ESC for exit
-                                    if key as i32 == KEY_ESC {
-                                        libinput_handle.shutdown();
-                                        break;
-                                    }
+//         //                                     if let Ok(current_vt) = seat.current_session().await && vt != current_vt {
+//         //                                         info!("Deactivating session - destroying rendering context completely");
 
-                                    // Only process function keys when Ctrl+Alt are held
-                                    if is_ctrl_alt_pressed && let Some(vt) = key_map.get_vt(key) {
-                                        if has_control {
-                                            info!("Ctrl+Alt+F{vt} pressed, attempting a VT switch to {vt}");
+//         //                                         wgpu_context = None;
 
-                                            if let Ok(current_vt) = seat.current_session().await && vt != current_vt {
-                                                info!("Deactivating session - destroying rendering context completely");
+//         //                                         if let Err(e) = seat.switch_session(vt).await {
+//         //                                             error!("Failed to switch to VT {vt}: {e}");
+//         //                                         }
+//         //                                     }
+//         //                                 } else {
+//         //                                     debug!("Not switching VT - session inactive");
+//         //                                 }
+//         //                             }
+//         //                         }
+//         //                     }
+//         //                     _ => {}
+//         //                 },
+//         //                 Err(_) => break,
+//         //             }
+//         //         }
+//         //         else => {}
+//         //     };
 
-                                                wgpu_context = None;
+//         //     if let Some(ref context) = wgpu_context {
+//         //         if let Err(e) = context.present() {
+//         //             error!("Present failed: {}", e);
+//         //         }
+//         //     }
+//         // }
 
-                                                if let Err(e) = seat.switch_session(vt).await {
-                                                    error!("Failed to switch to VT {vt}: {e}");
-                                                }
-                                            }
-                                        } else {
-                                            debug!("Not switching VT - session inactive");
-                                        }
-                                    }
-                                }
-                            }
-                            _ => {}
-                        },
-                        Err(_) => break,
-                    }
-                }
-                else => {}
-            };
-
-            if let Some(ref context) = wgpu_context {
-                if let Err(e) = context.present() {
-                    error!("Present failed: {}", e);
-                }
-            }
-        }
-
-        Ok(())
-    }
-}
+//         Ok(())
+//     }
+// }

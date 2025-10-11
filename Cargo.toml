@@ -64,6 +64,7 @@ saddle = "0.1.2"
 input-linux-sys = "0.9.0"
 pin-project-lite = "0.2.16"
 futures-sink = "0.3.31"
+tokio-util = { version = "0.7.16", features = ["rt"] }
 
 [build-dependencies]
 chrono = { version = "0.4.42", default-features = false, features = ["std"] }

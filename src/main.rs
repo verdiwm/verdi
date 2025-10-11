@@ -19,14 +19,13 @@ use rustix::{
 use serde::{Deserialize, Serialize};
 use tokio::{net::UnixListener, process::Command, sync::mpsc, task::JoinSet, time::sleep};
 use tokio_stream::{StreamExt, wrappers::UnboundedReceiverStream};
+use tokio_util::{sync::CancellationToken, task::TaskTracker};
 use tracing::{debug, error};
 
 use tracing_subscriber::EnvFilter;
 use verdi::{
-    Config,
-    Verdi,
+    Compositor, CompositorHandle, Config, actors::client_listener::ClientListener,
     error::VerdiError,
-    // protocol::wayland::display::{Display, WlDisplay},
 };
 
 use waynest::ObjectId;
@@ -63,7 +62,6 @@ fn main() -> AnyResult<()> {
         .with_target(false)
         .with_thread_ids(true)
         .with_thread_names(false)
-        .without_time()
         .compact();
 
     tracing_subscriber::fmt()
@@ -95,31 +93,46 @@ fn main() -> AnyResult<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    debug!("Created runtime");
+    debug!("Created tokio runtime");
 
     runtime.block_on(async move {
-        let listener = {
+        let actors_tracker = TaskTracker::new();
+        let shutdown_token = CancellationToken::new();
+
+        let socket_path = {
             if let Some(ref socket) = args.socket {
-                Listener::new_with_path(socket)
+                Some(socket)
             } else if let Some(ref socket) = config.socket {
-                Listener::new_with_path(socket)
+                Some(socket)
             } else {
-                Listener::new()
+                None
             }
-        }?;
+        };
 
-        let socket_path = listener.socket_path().canonicalize()?;
+        let compositor = Compositor::new(shutdown_token.clone());
 
-        debug!("Started listener at path {}", socket_path.display());
+        let client_listener =
+            ClientListener::new(compositor.handle(), shutdown_token.clone(), socket_path)
+                .expect("Failed to start client listener");
 
-        let mut verdi = Verdi::new(listener, config).await?;
+        actors_tracker.spawn(client_listener.run());
+        actors_tracker.spawn(compositor.run());
 
-        debug!("Started new verdi instance");
+        {
+            let actors_tracker = actors_tracker.clone();
 
-        verdi.run().await?;
+            tokio::spawn(async move {
+                tokio::time::sleep(Duration::from_secs(10)).await;
 
-        anyhow::Ok(())
-    })?;
+                tracing::debug!("Shutting down!");
+
+                actors_tracker.close();
+                shutdown_token.cancel();
+            });
+        }
+
+        actors_tracker.wait().await
+    });
 
     Ok(())
 }
