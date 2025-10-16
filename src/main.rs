@@ -96,8 +96,6 @@ fn main() -> AnyResult<()> {
     debug!("Created tokio runtime");
 
     runtime.block_on(async move {
-        let shutdown_token = CancellationToken::new();
-
         let socket_path = {
             if let Some(ref socket) = args.socket {
                 Some(socket)
@@ -108,15 +106,7 @@ fn main() -> AnyResult<()> {
             }
         };
 
-        let compositor = Compositor::new(shutdown_token.clone(), socket_path).await;
-
-        tokio::spawn(async move {
-            tokio::time::sleep(Duration::from_secs(10)).await;
-
-            tracing::debug!("Shutting down!");
-
-            shutdown_token.cancel();
-        });
+        let compositor = Compositor::new(socket_path).await;
 
         compositor.run().await;
     });

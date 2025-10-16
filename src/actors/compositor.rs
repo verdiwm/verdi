@@ -89,10 +89,9 @@ pub struct Compositor {
 }
 
 impl Compositor {
-    pub async fn new<P: AsRef<Path>>(
-        shutdown_token: CancellationToken,
-        socket_path: Option<P>,
-    ) -> Self {
+    pub async fn new<P: AsRef<Path>>(socket_path: Option<P>) -> Self {
+        let shutdown_token = CancellationToken::new();
+
         let (sender, receiver) = mpsc::channel(256);
 
         let actors_tracker = TaskTracker::new();
@@ -101,18 +100,18 @@ impl Compositor {
 
         let client_listener = ClientListener::new(
             compositor_handle.clone(),
-            shutdown_token.clone(),
+            shutdown_token.child_token(),
             socket_path,
         )
         .expect("Failed to start client listener");
 
-        let session = Session::new(compositor_handle.clone(), shutdown_token.clone()).await;
+        let session = Session::new(compositor_handle.clone(), shutdown_token.child_token()).await;
         let session_handle = session.handle();
 
         let input_manager = InputManager::new(
             compositor_handle,
             session_handle.clone(),
-            shutdown_token.clone(),
+            shutdown_token.child_token(),
         );
         let input_manager_handle = input_manager.handle();
 
