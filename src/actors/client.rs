@@ -5,6 +5,7 @@ use tokio::{
     sync::{mpsc, oneshot},
 };
 use tokio_stream::{Stream, StreamExt};
+use tracing::error;
 
 use waynest::{Message, ObjectId, ProtocolError, Socket};
 use waynest_server::{Client as _, Store};
@@ -138,7 +139,7 @@ impl Client {
                                 .dispatch_request(&mut self, msg.object_id(), &mut msg)
                                 .await
                             {
-                                // error!("Error while handling message: {err}");
+                                error!("Error while handling message: {err}");
                                 // return Err(err.into());
                             }
                         },

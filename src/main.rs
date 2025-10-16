@@ -96,7 +96,6 @@ fn main() -> AnyResult<()> {
     debug!("Created tokio runtime");
 
     runtime.block_on(async move {
-        let actors_tracker = TaskTracker::new();
         let shutdown_token = CancellationToken::new();
 
         let socket_path = {
@@ -109,29 +108,17 @@ fn main() -> AnyResult<()> {
             }
         };
 
-        let compositor = Compositor::new(shutdown_token.clone());
+        let compositor = Compositor::new(shutdown_token.clone(), socket_path).await;
 
-        let client_listener =
-            ClientListener::new(compositor.handle(), shutdown_token.clone(), socket_path)
-                .expect("Failed to start client listener");
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(10)).await;
 
-        actors_tracker.spawn(client_listener.run());
-        actors_tracker.spawn(compositor.run());
+            tracing::debug!("Shutting down!");
 
-        {
-            let actors_tracker = actors_tracker.clone();
+            shutdown_token.cancel();
+        });
 
-            tokio::spawn(async move {
-                tokio::time::sleep(Duration::from_secs(10)).await;
-
-                tracing::debug!("Shutting down!");
-
-                actors_tracker.close();
-                shutdown_token.cancel();
-            });
-        }
-
-        actors_tracker.wait().await
+        compositor.run().await;
     });
 
     Ok(())

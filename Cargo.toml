@@ -79,6 +79,8 @@ libcorn = { git = "https://github.com/corn-config/corn" }
 waynest = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
+saddle = { git = "https://github.com/verdiwm/saddle/", branch = "main" }
 # waynest = { path = "../waynest/crates/core" }
 # waynest-protocols = { path = "../waynest/crates/protocols" }
 # waynest-server = { path = "../waynest/crates/server" }
+# saddle = { path = "../saddle" }
