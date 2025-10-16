@@ -73,7 +73,7 @@ git2 = { version = "0.20.2", default-features = false }
 [patch.crates-io]
 # wgpu = { git = "https://github.com/gfx-rs/wgpu" }
 libcorn = { git = "https://github.com/corn-config/corn" }
-# colpetto = { git = "https://github.com/verdiwm/colpetto" }
+colpetto = { git = "https://github.com/verdiwm/colpetto" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
 # colpetto = { path = "../colpetto" }
 waynest = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
