@@ -1,7 +1,4 @@
-use std::{
-    ffi::{CStr, CString},
-    os::fd::OwnedFd,
-};
+use std::{ffi::CString, os::fd::OwnedFd};
 
 use saddle::Seat;
 use tokio::{
@@ -139,13 +136,13 @@ impl SessionHandle {
         let _ = self.sender.send(SessionMessage::SwitchVt { vt }).await;
     }
 
-    pub async fn open_device(&self, path: &CStr) -> Result<OwnedFd, RecvError> {
+    pub async fn open_device(&self, path: CString) -> Result<OwnedFd, RecvError> {
         let (send, recv) = oneshot::channel();
 
         let _ = self
             .sender
             .send(SessionMessage::OpenDevice {
-                path: path.to_owned(),
+                path,
                 respond_to: send,
             })
             .await;
@@ -153,25 +150,8 @@ impl SessionHandle {
         recv.await
     }
 
-    pub fn open_device_blocking(&self, path: &CStr) -> Result<OwnedFd, RecvError> {
-        let (send, recv) = oneshot::channel();
-
-        let _ = self.sender.blocking_send(SessionMessage::OpenDevice {
-            path: path.to_owned(),
-            respond_to: send,
-        });
-
-        recv.blocking_recv()
-    }
-
     pub async fn close_device(&self, fd: OwnedFd) {
         let _ = self.sender.send(SessionMessage::CloseDevice { fd }).await;
-    }
-
-    pub fn close_device_blocking(&self, fd: OwnedFd) {
-        let _ = self
-            .sender
-            .blocking_send(SessionMessage::CloseDevice { fd });
     }
 
     pub async fn current_vt(&self) -> Result<u32, RecvError> {

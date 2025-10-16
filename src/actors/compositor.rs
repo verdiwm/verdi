@@ -5,7 +5,6 @@ use input_linux_sys::KEY_ESC;
 use tokio::{
     net::UnixStream,
     sync::{RwLock, mpsc},
-    task::LocalSet,
 };
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 use tracing::{debug, info};
@@ -84,8 +83,6 @@ pub struct Compositor {
     modifier_state: Arc<RwLock<ModifierState>>,
     has_control: bool,
 
-    local_set: LocalSet,
-
     // Handles
     session_handle: SessionHandle,
     input_manager_handle: InputManagerHandle,
@@ -96,8 +93,7 @@ impl Compositor {
         shutdown_token: CancellationToken,
         socket_path: Option<P>,
     ) -> Self {
-        let (sender, receiver) = mpsc::channel(128);
-        let local_set = LocalSet::new();
+        let (sender, receiver) = mpsc::channel(256);
 
         let actors_tracker = TaskTracker::new();
 
@@ -120,29 +116,8 @@ impl Compositor {
         );
         let input_manager_handle = input_manager.handle();
 
-        // let rt = tokio::runtime::Builder::new_current_thread()
-        //     .enable_all()
-        //     .build()
-        //     .unwrap();
-
-        // std::thread::spawn(move || {
-        //     let local_set = LocalSet::new();
-
-        //     local_set.spawn_local(async move {
-        //         let input_manager = InputManager::new(
-        //             compositor_handle,
-        //             session_handle.clone(),
-        //             shutdown_token.clone(),
-        //         );
-
-        //         input_manager.run()
-        //     });
-
-        //     rt.block_on(local_set);
-        // });
-
         actors_tracker.spawn(session.run());
-        local_set.spawn_local(actors_tracker.spawn_local(input_manager.run()));
+        actors_tracker.spawn(input_manager.run());
         actors_tracker.spawn(client_listener.run());
 
         let key_map = KeyMap::new();
@@ -160,7 +135,6 @@ impl Compositor {
             has_control: false,
             session_handle,
             input_manager_handle,
-            local_set,
         }
     }
 
@@ -191,7 +165,7 @@ impl Compositor {
             }
         }
 
-        tokio::join!(self.actors_tracker.wait(), self.local_set);
+        self.actors_tracker.wait().await;
     }
 
     async fn handle_message(&mut self, msg: CompositorMessage) {
