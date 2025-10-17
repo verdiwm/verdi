@@ -10,6 +10,7 @@ use tokio_util::{sync::CancellationToken, task::TaskTracker};
 use tracing::{debug, info};
 
 use crate::{
+    Client,
     actors::{
         client::ClientHandle,
         client_listener::ClientListener,
@@ -173,9 +174,9 @@ impl Compositor {
                 let client_id = self.next_client_id();
 
                 // FIXME: how the hell do we handle errors
-                let (client_handle, client) = ClientHandle::new(stream, client_id).unwrap();
+                let client = Client::new(stream, client_id).unwrap();
 
-                self.clients.insert(client_id, client_handle);
+                self.clients.insert(client_id, client.handle());
 
                 tokio::spawn(client.run());
             }

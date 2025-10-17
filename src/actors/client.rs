@@ -1,9 +1,6 @@
 use futures_sink::Sink;
 use pin_project_lite::pin_project;
-use tokio::{
-    net::UnixStream,
-    sync::{mpsc, oneshot},
-};
+use tokio::{net::UnixStream, sync::mpsc};
 use tokio_stream::{Stream, StreamExt};
 use tracing::error;
 
@@ -28,6 +25,7 @@ pin_project! {
         next_object_id: ObjectId,
         next_event_serial: u32,
         receiver: Option<mpsc::Receiver<ClientMessage>>,
+        sender: mpsc::Sender<ClientMessage>,
         client_id: u32,
     }
 }
@@ -102,19 +100,28 @@ impl waynest_server::Client for Client {
 }
 
 impl Client {
-    pub fn new(
-        stream: UnixStream,
-        receiver: mpsc::Receiver<ClientMessage>,
-        client_id: u32,
-    ) -> Result<Self, VerdiError> {
-        Ok(Self {
+    pub fn new(stream: UnixStream, client_id: u32) -> Result<Self, VerdiError> {
+        let (sender, receiver) = mpsc::channel(128);
+
+        let mut client = Self {
             socket: Socket::new(stream.into_std()?)?,
             store: Store::new(),
             next_object_id: unsafe { ObjectId::from_raw(0xff000000) },
             next_event_serial: 0,
             receiver: Some(receiver),
+            sender,
             client_id,
-        })
+        };
+
+        let _ = client.insert(ObjectId::DISPLAY, Display::default());
+
+        tracing::debug!("Created new client with id {client_id}");
+
+        Ok(client)
+    }
+
+    pub fn handle(&self) -> ClientHandle {
+        ClientHandle::new(self.sender.clone(), self.client_id)
     }
 
     pub fn next_event_serial(&mut self) -> u32 {
@@ -160,13 +167,7 @@ impl Client {
 }
 
 impl ClientHandle {
-    pub fn new(stream: UnixStream, client_id: u32) -> Result<(Self, Client), VerdiError> {
-        let (sender, receiver) = mpsc::channel(8);
-        let mut client = Client::new(stream, receiver, client_id)?;
-        let _ = client.insert(ObjectId::DISPLAY, Display::default());
-
-        tracing::debug!("Created new client with id {client_id}");
-
-        Ok((Self { sender, client_id }, client))
+    pub fn new(sender: mpsc::Sender<ClientMessage>, client_id: u32) -> Self {
+        Self { sender, client_id }
     }
 }
