@@ -286,8 +286,9 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
 name = "colpetto"
-version = "0.6.0"
-source = "git+https://github.com/verdiwm/colpetto#6bba43402635d8fe05429a099dcbcb5f6c093d47"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b084fbcef934893d2623f4cf1d1db1442f468db1813c15f8d100155eda512a7"
 dependencies = [
  "cc",
  "devil",
@@ -296,7 +297,6 @@ dependencies = [
  "pkg-config",
  "thiserror",
  "tokio",
- "tokio-stream",
  "tracing",
 ]
 
@@ -1006,13 +1006,13 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "1.0.4"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78bed444cc8a2160f01cbcf811ef18cac863ad68ae8ca62092e8db51d51c761c"
+checksum = "69d83b0086dc8ecf3ce9ae2874b2d1290252e2a30720bea58a5c6639b0092873"
 dependencies = [
  "libc",
  "wasi",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

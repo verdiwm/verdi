@@ -7,13 +7,7 @@ use std::{
     sync::Arc,
 };
 
-use colpetto::{
-    event::KeyState,
-    helper::{
-        Handle as LibinputHandle,
-        event::{EventType, KeyboardEvent},
-    },
-};
+use colpetto::event::KeyState;
 use input_linux_sys::KEY_ESC;
 use saddle::Seat;
 use serde::{Deserialize, Serialize};
