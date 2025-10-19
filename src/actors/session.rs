@@ -72,7 +72,7 @@ impl Session {
     }
 
     pub fn seat_name(&self) -> &str {
-        &self.seat.seat_name()
+        self.seat.seat_name()
     }
 
     // FIXME: we basically aren't handling errors

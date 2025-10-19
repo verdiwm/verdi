@@ -187,6 +187,7 @@ impl Compositor {
 
                 tokio::spawn(client.run());
             }
+            #[allow(clippy::single_match)]
             CompositorMessage::Input(event) => match event.event_type {
                 EventType::Keyboard(KeyboardEvent::Key { key, state, .. }) => {
                     let (should_check_vt_switch, is_ctrl_alt_pressed) = {

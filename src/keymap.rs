@@ -10,6 +10,12 @@ pub struct KeyMap {
     mappings: HashMap<u32, u32>,
 }
 
+impl Default for KeyMap {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl KeyMap {
     pub fn new() -> Self {
         let mut mappings = HashMap::new();
@@ -35,6 +41,12 @@ impl KeyMap {
 
 pub struct ModifierState {
     pressed_keys: HashSet<u32>,
+}
+
+impl Default for ModifierState {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ModifierState {
