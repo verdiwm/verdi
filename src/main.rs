@@ -19,14 +19,13 @@ use rustix::{
 use serde::{Deserialize, Serialize};
 use tokio::{net::UnixListener, process::Command, sync::mpsc, task::JoinSet, time::sleep};
 use tokio_stream::{StreamExt, wrappers::UnboundedReceiverStream};
+use tokio_util::{sync::CancellationToken, task::TaskTracker};
 use tracing::{debug, error};
 
 use tracing_subscriber::EnvFilter;
 use verdi::{
-    Config,
-    Verdi,
+    Compositor, CompositorHandle, Config, actors::client_listener::ClientListener,
     error::VerdiError,
-    // protocol::wayland::display::{Display, WlDisplay},
 };
 
 use waynest::ObjectId;
@@ -59,11 +58,10 @@ struct Args {
 
 fn main() -> AnyResult<()> {
     let format = tracing_subscriber::fmt::format()
-        .with_level(false)
+        .with_level(true)
         .with_target(false)
         .with_thread_ids(true)
         .with_thread_names(false)
-        .without_time()
         .compact();
 
     tracing_subscriber::fmt()
@@ -95,31 +93,23 @@ fn main() -> AnyResult<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    debug!("Created runtime");
+    debug!("Created tokio runtime");
 
     runtime.block_on(async move {
-        let listener = {
+        let socket_path = {
             if let Some(ref socket) = args.socket {
-                Listener::new_with_path(socket)
+                Some(socket)
             } else if let Some(ref socket) = config.socket {
-                Listener::new_with_path(socket)
+                Some(socket)
             } else {
-                Listener::new()
+                None
             }
-        }?;
+        };
 
-        let socket_path = listener.socket_path().canonicalize()?;
+        let compositor = Compositor::new(socket_path).await;
 
-        debug!("Started listener at path {}", socket_path.display());
-
-        let mut verdi = Verdi::new(listener, config).await?;
-
-        debug!("Started new verdi instance");
-
-        verdi.run().await?;
-
-        anyhow::Ok(())
-    })?;
+        compositor.run().await;
+    });
 
     Ok(())
 }

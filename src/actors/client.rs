@@ -1,12 +1,22 @@
 use futures_sink::Sink;
 use pin_project_lite::pin_project;
-use tokio::net::UnixStream;
-use tokio_stream::Stream;
+use tokio::{net::UnixStream, sync::mpsc};
+use tokio_stream::{Stream, StreamExt};
+use tracing::error;
 
 use waynest::{Message, ObjectId, ProtocolError, Socket};
-use waynest_server::Store;
+use waynest_server::{Client as _, Store};
 
-use crate::VerdiError;
+use crate::{VerdiError, protocol::wayland::display::Display};
+
+pub enum ClientMessage {}
+
+#[derive(Clone)]
+#[allow(unused)]
+pub struct ClientHandle {
+    sender: mpsc::Sender<ClientMessage>,
+    client_id: u32,
+}
 
 pin_project! {
     pub struct Client {
@@ -15,12 +25,15 @@ pin_project! {
         store: Store<Client, VerdiError>,
         next_object_id: ObjectId,
         next_event_serial: u32,
+        receiver: Option<mpsc::Receiver<ClientMessage>>,
+        sender: mpsc::Sender<ClientMessage>,
+        client_id: u32,
     }
 }
 
 impl std::fmt::Debug for Client {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Client").finish()
+        f.debug_tuple("Client").field(&self.client_id).finish()
     }
 }
 
@@ -88,13 +101,28 @@ impl waynest_server::Client for Client {
 }
 
 impl Client {
-    pub fn new(stream: UnixStream) -> Result<Self, VerdiError> {
-        Ok(Self {
+    pub fn new(stream: UnixStream, client_id: u32) -> Result<Self, VerdiError> {
+        let (sender, receiver) = mpsc::channel(128);
+
+        let mut client = Self {
             socket: Socket::new(stream.into_std()?)?,
             store: Store::new(),
             next_object_id: unsafe { ObjectId::from_raw(0xff000000) },
             next_event_serial: 0,
-        })
+            receiver: Some(receiver),
+            sender,
+            client_id,
+        };
+
+        let _ = client.insert(ObjectId::DISPLAY, Display::default());
+
+        tracing::debug!("Created new client with id {client_id}");
+
+        Ok(client)
+    }
+
+    pub fn handle(&self) -> ClientHandle {
+        ClientHandle::new(self.sender.clone(), self.client_id)
     }
 
     pub fn next_event_serial(&mut self) -> u32 {
@@ -104,10 +132,43 @@ impl Client {
         prev
     }
 
-    // pub fn next_object_id(&mut self) -> usize {
-    //     let prev = self.next_object_id;
-    //     self.next_object_id = self.next_object_id.wrapping_add(1);
+    pub async fn run(mut self) {
+        let mut receiver = self.receiver.take().expect("Internal error");
 
-    //     prev
-    // }
+        loop {
+            tokio::select! {
+                biased;
+                msg = self.try_next() => {
+                    match msg {
+                        Ok(Some(mut msg)) => {
+                            if let Err(err) = self
+                                .get_raw(msg.object_id())
+                                .ok_or(VerdiError::MissingObject(msg.object_id())).unwrap()
+                                .dispatch_request(&mut self, msg.object_id(), &mut msg)
+                                .await
+                            {
+                                error!("Error while handling message: {err}");
+                                // return Err(err.into());
+                            }
+                        },
+                        Ok(None) => todo!(),
+                        Err(_) => todo!(),
+                    }
+                }
+                Some(msg) = receiver.recv() => {
+                    self.handle_message(msg);
+                }
+            }
+        }
+    }
+
+    fn handle_message(&mut self, msg: ClientMessage) {
+        match msg {}
+    }
+}
+
+impl ClientHandle {
+    pub fn new(sender: mpsc::Sender<ClientMessage>, client_id: u32) -> Self {
+        Self { sender, client_id }
+    }
 }
