@@ -27,6 +27,12 @@ pub enum SessionMessage {
     CloseDevice {
         fd: OwnedFd,
     },
+    AcquireSession {
+        respond_to: oneshot::Sender<()>,
+    },
+    ReleaseSession {
+        respond_to: oneshot::Sender<()>,
+    },
 }
 
 pub struct Session {
@@ -85,10 +91,8 @@ impl Session {
                     match res {
                         Ok(is_active) => {
                             if is_active {
-                                let _ = self.seat.aquire_session().await;
                                 self.compositor_handle.session_resumed().await;
                             } else {
-                                let _ = self.seat.release_session().await;
                                 self.compositor_handle.session_lost().await;
                             }
                         },
@@ -118,6 +122,16 @@ impl Session {
             }
             SessionMessage::CloseDevice { fd } => {
                 let _ = self.seat.close_device(fd).await;
+            }
+            SessionMessage::AcquireSession { respond_to } => {
+                let _ = self.seat.aquire_session().await;
+
+                let _ = respond_to.send(());
+            }
+            SessionMessage::ReleaseSession { respond_to } => {
+                let _ = self.seat.release_session().await;
+
+                let _ = respond_to.send(());
             }
         }
     }
@@ -160,6 +174,28 @@ impl SessionHandle {
         let _ = self
             .sender
             .send(SessionMessage::CurrentVt { respond_to: send })
+            .await;
+
+        recv.await
+    }
+
+    pub async fn acquire_session(&self) -> Result<(), RecvError> {
+        let (send, recv) = oneshot::channel();
+
+        let _ = self
+            .sender
+            .send(SessionMessage::AcquireSession { respond_to: send })
+            .await;
+
+        recv.await
+    }
+
+    pub async fn release_session(&self) -> Result<(), RecvError> {
+        let (send, recv) = oneshot::channel();
+
+        let _ = self
+            .sender
+            .send(SessionMessage::ReleaseSession { respond_to: send })
             .await;
 
         recv.await

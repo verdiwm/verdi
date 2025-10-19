@@ -12,6 +12,7 @@ use crate::{VerdiError, protocol::wayland::display::Display};
 pub enum ClientMessage {}
 
 #[derive(Clone)]
+#[allow(unused)]
 pub struct ClientHandle {
     sender: mpsc::Sender<ClientMessage>,
     client_id: u32,

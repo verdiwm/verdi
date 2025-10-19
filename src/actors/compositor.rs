@@ -15,6 +15,7 @@ use crate::{
         client::ClientHandle,
         client_listener::ClientListener,
         input_manager::{InputManager, InputManagerHandle},
+        renderer::{Renderer, RendererHandle},
         session::{Session, SessionHandle},
     },
     keymap::{KeyMap, ModifierState},
@@ -87,6 +88,7 @@ pub struct Compositor {
     // Handles
     session_handle: SessionHandle,
     input_manager_handle: InputManagerHandle,
+    renderer_handle: RendererHandle,
 }
 
 impl Compositor {
@@ -116,9 +118,13 @@ impl Compositor {
         );
         let input_manager_handle = input_manager.handle();
 
+        let renderer = Renderer::new(session_handle.clone(), shutdown_token.child_token());
+        let renderer_handle = renderer.handle();
+
         actors_tracker.spawn(session.run());
         actors_tracker.spawn(input_manager.run());
         actors_tracker.spawn(client_listener.run());
+        actors_tracker.spawn(renderer.run());
 
         let key_map = KeyMap::new();
         let modifier_state = Arc::new(RwLock::new(ModifierState::new()));
@@ -135,6 +141,7 @@ impl Compositor {
             has_control: false,
             session_handle,
             input_manager_handle,
+            renderer_handle,
         }
     }
 
@@ -207,8 +214,6 @@ impl Compositor {
                                         "Deactivating session - destroying rendering context completely"
                                     );
 
-                                    // wgpu_context = None;
-
                                     self.session_handle.switch_vt(vt).await;
 
                                     // if let Err(e) = self.session_handle.switch_vt(vt).await {
@@ -224,12 +229,18 @@ impl Compositor {
                 _ => {}
             },
             CompositorMessage::SessionLost => {
-                self.has_control = false;
                 self.input_manager_handle.suspend().await;
+                self.renderer_handle.suspend().await;
+
+                let _ = self.session_handle.release_session().await;
+                self.has_control = false;
             }
             CompositorMessage::SessionResumed => {
+                let _ = self.session_handle.acquire_session().await;
                 self.has_control = true;
+
                 self.input_manager_handle.resume().await;
+                self.renderer_handle.resume().await;
             }
         }
     }

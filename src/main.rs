@@ -58,7 +58,7 @@ struct Args {
 
 fn main() -> AnyResult<()> {
     let format = tracing_subscriber::fmt::format()
-        .with_level(false)
+        .with_level(true)
         .with_target(false)
         .with_thread_ids(true)
         .with_thread_names(false)

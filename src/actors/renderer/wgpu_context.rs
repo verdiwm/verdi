@@ -1,13 +1,14 @@
+use std::ffi::CString;
+
 use anyhow::{Context, Result};
 use diretto::{
     ClientCapability, Connector, Device as DrmDevice, ModeType, sys::DRM_MODE_OBJECT_PLANE,
 };
-use rustix::{
-    fd::{AsFd, AsRawFd},
-    fs::{Mode, OFlags, open},
-};
+use rustix::fd::{AsFd, AsRawFd};
 use tracing::{debug, trace};
 use wgpu::{Backends, ExperimentalFeatures, PresentMode, SurfaceTargetUnsafe};
+
+use crate::actors::session::SessionHandle;
 
 #[derive(Debug)]
 struct DrmState {
@@ -17,47 +18,85 @@ struct DrmState {
     plane_id: u32,
 }
 
-#[derive(Debug)]
-struct WgpuState<'s> {
-    surface: wgpu::Surface<'s>,
-    _instance: wgpu::Instance,
-    _adapter: wgpu::Adapter,
+pub struct WgpuContext<'s> {
     device: wgpu::Device,
     queue: wgpu::Queue,
-}
-
-pub struct WgpuContext<'s> {
-    wgpu_state: WgpuState<'s>,
+    surface: wgpu::Surface<'s>,
     _drm_state: DrmState,
 }
 
-fn open_drm_device() -> Result<DrmDevice> {
-    let fd = open(
-        "/dev/dri/card1",
-        OFlags::RDWR | OFlags::NONBLOCK | OFlags::CLOEXEC,
-        Mode::empty(),
-    )?;
-    let device = unsafe { DrmDevice::new_unchecked(fd) };
-
-    debug!("Opened DRM device /dev/dri/card1");
-    Ok(device)
-}
-
 impl<'s> WgpuContext<'s> {
-    pub async fn new() -> Result<Self> {
-        let drm_state = Self::create_drm_resources()?;
-        let wgpu_state = Self::create_wgpu_resources(&drm_state).await?;
+    pub async fn new(session_handle: &SessionHandle) -> Result<Self> {
+        let drm_state = Self::create_drm_resources(session_handle).await?;
+
+        let surface_target = SurfaceTargetUnsafe::Drm {
+            fd: drm_state.device.as_fd().as_raw_fd(),
+            plane: drm_state.plane_id,
+            connector_id: drm_state.connector.connector_id.into(),
+            width: drm_state.mode.display_width() as u32,
+            height: drm_state.mode.display_height() as u32,
+            refresh_rate: drm_state.mode.vertical_refresh_rate() * 1000,
+        };
+
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+            backends: Backends::VULKAN,
+            flags: wgpu::InstanceFlags::default()
+                | wgpu::InstanceFlags::ALLOW_UNDERLYING_NONCOMPLIANT_ADAPTER,
+            ..Default::default()
+        });
+
+        let surface = unsafe { instance.create_surface_unsafe(surface_target)? };
+
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::LowPower,
+                ..Default::default()
+            })
+            .await
+            .context("Failed to find an appropriate adapter")?;
+
+        let (device, queue) = adapter
+            .request_device(&wgpu::DeviceDescriptor {
+                label: None,
+                required_features: wgpu::Features::empty(),
+                required_limits: adapter.limits(),
+                memory_hints: wgpu::MemoryHints::MemoryUsage,
+                trace: wgpu::Trace::Off,
+                experimental_features: ExperimentalFeatures::disabled(),
+            })
+            .await
+            .context("Failed to create device")?;
+
+        let mut config = surface
+            .get_default_config(
+                &adapter,
+                drm_state.mode.display_width().into(),
+                drm_state.mode.display_height().into(),
+            )
+            .context("Surface not supported by adapter")?;
+
+        config.present_mode = PresentMode::AutoVsync;
+        surface.configure(&device, &config);
+
+        debug!("Created WGPU resources");
 
         Ok(Self {
+            surface,
+            device,
+            queue,
             _drm_state: drm_state,
-            wgpu_state,
         })
     }
 
-    fn create_drm_resources() -> Result<DrmState> {
-        let device = open_drm_device()?;
+    async fn create_drm_resources(session_handle: &SessionHandle) -> Result<DrmState> {
+        let fd = session_handle
+            .open_device(CString::new("/dev/dri/card1").unwrap())
+            .await
+            .unwrap();
+
+        let device = unsafe { DrmDevice::new_unchecked(fd) };
+
         device.set_client_capability(ClientCapability::Atomic, true)?;
-        device.set_master().context("Failed to become DRM master")?;
 
         let resources = device.get_resources()?;
 
@@ -136,70 +175,8 @@ impl<'s> WgpuContext<'s> {
         })
     }
 
-    async fn create_wgpu_resources<'a, 'b>(drm_state: &'b DrmState) -> Result<WgpuState<'a>> {
-        let surface_target = SurfaceTargetUnsafe::Drm {
-            fd: drm_state.device.as_fd().as_raw_fd(),
-            plane: drm_state.plane_id,
-            connector_id: drm_state.connector.connector_id.into(),
-            width: drm_state.mode.display_width() as u32,
-            height: drm_state.mode.display_height() as u32,
-            refresh_rate: drm_state.mode.vertical_refresh_rate() * 1000,
-        };
-
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-            backends: Backends::VULKAN,
-            flags: wgpu::InstanceFlags::default()
-                | wgpu::InstanceFlags::ALLOW_UNDERLYING_NONCOMPLIANT_ADAPTER,
-            ..Default::default()
-        });
-
-        let adapter = instance
-            .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::LowPower,
-                ..Default::default()
-            })
-            .await
-            .context("Failed to find an appropriate adapter")?;
-
-        let surface = unsafe { instance.create_surface_unsafe(surface_target)? };
-
-        let (device, queue) = adapter
-            .request_device(&wgpu::DeviceDescriptor {
-                label: None,
-                required_features: wgpu::Features::empty(),
-                required_limits: adapter.limits(),
-                memory_hints: wgpu::MemoryHints::MemoryUsage,
-                trace: wgpu::Trace::Off,
-                experimental_features: ExperimentalFeatures::disabled(),
-            })
-            .await
-            .context("Failed to create device")?;
-
-        let mut config = surface
-            .get_default_config(
-                &adapter,
-                drm_state.mode.display_width().into(),
-                drm_state.mode.display_height().into(),
-            )
-            .context("Surface not supported by adapter")?;
-
-        config.present_mode = PresentMode::AutoVsync;
-        surface.configure(&device, &config);
-
-        debug!("Created WGPU resources");
-        Ok(WgpuState {
-            surface,
-            _instance: instance,
-            _adapter: adapter,
-            device,
-            queue,
-        })
-    }
-
     pub fn present(&self) -> Result<()> {
-        let wgpu_state = &self.wgpu_state;
-
-        let frame = wgpu_state
+        let frame = self
             .surface
             .get_current_texture()
             .context("Failed to acquire next swapchain texture")?;
@@ -208,7 +185,7 @@ impl<'s> WgpuContext<'s> {
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
 
-        let mut encoder = wgpu_state
+        let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
 
@@ -229,7 +206,7 @@ impl<'s> WgpuContext<'s> {
         });
 
         drop(renderpass);
-        wgpu_state.queue.submit([encoder.finish()]);
+        self.queue.submit([encoder.finish()]);
         frame.present();
 
         Ok(())
