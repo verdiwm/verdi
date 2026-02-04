@@ -68,7 +68,7 @@ tokio-util = { version = "0.7.16", features = ["rt"] }
 
 [build-dependencies]
 chrono = { version = "0.4.42", default-features = false, features = ["std"] }
-git2 = { version = "0.20.2", default-features = false }
+git2 = { version = "0.20.4", default-features = false }
 
 [patch.crates-io]
 # wgpu = { git = "https://github.com/gfx-rs/wgpu" }
