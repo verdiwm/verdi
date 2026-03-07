@@ -23,10 +23,10 @@ inherits = "release"
 strip = false
 
 [dependencies]
-anyhow = "1.0.100"
-rustix = { version = "1.1.2", features = ["fs", "mm", "process"] }
-thiserror = "2.0.17"
-tokio = { version = "1.47.1", features = [
+anyhow = "1.0.102"
+rustix = { version = "1.1.4", features = ["fs", "mm", "process"] }
+thiserror = "2.0.18"
+tokio = { version = "1.50.0", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -35,40 +35,42 @@ tokio = { version = "1.47.1", features = [
     "tracing",
     "process",
 ] }
-tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.20", features = [
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = [
     "env-filter",
     "tracing-log",
 ] }
-wgpu = { version = "27.0.1", default-features = false, features = [
+wgpu = { version = "28.0.0", default-features = false, features = [
     "vulkan",
     "wgsl",
 ] }
-clap = { version = "4.5.48", features = ["derive"] }
+clap = { version = "4.5.60", features = ["derive"] }
 serde = { version = "1.0.228", features = ["derive"] }
 diretto = "0.0.7"
-rand = "0.9.2"
-bytemuck = { version = "1.24.0", features = ["derive"] }
+rand = "0.10.0"
+bytemuck = { version = "1.25.0", features = ["derive"] }
 colpetto = { version = "0.7.0", features = ["tokio", "tracing"] }
-waynest = "0.1.0"
-waynest-protocols = { version = "0.1.0", features = [
+waynest = "0.2.0-rc1"
+waynest-protocols = { version = "0.2.0-rc1", features = [
     "tracing",
     "server",
     "stable",
 ] }
-waynest-server = "0.1.0"
-home = "0.5.11"
-tokio-stream = { version = "0.1.17", features = ["sync"] }
-libcorn = "0.10.0"
+waynest-server = "0.2.0-rc1"
+home = "0.5.12"
+tokio-stream = { version = "0.1.18", features = ["sync"] }
+libcorn = "0.10.1"
 saddle = "0.1.2"
 input-linux-sys = "0.9.0"
-pin-project-lite = "0.2.16"
-futures-sink = "0.3.31"
-tokio-util = { version = "0.7.16", features = ["rt"] }
+pin-project-lite = "0.2.17"
+futures-core = "0.3.32"
+futures-sink = "0.3.32"
+tokio-util = { version = "0.7.18", features = ["rt"] }
+stagecraft = { version = "0.0.1", path = "../stagecraft" }
 
 [build-dependencies]
-chrono = { version = "0.4.42", default-features = false, features = ["std"] }
-git2 = { version = "0.20.2", default-features = false }
+chrono = { version = "0.4.44", default-features = false, features = ["std"] }
+git2 = { version = "0.20.4", default-features = false }
 
 [patch.crates-io]
 # wgpu = { git = "https://github.com/gfx-rs/wgpu" }
@@ -76,9 +78,9 @@ libcorn = { git = "https://github.com/corn-config/corn" }
 # colpetto = { git = "https://github.com/verdiwm/colpetto" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
 # colpetto = { path = "../colpetto" }
-waynest = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
-waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
-waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
+# waynest = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
+# waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
+# waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 saddle = { git = "https://github.com/verdiwm/saddle/", branch = "main" }
 # waynest = { path = "../waynest/crates/core" }
 # waynest-protocols = { path = "../waynest/crates/protocols" }

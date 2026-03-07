@@ -5,14 +5,13 @@ use std::{
 };
 
 use colpetto::{Libinput, event::AsRawEvent};
-use tokio::{sync::mpsc, task::LocalSet};
-use tokio_stream::StreamExt;
-use tokio_util::sync::CancellationToken;
-use tracing::debug;
+use stagecraft::{ActorDead, Context, Handle, HasMailbox, LocalActor, LocalStreamActor};
+use tokio::sync::mpsc;
+use tracing::{debug, error, trace};
 
-use crate::{
-    CompositorHandle,
-    actors::{compositor::InputEvent, session::SessionHandle},
+use crate::actors::{
+    compositor::{Compositor, CompositorMessage, InputEvent},
+    session::{SessionExt, SessionRef},
 };
 
 pub enum InputManagerMessage {
@@ -20,146 +19,141 @@ pub enum InputManagerMessage {
     Resume,
 }
 
+pub struct InputManagerInit {
+    pub compositor_handle: Handle<Compositor>,
+    pub session_ref: SessionRef,
+}
+
 pub struct InputManager {
-    sender: mpsc::Sender<InputManagerMessage>,
-    receiver: mpsc::Receiver<InputManagerMessage>,
-    compositor_handle: CompositorHandle,
-    shutdown_token: CancellationToken,
-    session_handle: SessionHandle,
+    compositor_handle: Handle<Compositor>,
+    libinput: Libinput,
 }
 
-#[derive(Clone)]
-pub struct InputManagerHandle {
-    sender: mpsc::Sender<InputManagerMessage>,
+impl HasMailbox for InputManager {
+    type Message = InputManagerMessage;
 }
 
-impl InputManager {
-    pub fn new(
-        compositor_handle: CompositorHandle,
-        session_handle: SessionHandle,
-        shutdown_token: CancellationToken,
-    ) -> Self {
-        let (sender, receiver) = mpsc::channel(128);
+impl LocalActor for InputManager {
+    type Init = InputManagerInit;
 
-        Self {
-            sender,
-            receiver,
-            compositor_handle,
-            shutdown_token,
-            session_handle,
-        }
-    }
+    async fn init(init: InputManagerInit, ctx: &mut Context<Self>) -> Self {
+        debug!("Called input manager init");
+        let (open_request_tx, mut open_request_rx) = mpsc::unbounded_channel::<CString>();
+        let (open_response_tx, open_response_rx) = std_mpsc::channel();
+        let (close_tx, mut close_rx) = mpsc::unbounded_channel::<OwnedFd>();
 
-    pub fn handle(&self) -> InputManagerHandle {
-        InputManagerHandle::new(self.sender.clone())
-    }
+        let open_session = init.session_ref.clone();
+        let close_session = init.session_ref.clone();
 
-    pub async fn run(mut self) {
-        let (open_request_sx, mut open_request_rx) = mpsc::unbounded_channel();
-        let (open_response_sx, open_response_rx) = std_mpsc::channel();
-        let (close_sx, mut close_rx) = mpsc::unbounded_channel();
-
-        let session_handle = self.session_handle;
-        let open_session = session_handle.clone();
-        let close_session = session_handle.clone();
-
-        tokio::spawn(async move {
+        // IMPORTANT: this need to be spawned in the original runtime otherwise we cause a deadlock
+        ctx.track_main(async move {
             while let Some(path) = open_request_rx.recv().await {
-                debug!("Bridge: opening device");
+                trace!("Bridge: opening device");
                 let fd = match open_session.open_device(path).await {
                     Ok(owned_fd) => owned_fd.into_raw_fd(),
-                    Err(_) => -1,
-                };
+                    Err(_) => {
+                        error!("Failed to open device, actor  dead");
 
-                let _ = open_response_sx.send(fd);
+                        -1
+                    }
+                };
+                let _ = open_response_tx.send(fd);
             }
         });
 
-        tokio::spawn(async move {
+        ctx.track_main(async move {
             while let Some(fd) = close_rx.recv().await {
-                debug!("Bridge: closing device");
+                trace!("Bridge: closing device");
                 let _ = close_session.close_device(fd).await;
             }
         });
 
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
+        let mut libinput = Libinput::with_tracing(
+            move |path, _| {
+                trace!("Trying to open device");
+                open_request_tx.send(path.to_owned()).map_err(|_| -1)?;
+                open_response_rx.recv().map_err(|_| -1)
+            },
+            move |fd| {
+                trace!("Trying to close device");
+                let _ = close_tx.send(unsafe { OwnedFd::from_raw_fd(fd) });
+            },
+        )
+        .unwrap();
+
+        libinput
+            .udev_assign_seat(
+                CString::new(init.session_ref.seat_name())
+                    .unwrap()
+                    .as_c_str(),
+            )
             .unwrap();
 
-        std::thread::spawn(move || {
-            let local = LocalSet::new();
+        Self {
+            compositor_handle: init.compositor_handle,
+            libinput,
+        }
+    }
 
-            local.spawn_local(async move {
-                let mut libinput = Libinput::with_tracing(
-                    move |path, _| {
-                        debug!("Trying to open device");
-                        open_request_sx.send(path.to_owned()).map_err(|_| -1)?;
-                        open_response_rx.recv().map_err(|_| -1)
-                    },
-                    move |fd| {
-                        debug!("Trying to close device");
-                        let _ = close_sx.send(unsafe { OwnedFd::from_raw_fd(fd) });
-                    },
-                )
-                .unwrap();
-
-                libinput
-                    .udev_assign_seat(CString::new(session_handle.seat_name()).unwrap().as_c_str())
-                    .unwrap();
-
-                let mut stream = libinput.event_stream().unwrap();
-
-                loop {
-                    tokio::select! {
-                        biased;
-                        _ = self.shutdown_token.cancelled() => {
-                            break
-                        }
-                        Some(res) = stream.next() => {
-                            match res {
-                                Ok(ref event) => {
-                                     let _ = self
-                                        .compositor_handle
-                                        .input(InputEvent {
-                                            name: event.event_type(),
-                                            event_type: event.into(),
-                                            device_name: event.device().name().to_string_lossy().to_string(),
-                                        })
-                                        .await;
-                                },
-                                Err(_) => break,
-                            }
-                        }
-                        Some(msg) = self.receiver.recv() => {
-                            match msg {
-                                InputManagerMessage::Suspend => {
-                                    libinput.suspend();
-                                }
-                                InputManagerMessage::Resume => {
-                                    let _ = libinput.resume();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            rt.block_on(local);
-        });
+    async fn handle_message(&mut self, msg: InputManagerMessage, _ctx: &mut Context<Self>) {
+        match msg {
+            InputManagerMessage::Suspend => {
+                self.libinput.suspend();
+            }
+            InputManagerMessage::Resume => {
+                let _ = self.libinput.resume();
+            }
+        }
     }
 }
 
-impl InputManagerHandle {
-    fn new(sender: mpsc::Sender<InputManagerMessage>) -> Self {
-        Self { sender }
+impl LocalStreamActor for InputManager {
+    type Event = Result<colpetto::Event, colpetto::Error>;
+    type Stream = colpetto::EventStream;
+
+    async fn create_stream(&mut self, _ctx: &mut Context<Self>) -> Self::Stream {
+        debug!("Called create stream for input manager");
+        self.libinput.event_stream().unwrap()
     }
 
-    pub async fn suspend(&self) {
-        let _ = self.sender.send(InputManagerMessage::Suspend).await;
+    async fn handle_event(
+        &mut self,
+        event: Result<colpetto::Event, colpetto::Error>,
+        _ctx: &mut Context<Self>,
+    ) {
+        match event {
+            Ok(ref event) => {
+                let _ = self
+                    .compositor_handle
+                    .cast(CompositorMessage::Input(InputEvent {
+                        name: event.event_type(),
+                        event_type: event.into(),
+                        device_name: event.device().name().to_string_lossy().to_string(),
+                    }))
+                    .await;
+            }
+            Err(e) => {
+                tracing::error!("libinput error: {e}");
+            }
+        }
+    }
+}
+
+pub trait InputManagerExt {
+    fn suspend(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
+    fn resume(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
+}
+
+impl InputManagerExt for Handle<InputManager> {
+    async fn suspend(&self) -> Result<(), ActorDead<()>> {
+        self.cast(InputManagerMessage::Suspend)
+            .await
+            .map_err(|_| ActorDead(()))
     }
 
-    pub async fn resume(&self) {
-        let _ = self.sender.send(InputManagerMessage::Resume).await;
+    async fn resume(&self) -> Result<(), ActorDead<()>> {
+        self.cast(InputManagerMessage::Resume)
+            .await
+            .map_err(|_| ActorDead(()))
     }
 }

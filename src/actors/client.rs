@@ -2,6 +2,7 @@ use futures_sink::Sink;
 use pin_project_lite::pin_project;
 use tokio::{net::UnixStream, sync::mpsc};
 use tokio_stream::{Stream, StreamExt};
+use tokio_util::sync::CancellationToken;
 use tracing::error;
 
 use waynest::{Message, ObjectId, ProtocolError, Socket};
@@ -28,6 +29,7 @@ pin_project! {
         receiver: Option<mpsc::Receiver<ClientMessage>>,
         sender: mpsc::Sender<ClientMessage>,
         client_id: u32,
+        shutdown_token: CancellationToken,
     }
 }
 
@@ -101,7 +103,11 @@ impl waynest_server::Client for Client {
 }
 
 impl Client {
-    pub fn new(stream: UnixStream, client_id: u32) -> Result<Self, VerdiError> {
+    pub fn new(
+        stream: UnixStream,
+        client_id: u32,
+        shutdown_token: CancellationToken,
+    ) -> Result<Self, VerdiError> {
         let (sender, receiver) = mpsc::channel(128);
 
         let mut client = Self {
@@ -112,6 +118,7 @@ impl Client {
             receiver: Some(receiver),
             sender,
             client_id,
+            shutdown_token,
         };
 
         let _ = client.insert(ObjectId::DISPLAY, Display::default());
@@ -134,25 +141,34 @@ impl Client {
 
     pub async fn run(mut self) {
         let mut receiver = self.receiver.take().expect("Internal error");
+        let shutdown_token = self.shutdown_token.clone();
 
         loop {
             tokio::select! {
                 biased;
+                _ = shutdown_token.cancelled() => break,
                 msg = self.try_next() => {
                     match msg {
                         Ok(Some(mut msg)) => {
-                            if let Err(err) = self
+                            let result = match self
                                 .get_raw(msg.object_id())
-                                .ok_or(VerdiError::MissingObject(msg.object_id())).unwrap()
-                                .dispatch_request(&mut self, msg.object_id(), &mut msg)
-                                .await
+                                .ok_or(VerdiError::MissingObject(msg.object_id()))
                             {
-                                error!("Error while handling message: {err}");
-                                // return Err(err.into());
+                                Ok(handler) => handler.dispatch_request(&mut self, msg.object_id(), &mut msg).await,
+                                Err(e) => Err(e),
+                            };
+                            if let Err(err) = result {
+                                error!("Error while handling message for client {}: {err}", self.client_id);
                             }
                         },
-                        Ok(None) => todo!(),
-                        Err(_) => todo!(),
+                        Ok(None) => {
+                            tracing::debug!("Client {} disconnected", self.client_id);
+                            break;
+                        },
+                        Err(e) => {
+                            error!("Protocol error for client {}: {e}", self.client_id);
+                            break;
+                        },
                     }
                 }
                 Some(msg) = receiver.recv() => {

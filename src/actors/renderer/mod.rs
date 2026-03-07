@@ -1,109 +1,96 @@
-use tokio::sync::{mpsc, oneshot};
-use tokio_util::sync::CancellationToken;
+use stagecraft::{Actor, ActorDead, Context, Handle, HasMailbox};
+use tokio::sync::oneshot;
 use tracing::debug;
 
-use crate::actors::{renderer::wgpu_context::WgpuContext, session::SessionHandle};
+use crate::actors::session::SessionRef;
+
+use self::wgpu_context::WgpuContext;
 
 mod wgpu_context;
 
 pub enum RendererMessage {
     Suspend { respond_to: oneshot::Sender<()> },
     Resume { respond_to: oneshot::Sender<()> },
+    Render,
 }
 
-pub struct Renderer<'s> {
-    sender: mpsc::Sender<RendererMessage>,
-    receiver: mpsc::Receiver<RendererMessage>,
-    session_handle: SessionHandle,
-    shutdown_token: CancellationToken,
-    wgpu_context: Option<WgpuContext<'s>>,
+pub struct Renderer {
+    session_ref: SessionRef,
+    wgpu_context: Option<WgpuContext<'static>>,
 }
 
-pub struct RendererHandle {
-    sender: mpsc::Sender<RendererMessage>,
-}
-
-impl Renderer<'_> {
-    pub fn new(session_handle: SessionHandle, shutdown_token: CancellationToken) -> Self {
-        let (sender, receiver) = mpsc::channel(128);
-
+impl Renderer {
+    pub fn new(session_ref: SessionRef) -> Self {
         Self {
-            sender,
-            receiver,
-            session_handle,
-            shutdown_token,
+            session_ref,
             wgpu_context: None,
         }
     }
+}
 
-    pub fn handle(&self) -> RendererHandle {
-        RendererHandle::new(self.sender.clone())
+impl HasMailbox for Renderer {
+    type Message = RendererMessage;
+}
+
+impl Actor for Renderer {
+    type Init = Self;
+
+    async fn init(init: Self, _ctx: &mut Context<Self>) -> Self {
+        init
     }
 
-    pub async fn run(mut self) {
-        loop {
-            tokio::select! {
-                biased;
-                _ = self.shutdown_token.cancelled() => {
-                    break
-                }
-                Some(msg) = self.receiver.recv() => {
-                    match msg {
-                        RendererMessage::Suspend { respond_to }=> {
-                            debug!("Suspending renderer");
-                            self.wgpu_context = None;
+    async fn handle_message(&mut self, msg: RendererMessage, ctx: &mut Context<Self>) {
+        match msg {
+            RendererMessage::Suspend { respond_to } => {
+                debug!("Suspending renderer");
+                self.wgpu_context = None;
+                let _ = respond_to.send(());
+            }
+            RendererMessage::Resume { respond_to } => {
+                debug!("Resuming renderer");
 
-                            let _ = respond_to.send(());
-
-                        }
-                        RendererMessage::Resume {respond_to} => {
-                            debug!("Resuming renderer");
-
-                            if self.wgpu_context.is_none() {
-                                debug!("Creating wgpu context");
-                                self.wgpu_context =Some( WgpuContext::new(&self.session_handle).await.unwrap());
-                            }
-
-                            let _ = respond_to.send(());
-                        }
+                if self.wgpu_context.is_none() {
+                    debug!("Creating wgpu context");
+                    match WgpuContext::new(&self.session_ref).await {
+                        Ok(wgpu_ctx) => self.wgpu_context = Some(wgpu_ctx),
+                        Err(e) => tracing::error!("Failed to create wgpu context: {e}"),
                     }
                 }
-            }
 
-            if let Some(ref context) = self.wgpu_context {
-                let _ = context.present();
-                continue;
-            }
+                let _ = respond_to.send(());
 
-            tokio::task::yield_now().await;
+                let _ = ctx.handle().cast(RendererMessage::Render).await;
+            }
+            RendererMessage::Render => {
+                if let Some(ref context) = self.wgpu_context {
+                    if let Err(e) = context.present() {
+                        tracing::error!("Present failed: {e}");
+                    }
+                    let _ = ctx.handle().cast(RendererMessage::Render).await;
+                }
+            }
         }
+    }
+
+    async fn on_stop(&mut self, _ctx: &mut Context<Self>) {
+        debug!("Renderer stopping, dropping wgpu context");
+        self.wgpu_context = None;
     }
 }
 
-impl RendererHandle {
-    fn new(sender: mpsc::Sender<RendererMessage>) -> Self {
-        Self { sender }
+pub trait RendererExt {
+    fn suspend(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
+    fn resume(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
+}
+
+impl RendererExt for Handle<Renderer> {
+    async fn suspend(&self) -> Result<(), ActorDead<()>> {
+        self.call(|tx| RendererMessage::Suspend { respond_to: tx })
+            .await
     }
 
-    pub async fn suspend(&self) {
-        let (send, recv) = oneshot::channel();
-
-        let _ = self
-            .sender
-            .send(RendererMessage::Suspend { respond_to: send })
-            .await;
-
-        let _ = recv.await;
-    }
-
-    pub async fn resume(&self) {
-        let (send, recv) = oneshot::channel();
-
-        let _ = self
-            .sender
-            .send(RendererMessage::Resume { respond_to: send })
-            .await;
-
-        let _ = recv.await;
+    async fn resume(&self) -> Result<(), ActorDead<()>> {
+        self.call(|tx| RendererMessage::Resume { respond_to: tx })
+            .await
     }
 }

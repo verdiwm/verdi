@@ -3,33 +3,18 @@
 
 use std::{
     fs,
-    os::fd::{FromRawFd, IntoRawFd, OwnedFd},
     path::{Path, PathBuf},
-    process::{Stdio, exit},
     time::Duration,
 };
 
 use anyhow::{Context, Result as AnyResult, bail};
 use clap::Parser;
-use rustix::{
-    fs::{Mode, OFlags},
-    io::Errno,
-    process::geteuid,
-};
-use serde::{Deserialize, Serialize};
-use tokio::{net::UnixListener, process::Command, sync::mpsc, task::JoinSet, time::sleep};
-use tokio_stream::{StreamExt, wrappers::UnboundedReceiverStream};
-use tokio_util::{sync::CancellationToken, task::TaskTracker};
-use tracing::{debug, error};
+use rustix::process::geteuid;
+use tokio_util::sync::CancellationToken;
+use tracing::debug;
 
 use tracing_subscriber::EnvFilter;
-use verdi::{
-    Compositor, CompositorHandle, Config, actors::client_listener::ClientListener,
-    error::VerdiError,
-};
-
-use waynest::ObjectId;
-use waynest_server::Listener;
+use verdi::{CompositorInit, Config};
 
 const fn version() -> &'static str {
     concat!(
@@ -96,19 +81,19 @@ fn main() -> AnyResult<()> {
     debug!("Created tokio runtime");
 
     runtime.block_on(async move {
-        let socket_path = {
-            if let Some(ref socket) = args.socket {
-                Some(socket)
-            } else if let Some(ref socket) = config.socket {
-                Some(socket)
-            } else {
-                None
-            }
-        };
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(5)).await;
 
-        let compositor = Compositor::new(socket_path).await;
+            std::process::exit(1);
+        });
 
-        compositor.run().await;
+        let socket_path = args.socket.or(config.socket);
+
+        let token = CancellationToken::new();
+
+        stagecraft::spawn::<verdi::Compositor>(token.clone(), CompositorInit { socket_path });
+
+        token.cancelled().await;
     });
 
     Ok(())

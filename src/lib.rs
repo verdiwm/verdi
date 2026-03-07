@@ -13,7 +13,7 @@ pub mod protocol;
 pub use crate::{
     actors::{
         client::Client,
-        compositor::{Compositor, CompositorHandle},
+        compositor::{Compositor, CompositorInit},
     },
     error::{Result, VerdiError},
 };

@@ -1,22 +1,21 @@
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use colpetto::event::KeyState;
 use input_linux_sys::KEY_ESC;
-use tokio::{
-    net::UnixStream,
-    sync::{RwLock, mpsc},
-};
-use tokio_util::{sync::CancellationToken, task::TaskTracker};
+use saddle::Seat;
+use stagecraft::{Actor, ActorDead, Context, Handle, HasMailbox};
+use tokio::{net::UnixStream, sync::RwLock};
 use tracing::{debug, info};
+use waynest_server::Listener;
 
 use crate::{
     Client,
     actors::{
         client::ClientHandle,
-        client_listener::ClientListener,
-        input_manager::{InputManager, InputManagerHandle},
-        renderer::{Renderer, RendererHandle},
-        session::{Session, SessionHandle},
+        client_listener::{ClientListener, ClientListenerInit},
+        input_manager::{InputManager, InputManagerExt, InputManagerInit},
+        renderer::{Renderer, RendererExt},
+        session::{Session, SessionExt, SessionRef},
     },
     keymap::{KeyMap, ModifierState},
 };
@@ -68,124 +67,103 @@ impl From<&colpetto::Event> for EventType {
     }
 }
 
-#[derive(Clone)]
-pub struct CompositorHandle {
-    sender: mpsc::Sender<CompositorMessage>,
+pub struct CompositorInit {
+    pub socket_path: Option<PathBuf>,
 }
 
 pub struct Compositor {
-    sender: mpsc::Sender<CompositorMessage>,
-    receiver: mpsc::Receiver<CompositorMessage>,
     next_client_id: u32,
     clients: HashMap<u32, ClientHandle>,
-    actors_tracker: TaskTracker,
-    shutdown_token: CancellationToken,
-
     key_map: KeyMap,
     modifier_state: Arc<RwLock<ModifierState>>,
     has_control: bool,
-
-    // Handles
-    session_handle: SessionHandle,
-    input_manager_handle: InputManagerHandle,
-    renderer_handle: RendererHandle,
+    session_ref: SessionRef,
+    input_manager_handle: Handle<InputManager>,
+    renderer_handle: Handle<Renderer>,
 }
 
 impl Compositor {
-    pub async fn new<P: AsRef<Path>>(socket_path: Option<P>) -> Self {
-        let shutdown_token = CancellationToken::new();
+    fn next_client_id(&mut self) -> u32 {
+        let prev = self.next_client_id;
+        self.next_client_id = self.next_client_id.wrapping_add(1);
+        prev
+    }
+}
 
-        let (sender, receiver) = mpsc::channel(256);
+impl HasMailbox for Compositor {
+    type Message = CompositorMessage;
 
-        let actors_tracker = TaskTracker::new();
+    fn channel_size() -> usize {
+        256
+    }
+}
 
-        let compositor_handle = CompositorHandle::new(sender.clone());
+impl Actor for Compositor {
+    type Init = CompositorInit;
 
-        let client_listener = ClientListener::new(
-            compositor_handle.clone(),
-            shutdown_token.child_token(),
-            socket_path,
-        )
-        .expect("Failed to start client listener");
+    async fn init(init: CompositorInit, ctx: &mut Context<Self>) -> Self {
+        debug!("Started compositor");
 
-        let session = Session::new(compositor_handle.clone(), shutdown_token.child_token()).await;
-        let session_handle = session.handle();
+        let seat = Seat::new().await.expect("Failed to open seat");
+        let seat_name = seat.seat_name().to_owned();
 
-        let input_manager = InputManager::new(
-            compositor_handle,
-            session_handle.clone(),
-            shutdown_token.child_token(),
-        );
-        let input_manager_handle = input_manager.handle();
+        let session = Session {
+            seat,
+            compositor_handle: ctx.handle(),
+        };
 
-        let renderer = Renderer::new(session_handle.clone(), shutdown_token.child_token());
-        let renderer_handle = renderer.handle();
+        let session_handle = ctx.spawn_stream::<Session>(session);
+        let session_ref = SessionRef::new(session_handle, seat_name);
 
-        actors_tracker.spawn(session.run());
-        actors_tracker.spawn(input_manager.run());
-        actors_tracker.spawn(client_listener.run());
-        actors_tracker.spawn(renderer.run());
+        let input_manager_handle = ctx.spawn_stream_local::<InputManager>(InputManagerInit {
+            compositor_handle: ctx.handle(),
+            session_ref: session_ref.clone(),
+        });
 
-        let key_map = KeyMap::new();
-        let modifier_state = Arc::new(RwLock::new(ModifierState::new()));
+        let renderer_handle = ctx.spawn::<Renderer>(Renderer::new(session_ref.clone()));
+
+        let listener = if let Some(ref path) = init.socket_path {
+            Listener::new_with_path(path).expect("Failed to start client listener")
+        } else {
+            Listener::new().expect("Failed to start client listener")
+        };
+
+        let _listener_handle = ctx.spawn_stream::<ClientListener>(ClientListenerInit {
+            listener,
+            compositor_handle: ctx.handle(),
+        });
 
         Self {
-            sender,
-            receiver,
             next_client_id: 1,
             clients: HashMap::new(),
-            actors_tracker,
-            shutdown_token,
-            key_map,
-            modifier_state,
+            key_map: KeyMap::new(),
+            modifier_state: Arc::new(RwLock::new(ModifierState::new())),
             has_control: false,
-            session_handle,
+            session_ref,
             input_manager_handle,
             renderer_handle,
         }
     }
 
-    pub fn handle(&self) -> CompositorHandle {
-        CompositorHandle::new(self.sender.clone())
+    async fn on_stop(&mut self, _ctx: &mut Context<Self>) {
+        debug!("Compositor stopped");
     }
 
-    fn next_client_id(&mut self) -> u32 {
-        let prev = self.next_client_id;
-        self.next_client_id = self.next_client_id.wrapping_add(1);
-
-        prev
-    }
-
-    pub async fn run(mut self) {
-        tracing::debug!("Started compositor");
-
-        loop {
-            tokio::select! {
-                biased;
-                _ = self.shutdown_token.cancelled() => {
-                    self.actors_tracker.close();
-                    break
-                }
-                Some(msg) = self.receiver.recv() => {
-                    self.handle_message(msg).await;
-                }
-            }
-        }
-
-        self.actors_tracker.wait().await;
-    }
-
-    async fn handle_message(&mut self, msg: CompositorMessage) {
+    async fn handle_message(&mut self, msg: CompositorMessage, ctx: &mut Context<Self>) {
         match msg {
             CompositorMessage::NewClient { stream } => {
                 let client_id = self.next_client_id();
 
-                // FIXME: how the hell do we handle errors
-                let client = Client::new(stream, client_id).unwrap();
-
-                self.clients.insert(client_id, client.handle());
-
-                tokio::spawn(client.run());
+                let token = ctx.child_token();
+                match Client::new(stream, client_id, token) {
+                    Ok(client) => {
+                        self.clients.insert(client_id, client.handle());
+                        ctx.track(client.run());
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to create client {client_id}: {e}");
+                    }
+                }
             }
             #[allow(clippy::single_match)]
             CompositorMessage::Input(event) => match event.event_type {
@@ -197,29 +175,21 @@ impl Compositor {
                     };
 
                     if should_check_vt_switch {
-                        // Handle ESC for exit
                         if key as i32 == KEY_ESC {
-                            // libinput_handle.shutdown();
-                            self.shutdown_token.cancel();
+                            ctx.shutdown();
                         }
 
-                        // Only process function keys when Ctrl+Alt are held
                         if is_ctrl_alt_pressed && let Some(vt) = self.key_map.get_vt(key) {
                             if self.has_control {
                                 info!("Ctrl+Alt+F{vt} pressed, attempting a VT switch to {vt}");
 
-                                if let Ok(current_vt) = self.session_handle.current_vt().await
+                                if let Ok(current_vt) = self.session_ref.current_vt().await
                                     && vt != current_vt
                                 {
                                     info!(
                                         "Deactivating session - destroying rendering context completely"
                                     );
-
-                                    self.session_handle.switch_vt(vt).await;
-
-                                    // if let Err(e) = self.session_handle.switch_vt(vt).await {
-                                    //     error!("Failed to switch to VT {vt}: {e}");
-                                    // }
+                                    let _ = self.session_ref.switch_vt(vt).await;
                                 }
                             } else {
                                 debug!("Not switching VT - session inactive");
@@ -230,47 +200,50 @@ impl Compositor {
                 _ => {}
             },
             CompositorMessage::SessionLost => {
-                self.input_manager_handle.suspend().await;
-                self.renderer_handle.suspend().await;
-
-                let _ = self.session_handle.release_session().await;
+                let _ = self.input_manager_handle.suspend().await;
+                let _ = self.renderer_handle.suspend().await;
+                let _ = self.session_ref.release_session().await;
                 self.has_control = false;
             }
             CompositorMessage::SessionResumed => {
-                let _ = self.session_handle.acquire_session().await;
+                let _ = self.session_ref.acquire_session().await;
                 self.has_control = true;
-
-                self.input_manager_handle.resume().await;
-                self.renderer_handle.resume().await;
+                let _ = self.input_manager_handle.resume().await;
+                let _ = self.renderer_handle.resume().await;
             }
         }
     }
 }
 
-impl CompositorHandle {
-    fn new(sender: mpsc::Sender<CompositorMessage>) -> Self {
-        Self { sender }
+pub trait CompositorExt {
+    fn new_client(&self, stream: UnixStream) -> impl Future<Output = Result<(), ActorDead<()>>>;
+    fn session_lost(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
+    fn session_resumed(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
+    fn input(&self, event: InputEvent) -> impl Future<Output = Result<(), ActorDead<()>>>;
+}
+
+impl CompositorExt for Handle<Compositor> {
+    async fn new_client(&self, stream: UnixStream) -> Result<(), ActorDead<()>> {
+        self.cast(CompositorMessage::NewClient { stream })
+            .await
+            .map_err(|_| ActorDead(()))
     }
 
-    pub async fn new_client(&self, stream: UnixStream) {
-        let _ = self
-            .sender
-            .send(CompositorMessage::NewClient { stream })
-            .await;
+    async fn session_lost(&self) -> Result<(), ActorDead<()>> {
+        self.cast(CompositorMessage::SessionLost)
+            .await
+            .map_err(|_| ActorDead(()))
     }
 
-    pub async fn session_lost(&self) {
-        let _ = self.sender.send(CompositorMessage::SessionLost).await;
+    async fn session_resumed(&self) -> Result<(), ActorDead<()>> {
+        self.cast(CompositorMessage::SessionResumed)
+            .await
+            .map_err(|_| ActorDead(()))
     }
 
-    pub async fn session_resumed(&self) {
-        let _ = self.sender.send(CompositorMessage::SessionResumed).await;
-    }
-
-    pub async fn input(&self, input_event: InputEvent) {
-        let _ = self
-            .sender
-            .send(CompositorMessage::Input(input_event))
-            .await;
+    async fn input(&self, event: InputEvent) -> Result<(), ActorDead<()>> {
+        self.cast(CompositorMessage::Input(event))
+            .await
+            .map_err(|_| ActorDead(()))
     }
 }

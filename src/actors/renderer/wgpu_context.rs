@@ -8,7 +8,7 @@ use rustix::fd::{AsFd, AsRawFd};
 use tracing::{debug, trace};
 use wgpu::{Backends, ExperimentalFeatures, PresentMode, SurfaceTargetUnsafe};
 
-use crate::actors::session::SessionHandle;
+use crate::actors::session::{SessionExt, SessionRef};
 
 #[derive(Debug)]
 struct DrmState {
@@ -26,8 +26,8 @@ pub struct WgpuContext<'s> {
 }
 
 impl<'s> WgpuContext<'s> {
-    pub async fn new(session_handle: &SessionHandle) -> Result<Self> {
-        let drm_state = Self::create_drm_resources(session_handle).await?;
+    pub async fn new(session_ref: &SessionRef) -> Result<Self> {
+        let drm_state = Self::create_drm_resources(session_ref).await?;
 
         let surface_target = SurfaceTargetUnsafe::Drm {
             fd: drm_state.device.as_fd().as_raw_fd(),
@@ -35,7 +35,7 @@ impl<'s> WgpuContext<'s> {
             connector_id: drm_state.connector.connector_id.into(),
             width: drm_state.mode.display_width() as u32,
             height: drm_state.mode.display_height() as u32,
-            refresh_rate: drm_state.mode.vertical_refresh_rate() * 1000,
+            refresh_rate: drm_state.mode.wsi_refresh_rate(),
         };
 
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
@@ -88,11 +88,11 @@ impl<'s> WgpuContext<'s> {
         })
     }
 
-    async fn create_drm_resources(session_handle: &SessionHandle) -> Result<DrmState> {
-        let fd = session_handle
+    async fn create_drm_resources(session_ref: &SessionRef) -> Result<DrmState> {
+        let fd = session_ref
             .open_device(CString::new("/dev/dri/card1").unwrap())
             .await
-            .unwrap();
+            .map_err(|_| anyhow::anyhow!("Session actor is dead"))?;
 
         let device = unsafe { DrmDevice::new_unchecked(fd) };
 
@@ -200,9 +200,7 @@ impl<'s> WgpuContext<'s> {
                 },
                 depth_slice: None,
             })],
-            depth_stencil_attachment: None,
-            timestamp_writes: None,
-            occlusion_query_set: None,
+            ..Default::default()
         });
 
         drop(renderpass);
