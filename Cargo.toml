@@ -66,7 +66,7 @@ pin-project-lite = "0.2.17"
 futures-core = "0.3.32"
 futures-sink = "0.3.32"
 tokio-util = { version = "0.7.18", features = ["rt"] }
-stagecraft = { version = "0.0.1", path = "../stagecraft" }
+stagecraft = "0.0.1"
 
 [build-dependencies]
 chrono = { version = "0.4.44", default-features = false, features = ["std"] }
@@ -82,6 +82,7 @@ libcorn = { git = "https://github.com/corn-config/corn" }
 # waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 # waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 saddle = { git = "https://github.com/verdiwm/saddle/", branch = "main" }
+stagecraft = { git = "https://github.com/verdiwm/stagecraft/", branch = "main" }
 # waynest = { path = "../waynest/crates/core" }
 # waynest-protocols = { path = "../waynest/crates/protocols" }
 # waynest-server = { path = "../waynest/crates/server" }
