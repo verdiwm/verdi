@@ -5,7 +5,7 @@ use std::{
 };
 
 use colpetto::{Libinput, event::AsRawEvent};
-use stagecraft::{ActorDead, Context, Handle, HasMailbox, LocalActor, LocalStreamActor};
+use stagecraft::{Context, Handle, HasMailbox, LocalActor, LocalStreamActor};
 use tokio::sync::mpsc;
 use tracing::{debug, error, trace};
 
@@ -14,6 +14,7 @@ use crate::actors::{
     session::{SessionExt, SessionRef},
 };
 
+#[stagecraft::message(InputManager)]
 pub enum InputManagerMessage {
     Suspend,
     Resume,
@@ -136,24 +137,5 @@ impl LocalStreamActor for InputManager {
                 tracing::error!("libinput error: {e}");
             }
         }
-    }
-}
-
-pub trait InputManagerExt {
-    fn suspend(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn resume(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-}
-
-impl InputManagerExt for Handle<InputManager> {
-    async fn suspend(&self) -> Result<(), ActorDead<()>> {
-        self.cast(InputManagerMessage::Suspend)
-            .await
-            .map_err(|_| ActorDead(()))
-    }
-
-    async fn resume(&self) -> Result<(), ActorDead<()>> {
-        self.cast(InputManagerMessage::Resume)
-            .await
-            .map_err(|_| ActorDead(()))
     }
 }

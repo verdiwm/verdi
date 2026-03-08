@@ -2,32 +2,29 @@ use std::{ffi::CString, os::fd::OwnedFd, pin::Pin};
 
 use futures_core::Stream;
 use saddle::Seat;
-use tokio::sync::oneshot;
 
-use stagecraft::{Actor, ActorDead, Context, Handle, HasMailbox, StreamActor};
+use stagecraft::{Actor, Context, Handle, HasMailbox, StreamActor};
 
 use super::compositor::Compositor;
 
+#[stagecraft::message(Session)]
 pub enum SessionMessage {
-    CurrentVt {
-        respond_to: oneshot::Sender<u32>,
-    },
+    #[call(u32)]
+    CurrentVt,
     SwitchVt {
         vt: u32,
     },
+    #[call(OwnedFd)]
     OpenDevice {
         path: CString,
-        respond_to: oneshot::Sender<OwnedFd>,
     },
     CloseDevice {
         fd: OwnedFd,
     },
-    AcquireSession {
-        respond_to: oneshot::Sender<()>,
-    },
-    ReleaseSession {
-        respond_to: oneshot::Sender<()>,
-    },
+    #[call]
+    AcquireSession,
+    #[call]
+    ReleaseSession,
 }
 
 pub struct Session {
@@ -145,51 +142,5 @@ impl StreamActor for Session {
                 tracing::error!("Session stream error: {e}");
             }
         }
-    }
-}
-
-pub trait SessionExt {
-    fn switch_vt(&self, vt: u32) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn open_device(&self, path: CString) -> impl Future<Output = Result<OwnedFd, ActorDead<()>>>;
-    fn close_device(&self, fd: OwnedFd) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn current_vt(&self) -> impl Future<Output = Result<u32, ActorDead<()>>>;
-    fn acquire_session(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn release_session(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-}
-
-impl SessionExt for Handle<Session> {
-    async fn switch_vt(&self, vt: u32) -> Result<(), ActorDead<()>> {
-        self.cast(SessionMessage::SwitchVt { vt })
-            .await
-            .map_err(|_| ActorDead(()))
-    }
-
-    async fn open_device(&self, path: CString) -> Result<OwnedFd, ActorDead<()>> {
-        self.call(|tx| SessionMessage::OpenDevice {
-            path,
-            respond_to: tx,
-        })
-        .await
-    }
-
-    async fn close_device(&self, fd: OwnedFd) -> Result<(), ActorDead<()>> {
-        self.cast(SessionMessage::CloseDevice { fd })
-            .await
-            .map_err(|_| ActorDead(()))
-    }
-
-    async fn current_vt(&self) -> Result<u32, ActorDead<()>> {
-        self.call(|tx| SessionMessage::CurrentVt { respond_to: tx })
-            .await
-    }
-
-    async fn acquire_session(&self) -> Result<(), ActorDead<()>> {
-        self.call(|tx| SessionMessage::AcquireSession { respond_to: tx })
-            .await
-    }
-
-    async fn release_session(&self) -> Result<(), ActorDead<()>> {
-        self.call(|tx| SessionMessage::ReleaseSession { respond_to: tx })
-            .await
     }
 }

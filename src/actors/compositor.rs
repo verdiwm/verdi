@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use colpetto::event::KeyState;
 use input_linux_sys::KEY_ESC;
 use saddle::Seat;
-use stagecraft::{Actor, ActorDead, Context, Handle, HasMailbox};
+use stagecraft::{Actor, Context, Handle, HasMailbox};
 use tokio::{net::UnixStream, sync::RwLock};
 use tracing::{debug, info};
 use waynest_server::Listener;
@@ -21,6 +21,7 @@ use crate::{
 };
 
 #[derive(Debug)]
+#[stagecraft::message(Compositor)]
 pub enum CompositorMessage {
     NewClient { stream: UnixStream },
     Input(InputEvent),
@@ -212,38 +213,5 @@ impl Actor for Compositor {
                 let _ = self.renderer_handle.resume().await;
             }
         }
-    }
-}
-
-pub trait CompositorExt {
-    fn new_client(&self, stream: UnixStream) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn session_lost(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn session_resumed(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn input(&self, event: InputEvent) -> impl Future<Output = Result<(), ActorDead<()>>>;
-}
-
-impl CompositorExt for Handle<Compositor> {
-    async fn new_client(&self, stream: UnixStream) -> Result<(), ActorDead<()>> {
-        self.cast(CompositorMessage::NewClient { stream })
-            .await
-            .map_err(|_| ActorDead(()))
-    }
-
-    async fn session_lost(&self) -> Result<(), ActorDead<()>> {
-        self.cast(CompositorMessage::SessionLost)
-            .await
-            .map_err(|_| ActorDead(()))
-    }
-
-    async fn session_resumed(&self) -> Result<(), ActorDead<()>> {
-        self.cast(CompositorMessage::SessionResumed)
-            .await
-            .map_err(|_| ActorDead(()))
-    }
-
-    async fn input(&self, event: InputEvent) -> Result<(), ActorDead<()>> {
-        self.cast(CompositorMessage::Input(event))
-            .await
-            .map_err(|_| ActorDead(()))
     }
 }

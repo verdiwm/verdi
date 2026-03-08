@@ -1,5 +1,4 @@
-use stagecraft::{Actor, ActorDead, Context, Handle, HasMailbox};
-use tokio::sync::oneshot;
+use stagecraft::{Actor, Context, HasMailbox};
 use tracing::debug;
 
 use crate::actors::session::SessionRef;
@@ -8,9 +7,12 @@ use self::wgpu_context::WgpuContext;
 
 mod wgpu_context;
 
+#[stagecraft::message(Renderer)]
 pub enum RendererMessage {
-    Suspend { respond_to: oneshot::Sender<()> },
-    Resume { respond_to: oneshot::Sender<()> },
+    #[call]
+    Suspend,
+    #[call]
+    Resume,
     Render,
 }
 
@@ -75,22 +77,5 @@ impl Actor for Renderer {
     async fn on_stop(&mut self, _ctx: &mut Context<Self>) {
         debug!("Renderer stopping, dropping wgpu context");
         self.wgpu_context = None;
-    }
-}
-
-pub trait RendererExt {
-    fn suspend(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-    fn resume(&self) -> impl Future<Output = Result<(), ActorDead<()>>>;
-}
-
-impl RendererExt for Handle<Renderer> {
-    async fn suspend(&self) -> Result<(), ActorDead<()>> {
-        self.call(|tx| RendererMessage::Suspend { respond_to: tx })
-            .await
-    }
-
-    async fn resume(&self) -> Result<(), ActorDead<()>> {
-        self.call(|tx| RendererMessage::Resume { respond_to: tx })
-            .await
     }
 }
