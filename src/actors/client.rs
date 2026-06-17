@@ -45,6 +45,10 @@ impl waynest::Connection for Client {
     fn fd(&mut self) -> std::result::Result<std::os::unix::prelude::OwnedFd, VerdiError> {
         self.socket.fd().map_err(VerdiError::from)
     }
+
+    fn push_fd(&mut self, fd: std::os::unix::prelude::OwnedFd) {
+        self.socket.push_fd(fd);
+    }
 }
 
 impl Stream for Client {

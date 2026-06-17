@@ -26,7 +26,7 @@ strip = false
 anyhow = "1.0.102"
 rustix = { version = "1.1.4", features = ["fs", "mm", "process"] }
 thiserror = "2.0.18"
-tokio = { version = "1.50.0", features = [
+tokio = { version = "1.52.3", features = [
     "macros",
     "net",
     "rt-multi-thread",
@@ -36,18 +36,18 @@ tokio = { version = "1.50.0", features = [
     "process",
 ] }
 tracing = "0.1.44"
-tracing-subscriber = { version = "0.3.22", features = [
+tracing-subscriber = { version = "0.3.23", features = [
     "env-filter",
     "tracing-log",
 ] }
-wgpu = { version = "28.0.0", default-features = false, features = [
+wgpu = { version = "29.0.3", default-features = false, features = [
     "vulkan",
     "wgsl",
 ] }
-clap = { version = "4.5.60", features = ["derive"] }
+clap = { version = "4.6.1", features = ["derive"] }
 serde = { version = "1.0.228", features = ["derive"] }
 diretto = "0.0.7"
-rand = "0.10.0"
+rand = "0.10.1"
 bytemuck = { version = "1.25.0", features = ["derive"] }
 colpetto = { version = "0.7.0", features = ["tokio", "tracing"] }
 waynest = "0.2.0-rc1"
@@ -66,24 +66,27 @@ pin-project-lite = "0.2.17"
 futures-core = "0.3.32"
 futures-sink = "0.3.32"
 tokio-util = { version = "0.7.18", features = ["rt"] }
-stagecraft = "0.0.1"
+stagecraft = "0.1.0"
 
 [build-dependencies]
-chrono = { version = "0.4.44", default-features = false, features = ["std"] }
-git2 = { version = "0.20.4", default-features = false }
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+git2 = { version = "0.21.0", default-features = false }
 
 [patch.crates-io]
 # wgpu = { git = "https://github.com/gfx-rs/wgpu" }
 libcorn = { git = "https://github.com/corn-config/corn" }
 # colpetto = { git = "https://github.com/verdiwm/colpetto" }
 # diretto = { git = "https://github.com/verdiwm/diretto.git" }
-# colpetto = { path = "../colpetto" }
+colpetto = { path = "../colpetto" }
 # waynest = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 # waynest-protocols = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
 # waynest-server = { git = "https://github.com/verdiwm/waynest/", branch = "main" }
-saddle = { git = "https://github.com/verdiwm/saddle/", branch = "main" }
-stagecraft = { git = "https://github.com/verdiwm/stagecraft/", branch = "main" }
-# waynest = { path = "../waynest/crates/core" }
-# waynest-protocols = { path = "../waynest/crates/protocols" }
-# waynest-server = { path = "../waynest/crates/server" }
+# saddle = { git = "https://github.com/verdiwm/saddle/", branch = "main" }
+saddle = { path = "../saddle" }
+# stagecraft = { git = "https://github.com/verdiwm/stagecraft/", branch = "main" }
+stagecraft = { path = "../stagecraft" }
+waynest = { path = "../waynest/crates/waynest" }
+waynest-core = { path = "../waynest/crates/core" }
+waynest-protocols = { path = "../waynest/crates/protocols" }
+waynest-server = { path = "../waynest/crates/server" }
 # saddle = { path = "../saddle" }

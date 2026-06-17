@@ -34,4 +34,12 @@ impl WlCompositor for Compositor {
     ) -> Result<()> {
         todo!()
     }
+
+    async fn release(
+        &self,
+        connection: &mut Self::Connection,
+        sender_id: waynest::ObjectId,
+    ) -> Result<()> {
+        todo!()
+    }
 }

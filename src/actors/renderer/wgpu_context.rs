@@ -1,21 +1,16 @@
-use std::ffi::CString;
-
-use anyhow::{Context, Result};
-use diretto::{
-    ClientCapability, Connector, Device as DrmDevice, ModeType, sys::DRM_MODE_OBJECT_PLANE,
-};
+use anyhow::{Context, Result, bail};
+use diretto::{ClientCapability, Device as DrmDevice};
 use rustix::fd::{AsFd, AsRawFd};
-use tracing::{debug, trace};
-use wgpu::{Backends, ExperimentalFeatures, PresentMode, SurfaceTargetUnsafe};
+use tracing::debug;
+use wgpu::{
+    Backends, CurrentSurfaceTexture, ExperimentalFeatures, PresentMode, SurfaceTargetUnsafe,
+};
 
-use crate::actors::session::{SessionExt, SessionRef};
+use crate::actors::{output_manager::OutputInfo, session::DeviceBroker};
 
-#[derive(Debug)]
 struct DrmState {
-    device: DrmDevice,
-    connector: Connector,
-    mode: diretto::Mode,
-    plane_id: u32,
+    // Kept alive to ensure the DRM fd remains open for the duration of the WGPU surface.
+    _device: DrmDevice,
 }
 
 pub struct WgpuContext<'s> {
@@ -26,23 +21,32 @@ pub struct WgpuContext<'s> {
 }
 
 impl<'s> WgpuContext<'s> {
-    pub async fn new(session_ref: &SessionRef) -> Result<Self> {
-        let drm_state = Self::create_drm_resources(session_ref).await?;
+    pub async fn new(device_broker: &DeviceBroker, output: &OutputInfo) -> Result<Self> {
+        let fd: std::os::fd::OwnedFd = device_broker
+            .open(output.device_path.clone())
+            .await
+            .map_err(|_| anyhow::anyhow!("Session actor is dead"))?;
+
+        let drm_device = unsafe { DrmDevice::new_unchecked(fd) };
+
+        drm_device.set_client_capability(ClientCapability::Atomic, true)?;
 
         let surface_target = SurfaceTargetUnsafe::Drm {
-            fd: drm_state.device.as_fd().as_raw_fd(),
-            plane: drm_state.plane_id,
-            connector_id: drm_state.connector.connector_id.into(),
-            width: drm_state.mode.display_width() as u32,
-            height: drm_state.mode.display_height() as u32,
-            refresh_rate: drm_state.mode.wsi_refresh_rate(),
+            fd: drm_device.as_fd().as_raw_fd(),
+            plane: output.plane_id,
+            connector_id: output.connector_id,
+            width: output.width,
+            height: output.height,
+            refresh_rate: output.refresh_rate,
         };
 
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: Backends::VULKAN,
             flags: wgpu::InstanceFlags::default()
                 | wgpu::InstanceFlags::ALLOW_UNDERLYING_NONCOMPLIANT_ADAPTER,
-            ..Default::default()
+            memory_budget_thresholds: Default::default(),
+            backend_options: Default::default(),
+            display: None,
         });
 
         let surface = unsafe { instance.create_surface_unsafe(surface_target)? };
@@ -68,11 +72,7 @@ impl<'s> WgpuContext<'s> {
             .context("Failed to create device")?;
 
         let mut config = surface
-            .get_default_config(
-                &adapter,
-                drm_state.mode.display_width().into(),
-                drm_state.mode.display_height().into(),
-            )
+            .get_default_config(&adapter, output.width, output.height)
             .context("Surface not supported by adapter")?;
 
         config.present_mode = PresentMode::AutoVsync;
@@ -84,102 +84,20 @@ impl<'s> WgpuContext<'s> {
             surface,
             device,
             queue,
-            _drm_state: drm_state,
+            _drm_state: DrmState {
+                _device: drm_device,
+            },
         })
     }
 
-    async fn create_drm_resources(session_ref: &SessionRef) -> Result<DrmState> {
-        let fd = session_ref
-            .open_device(CString::new("/dev/dri/card1").unwrap())
-            .await
-            .map_err(|_| anyhow::anyhow!("Session actor is dead"))?;
+    pub fn present(&self) -> anyhow::Result<()> {
+        let frame = self.surface.get_current_texture();
 
-        let device = unsafe { DrmDevice::new_unchecked(fd) };
-
-        device.set_client_capability(ClientCapability::Atomic, true)?;
-
-        let resources = device.get_resources()?;
-
-        // Find connected connector
-        let connector = {
-            let mut found_connector = None;
-            for connector_id in &resources.connectors {
-                let connector = device.get_connector(*connector_id, false)?;
-                if connector.connection.is_connected() {
-                    found_connector = Some(connector);
-                    break;
-                }
-            }
-            found_connector.ok_or_else(|| anyhow::anyhow!("No connected display found"))?
+        let (CurrentSurfaceTexture::Success(frame) | CurrentSurfaceTexture::Suboptimal(frame)) =
+            frame
+        else {
+            bail!("Failed to acquire next swapchain texture")
         };
-
-        // Find best mode
-        let mode = {
-            let mut best_mode = None;
-            let mut max_area = 0;
-
-            for current_mode in connector.modes.iter().copied() {
-                if current_mode.ty().contains(ModeType::DEFAULT) {
-                    best_mode = Some(current_mode);
-                    break;
-                }
-
-                let area =
-                    current_mode.display_width() as u32 * current_mode.display_height() as u32;
-                if area > max_area {
-                    best_mode = Some(current_mode);
-                    max_area = area;
-                }
-            }
-            best_mode.ok_or_else(|| anyhow::anyhow!("No suitable mode found"))?
-        };
-
-        debug!(
-            "Selected mode {}x{}@{}",
-            mode.display_width(),
-            mode.display_height(),
-            mode.vertical_refresh_rate()
-        );
-
-        // Find primary plane
-        let plane_id = {
-            let plane_resources = device.get_plane_resources()?;
-            let mut primary_plane = None;
-
-            for id in plane_resources {
-                let (props, values) = unsafe { device.get_properties(id, DRM_MODE_OBJECT_PLANE)? };
-
-                for (index, prop) in props.into_iter().enumerate() {
-                    let (name, _) = unsafe { device.get_property(prop)? };
-                    let current_value = values[index];
-
-                    if name.as_c_str() == c"type" && current_value == 1 {
-                        trace!("Found primary plane: {}", id);
-                        primary_plane = Some(id);
-                        break;
-                    }
-                }
-
-                if primary_plane.is_some() {
-                    break;
-                }
-            }
-            primary_plane.ok_or_else(|| anyhow::anyhow!("No primary plane found"))?
-        };
-
-        Ok(DrmState {
-            device,
-            connector,
-            mode,
-            plane_id,
-        })
-    }
-
-    pub fn present(&self) -> Result<()> {
-        let frame = self
-            .surface
-            .get_current_texture()
-            .context("Failed to acquire next swapchain texture")?;
 
         let texture_view = frame
             .texture

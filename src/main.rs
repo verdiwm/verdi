@@ -82,7 +82,7 @@ fn main() -> AnyResult<()> {
 
     runtime.block_on(async move {
         tokio::spawn(async move {
-            tokio::time::sleep(Duration::from_secs(5)).await;
+            tokio::time::sleep(Duration::from_secs(10)).await;
 
             std::process::exit(1);
         });

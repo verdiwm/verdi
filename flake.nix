@@ -1,45 +1,58 @@
 {
-  description = "The elegant Wayland compositor";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    systems.url = "github:nix-systems/default-linux";
-    crane.url = "github:ipetkov/crane";
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, systems, crane, ... }: let
-    name = "verdi";
-    forEachSystem = nixpkgs.lib.genAttrs (import systems);
-  in {
-    packages = forEachSystem (
-      system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-        craneLib = crane.mkLib pkgs;
-        package = pkgs.callPackage ./package.nix { inherit craneLib; };
-      in {
-        ${name} = package;
-        default = package;
-      }
-    );
-    devShells = forEachSystem (
-      system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-        craneLib = crane.mkLib pkgs;
-        shell = craneLib.devShell {
-          inherit name;
+  outputs =
+    {
+      nixpkgs,
+      rust-overlay,
+      ...
+    }:
+    let
+      inherit (nixpkgs) lib;
+      eachSystem = lib.genAttrs lib.systems.flakeExposed;
+    in
+    {
+      devShells = eachSystem (
+        system:
+        let
+          overlays = [ (import rust-overlay) ];
+          pkgs = import nixpkgs {
+            inherit system overlays;
+          };
+        in
+        {
+          default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              cargo-nextest
+              cargo-expand
+              cargo-bloat
+              cargo-edit
+              pkg-config
+              vulkan-validation-layers
+              udev
+              clang
+              libinput
+              vulkan-loader
+              (rust-bin.stable.latest.default.override {
+                extensions = [
+                  "rust-src"
+                  "rust-analyzer"
+                ];
+              })
+            ];
 
-          packages = with pkgs; [
-            rust-analyzer
-            clippy
-            gdb
-          ];
-
-          inputsFrom = [ self.packages.${system}.${name} ];
-        };
-      in {
-        ${name} = shell;
-        default = shell;
-      }
-    );
-  };
+            LD_LIBRARY_PATH = with pkgs; "./target:${vulkan-loader}/lib:${vulkan-validation-layers}/lib";
+            VULKAN_SDK = with pkgs; "${vulkan-headers}";
+            VK_LAYER_PATH = with pkgs; "${vulkan-validation-layers}/share/vulkan/explicit_layer.d";
+          };
+        }
+      );
+    };
 }

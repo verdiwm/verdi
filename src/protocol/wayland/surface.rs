@@ -141,4 +141,13 @@ impl WlSurface for Surface {
     ) -> Result<()> {
         todo!()
     }
+
+    async fn get_release(
+        &self,
+        connection: &mut Self::Connection,
+        sender_id: waynest::ObjectId,
+        callback: waynest::ObjectId,
+    ) -> Result<()> {
+        todo!()
+    }
 }
